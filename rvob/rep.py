@@ -81,8 +81,8 @@ class Instruction(Statement):
         """
         super().__init__(labels)
         self.op_code = op_code
-        self.instr_args = instr_args
         self.type = i_type
+        self.instr_args = dict(instr_args)
 
 
 # Constructors catalogue
