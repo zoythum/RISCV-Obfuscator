@@ -83,3 +83,30 @@ class Instruction(Statement):
         self.op_code = op_code
         self.instr_args = instr_args
         self.type = i_type
+
+
+# Constructors catalogue
+constructors = {
+    "directive": Directive.__init__,
+    "instruction": Instruction.__init__
+}
+
+
+def load_src(descriptions: list) -> Source:
+    """Loads a list of dictionary descriptions of parsed assembler statements
+    :param descriptions: a list of dictionaries, describing a single assembler statement each
+    :return: a new source object
+    """
+
+    labs = []
+    statements = []
+    for d in descriptions:
+        if "label".__eq__(d["type"]):
+            labs.append(d["name"])
+        else:
+            constructor = constructors[d["type"]]
+            del d["type"]
+            statements.append(constructor(labels=labs, **d))
+            labs = []
+
+    return Source(statements)
