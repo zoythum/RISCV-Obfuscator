@@ -51,42 +51,35 @@ class Statement:
 class Directive(Statement):
     """A parsed assembler directive"""
 
-    def __init__(self, dir_id, args=None, labels=None):
+    def __init__(self, name, labels=None, **kwargs):
         """
         Instantiates a new assembler directive statement
-        :param dir_id: the directives name
-        :param args: a optional list of arguments for the directive
+        :param name: the directives name
         :param labels: an optional list of labels to mark the directive with
+        :param kwargs: a optional list of arguments for the directive
         """
 
         super().__init__(labels)
-        self.id = dir_id
+        self.id = name
 
-        if args is None:
-            self.args = []
+        if kwargs is None:
+            self.args = {}
         else:
-            self.args = list(args)
+            self.args = dict(kwargs)
 
 
 class Instruction(Statement):
     """A parsed assembly instruction"""
 
-    # TODO refactor this constructor, since its arguments list is too long
-    def __init__(self, op_code, i_type, rd=None, rs1=None, rs2=None, immediate=None, labels=None):
+    def __init__(self, op_code, i_type, labels=None, **instr_args):
         """
         Instantiates a new instruction statement
         :param op_code: the opcode for the new instruction
         :param i_type: the instruction's type
-        :param rd: the destination register of the instruction, if any
-        :param rs1: the first source register of the instruction, if any
-        :param rs2: the last source register of the instruction, if any
-        :param immediate: the immediate argument (symbolic or literal) value of the instruction, if any
+        :param instr_args: the instruction's arguments
         :param labels: an optional list of labels to mark the instruction with
         """
         super().__init__(labels)
         self.op_code = op_code
-        self.rd = rd
-        self.rs1 = rs1
-        self.rs2 = rs2
-        self.immediate = immediate
+        self.instr_args = instr_args
         self.type = i_type
