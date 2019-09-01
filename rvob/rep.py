@@ -32,6 +32,20 @@ class Source:
 
         self.lines[start:end] = replacement
 
+    def get_labels(self):
+        """Returns a dictionary of labels mapped to the lines they point to"""
+
+        labd = {}
+        lc = 1
+
+        for statement in self.lines:
+            for label in statement.labels:
+                labd[label] = lc
+
+            lc += 1
+
+        return labd
+
 
 class Statement:
     """An assembler source statement"""
@@ -110,20 +124,3 @@ def load_src(descriptions: list) -> Source:
             labs = []
 
     return Source(statements)
-
-
-def index_labels(src: Source):
-    """Constructs a dictionary of labels mapped to the lines they point to
-    :param src: an assembler source object
-    """
-
-    labd = {}
-    lc = 1
-
-    for statement in src.lines:
-        for label in statement.labels:
-            labd[label] = lc
-
-        lc += 1
-
-    return labd
