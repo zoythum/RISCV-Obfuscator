@@ -1,3 +1,7 @@
+# The standard section's names
+standard_sections = {".text", ".data", ".bss"}
+
+
 class Source:
     """A parsed assembler source file"""
 
@@ -45,6 +49,28 @@ class Source:
             lc += 1
 
         return labd
+
+    def get_sections(self):
+        """Returns a list of sections, represented as tuples of (<section name>, <statements list>)"""
+
+        sec_ls = []
+        curr_ln, start = 1, 1
+        # First line of an assembler source is the first section's header
+        curr_sec = self.lines[0].args[0] if self.lines[0].id.__eq__(".section") else self.lines[0].id
+
+        for statement in self.lines[1:]:
+            if (type(statement) is Directive) and \
+                    (standard_sections.__contains__(statement.id) or statement.id.__eq__(".section")):
+                sec_ls.append((curr_sec, self.lines[start:curr_ln]))
+                start = curr_ln + 1
+                # Remember to update this argument retrieval statement in case we decide to name arguments
+                curr_sec = statement.args[0] if statement.id.__eq__(".section") else statement.id
+
+            curr_ln += 1
+
+        sec_ls.append((curr_sec, self.lines[start:curr_ln]))
+
+        return sec_ls
 
 
 class Statement:
