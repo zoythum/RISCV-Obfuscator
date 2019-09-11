@@ -51,7 +51,12 @@ class Source:
         return labd
 
     def get_sections(self):
-        """Returns a list of sections, represented as tuples of (<section name>, <statements list>)"""
+        """
+        Returns a list of sections, represented as tuples of (<section name>, <start>, <end>, <statements list>).
+
+        Keep in mind that <start> and <end> represent the index of the first line of the section and the position
+        after the last line, respectively, much like as in the list slicing convention.
+        """
 
         sec_ls = []
         curr_ln, start = 1, 1
@@ -61,14 +66,14 @@ class Source:
         for statement in self.lines[1:]:
             if (type(statement) is Directive) and \
                     (standard_sections.__contains__(statement.id) or statement.id.__eq__(".section")):
-                sec_ls.append((curr_sec, self.lines[start:curr_ln]))
+                sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
                 start = curr_ln + 1
                 # Remember to update this argument retrieval statement in case we decide to name arguments
                 curr_sec = statement.args[0] if statement.id.__eq__(".section") else statement.id
 
             curr_ln += 1
 
-        sec_ls.append((curr_sec, self.lines[start:curr_ln]))
+        sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
 
         return sec_ls
 
