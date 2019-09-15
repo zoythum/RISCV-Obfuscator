@@ -5,7 +5,7 @@ import networkx as nx
 import rvob.rep as rep
 
 jump_type = Enum('JUMP', 'U, C')
-# TODO what the hell do we do about 'jr' jumps? And what about calls to unlinked code?
+# TODO what the hell do we do about 'jr' jumps?
 jump_ops = {
     "call": jump_type.U,
     "j": jump_type.U,
@@ -74,7 +74,11 @@ def build_cfg(src: rep.Source):
 
                 # Push the jump's target onto the exploration stack
                 # TODO what the hell do we do about 'jr' jumps?
-                exs.append((label_dict[statement.instr_args["immediate"]], dst, trail))
+                try:
+                    exs.append((label_dict[statement.instr_args["immediate"]], dst, trail))
+                except KeyError:
+                    # Jump to non-local code: execution resumes from the next line onwards
+                    exs.append((stop, dst, trail))
                 break
                 
             cursor += 1
