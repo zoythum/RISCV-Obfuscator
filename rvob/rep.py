@@ -60,16 +60,20 @@ class Source:
 
         sec_ls = []
         curr_ln, start = 1, 1
-        # First line of an assembler source is the first section's header
-        curr_sec = self.lines[0].args[0] if self.lines[0].id.__eq__(".section") else self.lines[0].id
+        # The first part of an assembler source contains options for GAS, so we ignore it
+        # TODO  maybe define this as a special fake section?
+        curr_sec = None
 
         for statement in self.lines[1:]:
             if (type(statement) is Directive) and \
-                    (standard_sections.__contains__(statement.id) or statement.id.__eq__(".section")):
-                sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+                    (standard_sections.__contains__(statement.name) or statement.name.__eq__(".section")):
+                # If not the first section, conclude the previous one and add it to the returned list
+                if curr_sec is not None:
+                    sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+
                 start = curr_ln + 1
                 # Remember to update this argument retrieval statement in case we decide to name arguments
-                curr_sec = statement.args[0] if statement.id.__eq__(".section") else statement.id
+                curr_sec = statement.args["args"][0] if statement.name.__eq__(".section") else statement.name
 
             curr_ln += 1
 
@@ -105,18 +109,24 @@ class Directive(Statement):
         """
 
         super().__init__(labels)
-        self.id = name
+        self.name = name
 
         if kwargs is None:
             self.args = {}
         else:
             self.args = dict(kwargs)
+    
+    def __repr__(self):
+        return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
+    
+    def __str__(self):
+        return str(self.name) + " " + str(self.args)
 
 
 class Instruction(Statement):
     """A parsed assembly instruction"""
 
-    def __init__(self, op_code, i_type, labels=None, **instr_args):
+    def __init__(self, opcode, family, labels=None, **instr_args):
         """
         Instantiates a new instruction statement
         :param op_code: the opcode for the new instruction
@@ -125,15 +135,21 @@ class Instruction(Statement):
         :param labels: an optional list of labels to mark the instruction with
         """
         super().__init__(labels)
-        self.op_code = op_code
-        self.type = i_type
+        self.opcode = opcode
+        self.family = family
         self.instr_args = dict(instr_args)
+        
+    def __repr__(self):
+        return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + repr(self.instr_args)
+    
+    def __str__(self):
+        return str(self.opcode) + " " + str(self.instr_args)
 
 
-# Constructors catalogue
-constructors = {
-    "directive": Directive.__init__,
-    "instruction": Instruction.__init__
+# Classes catalogue
+classes = {
+    "directive": Directive,
+    "instruction": Instruction
 }
 
 
@@ -146,11 +162,11 @@ def load_src(descriptions: list) -> Source:
     labs = []
     statements = []
     for d in descriptions:
-        if "label".__eq__(d["type"]):
+        if "label".__eq__(d["role"]):
             labs.append(d["name"])
         else:
-            constructor = constructors[d["type"]]
-            del d["type"]
+            constructor = classes[d["role"]]
+            del d["role"]
             statements.append(constructor(labels=labs, **d))
             labs = []
 
