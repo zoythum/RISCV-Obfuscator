@@ -12,10 +12,20 @@ jump_ops = {
     "jal": jump_type.U,
     "jalr": jump_type.U,
     "beq": jump_type.C,
+    "beqz": jump_type.C,
     "bne": jump_type.C,
+    "bnez": jump_type.C,
     "blt": jump_type.C,
+    "bltz": jump_type.C,
     "bltu": jump_type.C,
+    "ble": jump_type.C,
+    "blez": jump_type.C,
+    "bleu": jump_type.C,
+    "bgt": jump_type.C,
+    "bgtz": jump_type.C,
+    "bgtu": jump_type.C,
     "bge": jump_type.C,
+    "bgez": jump_type.C,
     "bgeu": jump_type.C
 }
 
