@@ -4,7 +4,14 @@ from bisect import bisect_right
 import networkx as nx
 import rvob.rep as rep
 
+# Type of jumps:
+# U: unconditional jump without side effects
+# C: conditional jump/branching instruction
+# F: unconditional jump with return-address memorization (procedure call)
+# R: unconditional jump to memorized return-address (procedure return)
 jump_type = Enum('JUMP', 'U, C, F, R')
+
+# Dictionary of jump instructions
 jump_ops = {
     "call": jump_type.F,
     "jr": jump_type.R,
