@@ -1,3 +1,5 @@
+import collections
+
 # The standard section's names
 standard_sections = {".text", ".data", ".bss"}
 
@@ -58,6 +60,9 @@ class Source:
         after the last line, respectively, much like as in the list slicing convention.
         """
 
+        # Create a named tuple class for storing the section's information
+        section_nt = collections.namedtuple("Section", 'name start end statements')
+
         sec_ls = []
         curr_ln, start = 1, 1
         # The first part of an assembler source contains options for GAS, so we ignore it
@@ -69,7 +74,7 @@ class Source:
                     (standard_sections.__contains__(statement.name) or statement.name.__eq__(".section")):
                 # If not the first section, conclude the previous one and add it to the returned list
                 if curr_sec is not None:
-                    sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+                    sec_ls.append(section_nt(curr_sec, start, curr_ln, self.lines[start:curr_ln]))
 
                 start = curr_ln + 1
                 # Remember to update this argument retrieval statement in case we decide to name arguments
@@ -77,7 +82,7 @@ class Source:
 
             curr_ln += 1
 
-        sec_ls.append((curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+        sec_ls.append(section_nt(curr_sec, start, curr_ln, self.lines[start:curr_ln]))
 
         return sec_ls
 
