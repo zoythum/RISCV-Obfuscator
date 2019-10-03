@@ -1,4 +1,4 @@
-import collections
+from collections import namedtuple
 
 # The standard section's names
 standard_sections = {".text", ".data", ".bss"}
@@ -61,7 +61,7 @@ class Source:
         """
 
         # Create a named tuple class for storing the section's information
-        section_nt = collections.namedtuple("Section", 'name start end statements')
+        section_nt = namedtuple("Section", 'name start end statements')
 
         sec_ls = []
         curr_ln, start = 1, 1
