@@ -50,27 +50,38 @@ class SectionUnroller:
             self.__sections__[section.start] = section
 
     def get_containing_section(self, line_number: int):
+        # Find a section that sports the last starting line that precedes the one passed as argument
         candidate = self.__sections__[self.__header_lines__[bisect_right(self.__header_lines__, line_number) - 1]]
 
+        # Check for line membership: if the received line belongs to the candidate, return it, otherwise it is outside
+        # of the sections selected for scanning
         if candidate.start <= line_number < candidate.end:
             return candidate
         else:
             raise KeyError
 
     def get_nearest_following_section(self, line_number: int):
+        # Find the index of the __header_lines__ entry which could indicate the starting line of the nearest following
+        # section
         tentative_index = bisect_right(self.__header_lines__, line_number)
 
+        # Check if we've reached the end of the index and didn't find a suitable section
         if tentative_index == len(self.__header_lines__):
             raise ValueError
         else:
+            # Return the nearest following section
             return self.__sections__[self.__header_lines__[tentative_index]]
 
     def get_following_line(self, line_number):
+        # Get the section containing the received line
         current_section = self.get_containing_section(line_number)
 
+        # Check code contiguity between the received line and the one which should follow
         if line_number < current_section.end:
             return line_number + 1
         else:
+            # If the following line falls outside of the section in which the received line resides, then such line must
+            # be the header line of the following section
             return self.get_nearest_following_section(line_number + 1).start
 
     def get_line_iterator(self, starting_line: int):
@@ -79,12 +90,16 @@ class SectionUnroller:
         curr_line = starting_line
         while True:
             try:
+                # If the starting line exists inside the considered sections, then find the section it belongs to
                 curr_section = self.get_containing_section(curr_line)
             except KeyError:
+                # The starting line falls outside of the considered sections, so the real starting line must be the
+                # header line of the nearest following section wrt the stated starting line
                 try:
                     curr_section = self.get_nearest_following_section(curr_line)
                     curr_line = curr_section.start
                 except ValueError:
+                    # No nearest following section exists, so we must have reached the end
                     break
 
             for statement in curr_section.statements[curr_line - curr_section.start:]:
