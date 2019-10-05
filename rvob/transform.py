@@ -1,7 +1,8 @@
 from enum import Enum
-from collections import deque
+from collections import deque, namedtuple
+from itertools import count
 from bisect import bisect_right
-import networkx as nx
+from networkx import DiGraph
 import rvob.rep as rep
 
 # Type of jumps:
@@ -37,93 +38,163 @@ jump_ops = {
 }
 
 
-# TODO refactor this hell of a function, maybe make it recursive
-def build_cfg(src: rep.Source):
-    label_dict = src.get_labels()
-    # For now we only target '.text' sections
-    sections = [sect for sect in src.get_sections() if sect[0].__eq__(".text")]
-    # Fill a list containing the sections' starting lines
-    pegs = [sect[1] for sect in sections]
+# TODO Is this a good object? Can it belong to a narrower namespace?
+class SectionUnroller:
 
-    # Initialize the graph object and add an empty root node
-    cfg = nx.DiGraph()
-    cfg.add_node(-1, block=None)
+    def __init__(self, sections):
+        self.__header_lines__ = []
+        self.__sections__ = {}
 
-    # Load the exploration stack with the first line of the first code section, setting the root node as initial father
-    exs = deque()
-    exs.append((sections[0][1], -1, frozenset(), -1))
+        for section in sections:
+            self.__header_lines__.append(section.start)
+            self.__sections__[section.start] = section
 
-    # Set the flag to temporarily ignore labels to false
-    ignore_labels = False
+    def get_containing_section(self, line_number: int):
+        candidate = self.__sections__[self.__header_lines__[bisect_right(self.__header_lines__, line_number) - 1]]
 
-    # Perform a DFS for each element on the exploration stack
-    while exs.__len__() != 0:
-        dst, father, trail, ra = exs.pop()
-        # Extract section
-        curr_sec = sections[bisect_right(pegs, dst) - 1]
-        # Align local cursor
-        cursor = dst - curr_sec[1]
-        # Initialize returning operation flag
-        ret = False
-
-        # If a loop is detected, add the looping edge to the graph and continue with the next iteration
-        if dst in trail:
-            cfg.add_edge(father, dst)
-            continue
-
-        # Add the new block to the trail
-        trail = frozenset(list(trail) + [dst])
-
-        # Advance until we encounter either a jump, a label or the end of the section
-        while cursor < curr_sec[3].__len__():
-            statement = curr_sec[3][cursor]
-
-            if statement.labels.__len__() != 0 and ignore_labels is False:
-                # Labeled statement encountered: set current line as block terminator and push the next line on exs
-                stop = curr_sec[1] + cursor
-                exs.append((stop, dst, trail, ra))
-                ignore_labels = True
-                break
-            elif type(statement) is rep.Instruction and jump_ops.keys().__contains__(statement.opcode):
-                # Last line of the current block is a jump
-                stop = curr_sec[1] + cursor + 1
-
-                # If conditional jump, push the line that follows on the exploration stack
-                if jump_type.C == jump_ops[statement.opcode]:
-                    exs.append((stop, dst, trail, ra))
-
-                # Push the jump's target onto the exploration stack
-                try:
-                    # If we are returning, set the `ret` flag
-                    if jump_ops[statement.opcode] == jump_type.R:
-                        ret = True
-                    else:
-                        # When performing a procedure call, save the return address on the appropriate stack
-                        if jump_ops[statement.opcode] == jump_type.F:
-                            exs.append((label_dict[statement.instr_args["immediate"]], dst, trail, stop))
-                        else:
-                            exs.append((label_dict[statement.instr_args["immediate"]], dst, trail, ra))
-                except KeyError:
-                    # Jump to non-local code: execution resumes from the next line onwards
-                    exs.append((stop, dst, trail, ra))
-                break
-                
-            cursor += 1
-            ignore_labels = False
+        if candidate.start <= line_number < candidate.end:
+            return candidate
         else:
-            # Hit end of section: set ending line as block end
-            stop = curr_sec[2]
+            raise KeyError
 
-            # If this isn't the last section, push the next one's starting line on the exploration stack
-            if curr_sec[2] != pegs[pegs.__len__() - 1]:
-                exs.append((pegs[bisect_right(pegs, curr_sec[2]) - 1], dst, trail, ra))
+    def get_nearest_following_section(self, line_number: int):
+        tentative_index = bisect_right(self.__header_lines__, line_number)
 
-        # Add the new block to the CFG
-        cfg.add_node(dst, block=src.lines[dst:stop])
-        cfg.add_edge(father, dst)
-        # If we are returning, build an arc to the code block after the procedure call
-        if ret is True:
-            cfg.add_edge(dst, bisect_right(pegs, ra) - 1)
-            ret = False
+        if tentative_index == len(self.__header_lines__):
+            raise ValueError
+        else:
+            return self.__sections__[self.__header_lines__[tentative_index]]
+
+    def get_following_line(self, line_number):
+        current_section = self.get_containing_section(line_number)
+
+        if line_number < current_section.end:
+            return line_number + 1
+        else:
+            return self.get_nearest_following_section(line_number + 1).start
+
+    def get_line_iterator(self, starting_line: int):
+        line = namedtuple("Line", 'ln st')
+
+        curr_line = starting_line
+        while True:
+            try:
+                curr_section = self.get_containing_section(curr_line)
+            except KeyError:
+                try:
+                    curr_section = self.get_nearest_following_section(curr_line)
+                    curr_line = curr_section.start
+                except ValueError:
+                    break
+
+            for statement in curr_section.statements[curr_line - curr_section.start:]:
+                yield line(curr_line, statement)
+                curr_line += 1
+
+
+# TODO include some sort of code view inside nodes
+def build_cfg(src: rep.Source):
+    
+    def explorer(start_line: int, __ret_stack__: deque):
+        # Detect if there's a loop and eventually return the ancestor's ID to the caller
+        if start_line in ancestors:
+            return ancestors[start_line]
+
+        line_supplier = reader.get_line_iterator(start_line)
+        # Generate node ID for the root of the local subtree
+        rid = id_sup.__next__()
+
+        # Variable for keeping track of the previous line, in case we need to reference it
+        previous_line = None
+
+        for line in line_supplier:
+            if len(line.st.labels) != 0 and line.ln != start_line:
+                # TODO maybe we can make this iterative?
+                # We stepped inside a new contiguous block: build the node for the previous block and relay
+                cfg.add_node(rid, start=start_line, end=previous_line)
+                ancestors[start_line] = rid
+                cfg.add_edge(rid, explorer(line.ln, __ret_stack__))
+                break
+            elif type(line.st) is rep.Instruction and line.st.opcode in jump_ops:
+                # Create node
+                cfg.add_node(rid, start=start_line, end=line.ln)
+                ancestors[start_line] = rid
+
+                if jump_ops[line.st.opcode] == jump_type.U:
+                    # Unconditional jump: resolve destination and relay-call explorer there
+                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
+                    break
+                elif jump_ops[line.st.opcode] == jump_type.F:
+                    # Function call: start by resolving destination
+                    target = line.st.instr_args["immediate"]
+                    # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
+                    try:
+                        dst = label_dict[target]
+                        # Update the return address
+                        ret_stack.append(reader.get_following_line(line.ln))
+                        # Set the current node as ancestor for the recursive explorer
+                        home = rid
+                    except KeyError:
+                        # Calling an external function: add an edge to the external code node
+                        if not cfg.has_node(target):
+                            # First time we call this procedure, so we add its virtual node to the graph
+                            cfg.add_node(target, external=True)
+
+                        cfg.add_edge(rid, target)
+
+                        # Set the following line as destination
+                        dst = reader.get_following_line(line.ln)
+                        # Set the external node as ancestor for the recursive explorer
+                        home = target
+
+                    # Perform the actual recursive call
+                    cfg.add_edge(home, explorer(dst, __ret_stack__))
+                    break
+                elif jump_ops[line.st.opcode] == jump_type.C:
+                    # Conditional jump: launch two explorers, one at the jump's target and one at the following line
+                    cfg.add_edge(rid, explorer(reader.get_following_line(line.ln), __ret_stack__))
+                    # The second explorer needs a copy of the return stack, since it may encounter another return jump
+                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
+                    break
+                elif jump_ops[line.st.opcode] == jump_type.R:
+                    # Procedure return: close the edge on the return address by invoking an explorer there
+                    cfg.add_edge(rid, explorer(__ret_stack__.pop(), __ret_stack__))
+                    break
+                else:
+                    raise LookupError("Unrecognized jump type")
+
+            previous_line = line.ln
+        else:
+            cfg.add_node(rid, start=start_line, end=previous_line)
+
+        return rid
+
+    # Generate the dictionary containing label mappings
+    label_dict = src.get_labels()
+
+    # Instantiate the section un-roller
+    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
+
+    # Instantiate the node id supplier
+    id_sup = count()
+
+    # Instantiate an empty di-graph for hosting the CFG
+    cfg = DiGraph()
+    
+    # Initialize the dictionary mapping blocks' initial lines to nodes
+    ancestors = {}
+
+    # Initialize the graph with a special root node
+    root_id = id_sup.__next__()
+    cfg.add_node(root_id, external=True)
+    ancestors[-1] = root_id
+
+    # Initialize the return stack
+    ret_stack = deque()
+    ret_stack.append(-1)
+
+    # Call the explorer and append the resulting graph to the root node
+    child_id = explorer(reader.get_nearest_following_section(0).start, ret_stack)
+    cfg.add_edge(root_id, child_id)
 
     return cfg
