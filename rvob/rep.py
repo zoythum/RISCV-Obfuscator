@@ -71,14 +71,14 @@ class Source:
 
         for statement in self.lines[1:]:
             if (type(statement) is Directive) and \
-                    (standard_sections.__contains__(statement.name) or statement.name.__eq__(".section")):
+                    (standard_sections.__contains__(statement.name) or ".section" == statement.name):
                 # If not the first section, conclude the previous one and add it to the returned list
                 if curr_sec is not None:
                     sec_ls.append(section_nt(curr_sec, start, curr_ln, self.lines[start:curr_ln]))
 
                 start = curr_ln + 1
                 # Remember to update this argument retrieval statement in case we decide to name arguments
-                curr_sec = statement.args["args"][0] if statement.name.__eq__(".section") else statement.name
+                curr_sec = statement.args["args"][0] if ".section" == statement.name else statement.name
 
             curr_ln += 1
 
@@ -167,7 +167,7 @@ def load_src(descriptions: list) -> Source:
     labs = []
     statements = []
     for d in descriptions:
-        if "label".__eq__(d["role"]):
+        if "label" == d["role"]:
             labs.append(d["name"])
         else:
             constructor = classes[d["role"]]
