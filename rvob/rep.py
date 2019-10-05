@@ -42,7 +42,7 @@ class Source:
         """Returns a dictionary of labels mapped to the lines they point to"""
 
         labd = {}
-        lc = 1
+        lc = 0
 
         for statement in self.lines:
             for label in statement.labels:
