@@ -153,6 +153,7 @@ def build_cfg(src: rep.Source):
                         # Calling an external function: add an edge to the external code node
                         if not cfg.has_node(target):
                             # First time we call this procedure, so we add its virtual node to the graph
+                            # The keyword external means that this node contains code that is not in the source file
                             cfg.add_node(target, external=True)
 
                         cfg.add_edge(rid, target)

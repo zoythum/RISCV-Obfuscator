@@ -120,10 +120,10 @@ class Directive(Statement):
             self.args = {}
         else:
             self.args = dict(kwargs)
-    
+
     def __repr__(self):
         return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
-    
+
     def __str__(self):
         return str(self.name) + " " + str(self.args)
 
@@ -143,10 +143,10 @@ class Instruction(Statement):
         self.opcode = opcode
         self.family = family
         self.instr_args = dict(instr_args)
-        
+
     def __repr__(self):
         return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + repr(self.instr_args)
-    
+
     def __str__(self):
         return str(self.opcode) + " " + str(self.instr_args)
 
