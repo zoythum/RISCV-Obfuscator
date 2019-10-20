@@ -20,7 +20,7 @@ def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
     inizio = cfg.nodes[int(node_id)]["start"]
     fine = cfg.nodes[int(node_id)]["end"]
 
-    for i in range(int(fine), int(inizio)-1, -1):
+    for i in range(int(fine), int(inizio) - 1, -1):
         current_line = src.lines[i]
         if type(current_line) == rep.Instruction:
             r1 = current_line.instr_args['r1']
@@ -60,8 +60,42 @@ def get_children(cfg: DiGraph, node_id: str):
     return children
 
 
+def is_sublist(sublist: list, main_list: list):
+    # Utility functions, given two strings checks if the first one is totally contained in the second one
+    if len(sublist) >= len(main_list):
+        return False
+    else:
+        for elem in sublist:
+            if elem not in main_list:
+                return False
+    return True
+
+
+def sanitize_contracts(cfg: DiGraph):
+    # This function sanitizes all the contracts, firstly it finds all the cycles in the graph, then
+    # it copies the cycle head's "requires" contract into each node of the cycle
+    cycles = list(simple_cycles(cfg))
+
+    for elem in list(cycles):
+        if 0 in elem:
+            cycles.remove(elem)
+
+    for elem in list(cycles):
+        for elem2 in list(cycles):
+            if is_sublist(elem, elem2):
+                print(elem)
+                cycles.remove(elem)
+
+    print(cycles)
+
+    for cycle in cycles:
+        req = cfg.nodes[cycle[0]]['requires']
+        for node in cycle:
+            cfg.nodes[node]['requires'] = req
+
+
 def setup_contracts():
-    file = open("duefunz.json")
+    file = open("aes.json")
     src = rep.load_src(json.load(file))
     cfg = transform.build_cfg(src)
     for i in range(0, len(cfg.nodes)):
@@ -94,3 +128,8 @@ def setup_contracts():
         for parent in reverse(cfg, False).neighbors(node):
             if parent not in remaining_nodes and parent not in visited:
                 remaining_nodes.append(parent)
+
+    sanitize_contracts(cfg)
+
+
+setup_contracts()
