@@ -1,14 +1,8 @@
-###
-# TODO never do this
-from networkx import *
-###
-import rvob.transform as transform
+from networkx import DiGraph, neighbors, reverse, simple_cycles
 import rvob.rep as rep
-import json
 
 
-# TODO node_id is int
-def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
+def fill_contract(cfg: DiGraph, node_id: int, src: rep.Source):
     # Function that creates the contract for a single node, we use two different sets:
     # 1) provides contains all the registers written in this node's code block
     # 2) requires contains all the registers that are read in this node's code block
@@ -21,20 +15,17 @@ def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
         for elem in cfg.nodes[child]["requires"]:
             requires.add(elem)
 
-    # TODO remove spaghetti
-    inizio = cfg.nodes[int(node_id)]["start"]
-    fine = cfg.nodes[int(node_id)]["end"]
+    start = cfg.nodes[node_id]["start"]
+    end = cfg.nodes[node_id]["end"]
 
-    # TODO no need to cast
-    for i in range(int(fine), int(inizio) - 1, -1):
+    for i in range(end, start - 1, -1):
         current_line = src.lines[i]
         if type(current_line) == rep.Instruction:
             r1 = current_line.instr_args['r1']
             r2 = current_line.instr_args['r2']
             r3 = current_line.instr_args['r3']
-            # TODO sets are add-invariant
-            if r1 not in provides:
-                provides.add(r1)
+
+            provides.add(r1)
             if r1 in requires:
                 requires.remove(r1)
             if r2 not in requires:
@@ -47,17 +38,14 @@ def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
         requires.remove('unused')
     if 'unused' in provides:
         requires.remove('unused')
-    # TODO raise exception when reg_err
-    if 'reg_err' in requires:
-        requires.remove('reg_err')
-    if 'reg_err' in provides:
-        requires.remove('reg_err')
+    if 'reg_err' in requires or 'reg_err' in provides:
+        raise Exception("Reg_err found in requires/provides set")
 
     cfg.nodes[node_id]['requires'] = requires
     cfg.nodes[node_id]['provides'] = provides
 
 
-def get_children(cfg: DiGraph, node_id: str):
+def get_children(cfg: DiGraph, node_id: int):
     # Utility function, recovers the children of a specific node, if the head of the tree should appear as a child it
     # will be ignored
     children = []
@@ -83,7 +71,6 @@ def is_sublist(sublist: list, main_list: list):
 def sanitize_contracts(cfg: DiGraph):
     # This function sanitizes all the contracts, firstly it finds all the cycles in the graph, then
     # it copies the cycle head's "requires" contract into each node of the cycle
-    # TODO what is this shadowing?
     cycles = list(simple_cycles(cfg))
 
     for elem in list(cycles):
@@ -96,28 +83,19 @@ def sanitize_contracts(cfg: DiGraph):
                 print(elem)
                 cycles.remove(elem)
 
-    # TODO remove this debug print
-    print(cycles)
-
     for cycle in cycles:
         req = cfg.nodes[cycle[0]]['requires']
         for node in cycle:
             cfg.nodes[node]['requires'] = req
 
 
-def setup_contracts():
-    # TODO remove this testing/debugging code
-    file = open("aes.json")
-    src = rep.load_src(json.load(file))
-    cfg = transform.build_cfg(src)
+def setup_contracts(src: rep.Source, cfg: DiGraph):
     for i in range(0, len(cfg.nodes)):
         cfg.nodes[i]['provides'] = set()
         cfg.nodes[i]['requires'] = set()
     # Recovers the leaves of our tree
-    # TODo there are no nodes that satisfy this condition
-    remaining_nodes = [x for x in cfg.nodes() if cfg.out_degree(x) == 0 and cfg.in_degree(x) == 1]
-    # TODO convert to a set
-    visited = []
+    remaining_nodes = []
+    visited = set()
     # Adds all the nodes that are leaves but were previously filtered out because of a connection with the head of
     # the tree (wich should be all the leaves because of the way in wich we create the tree in the first place)
     for node in reverse(cfg, False).neighbors(0):
@@ -131,12 +109,10 @@ def setup_contracts():
     # 4) start from point 1
     while len(remaining_nodes) > 0:
         node = remaining_nodes.pop(0)
-        visited.append(node)
+        visited.add(node)
         try:
             # We need to check if the node we're dealing with has a start attribute, otherwise we ignore the node and
             # skip to the next one (should happen only at the end when dealing with the head of the cfg)
-            # TODO exception originates from the called function already
-            cfg.nodes[node]['start']
             fill_contract(cfg, node, src)
         except KeyError:
             continue
@@ -147,5 +123,3 @@ def setup_contracts():
     sanitize_contracts(cfg)
 
 
-# TODO remove this top-level statement, use the console
-setup_contracts()
