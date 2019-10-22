@@ -224,8 +224,7 @@ class CodeFragment(ABC, MutableSequence, Hashable):
         pass
 
     @abstractmethod
-    # TODO access by slices should return an object of the same kind
-    def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, Sequence[Statement]]:
+    def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, CodeFragment]:
         pass
 
     @abstractmethod
@@ -341,13 +340,17 @@ class FragmentCopy(CodeFragment):
     def __len__(self) -> int:
         return len(self.__lines__)
 
-    def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, Sequence[Statement]]:
+    def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, FragmentCopy]:
         if type(line_number) is int:
             return self.__lines__[self.__line_to_index__(line_number)]
         elif type(line_number) is slice:
-            return self.__lines__[self.__line_to_index__(line_number.start):
-                                  self.__line_to_index__(line_number.stop):
-                                  line_number.step]
+            # We return a FragmentCopy representing the slice, but notice how the offset info gets lost
+            return FragmentCopy(self.__lines__[self.__line_to_index__(line_number.start):
+                                               self.__line_to_index__(line_number.stop):
+                                               line_number.step],
+                                line_number.start,
+                                line_number.stop,
+                                0)
         else:
             raise TypeError("Integer index or slice expected")
 
