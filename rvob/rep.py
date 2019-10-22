@@ -394,7 +394,6 @@ class FragmentView(CodeFragment):
     Multiple views of the same or different parts of an assembler source can be instantiated, and a shared data
     structure ensures that any update performed through the objects of this class is correctly reflected in the overall
     code layout presented through these views.
-    As of now, an empty view cannot be used anymore. For all operations, at least a view of length 1 is required.
     Be aware that any structural modification performed directly on the origin leaves the whole view system in an
     inconsistent state. To regain consistency, discard the corrupted views and recreate them.
     """
@@ -442,7 +441,6 @@ class FragmentView(CodeFragment):
         self.__views_catalogue__[self] = FragmentView.FragmentReferenceFrame(begin, end, offset)
 
     # Utility method used for updating all the views' metadata after a structural change
-    # TODO this method doesn't work very well when the view is empty. Is there a way to make it?
     def __grow__(self, growth_point: int, size: int) -> None:
         # Iterate over all the registered views for the current origin
         for view, frame in self.__views_catalogue__.items():
@@ -450,7 +448,7 @@ class FragmentView(CodeFragment):
             begin, end, offset = frame
 
             # Check if begin/offset have to be shifted
-            if begin >= growth_point:
+            if begin >= growth_point and view != self:
                 begin += size
                 offset += size
                 mutated = True
