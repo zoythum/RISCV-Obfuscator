@@ -63,6 +63,7 @@ def get_children(cfg: DiGraph, node_id: str):
 def setup_contracts():
     file = open("duefunz.json")
     src = rep.load_src(json.load(file))
+    # TODO check the entry point
     cfg = transform.build_cfg(src)
     for i in range(0, len(cfg.nodes)):
         cfg.nodes[i]['provides'] = set()

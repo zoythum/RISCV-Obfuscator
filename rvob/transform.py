@@ -108,7 +108,7 @@ class SectionUnroller:
 
 
 # TODO include some sort of code view inside nodes
-def build_cfg(src: rep.Source):
+def build_cfg(src: rep.Source, entry_point: str = "main"):
     
     def explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
@@ -209,8 +209,8 @@ def build_cfg(src: rep.Source):
     ret_stack = deque()
     ret_stack.append(-1)
 
-    # Call the explorer and append the resulting graph to the root node
-    child_id = explorer(reader.get_nearest_following_section(0).start, ret_stack)
+    # Call the explorer on the entry point and append the resulting graph to the root node
+    child_id = explorer(label_dict[entry_point], ret_stack)
     cfg.add_edge(root_id, child_id)
 
     return cfg
