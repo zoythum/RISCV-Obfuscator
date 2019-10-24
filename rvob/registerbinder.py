@@ -1,8 +1,8 @@
-
 from networkx import DiGraph, nx
 
-from rvob import rep
-from rvob.transform import SectionUnroller
+import rvob.rep as rep
+import json
+import rvob.transform as transform
 
 
 class ValueBlock:
@@ -26,39 +26,45 @@ class Counter:
 register_status = {}
 value_count = Counter()
 
-# Dictionary to classify the operations that perform a write on the first register,
-# the keys in the dictionary indicates the amount of register used by the operations in the associated list
-write_operations = {
-    'single': ['lui', 'auipc', 'jal'],
-    'double': ['jalr', 'lb', 'lh', 'lw', 'lbu', 'lhu', 'addi', 'slti', 'sltiu', 'xori', 'ori', 'andi', 'slli', 'srli',
-               'srai', 'lwu', 'ld', 'addiw', 'slliw', 'srliw', 'sraiw', 'lr.w', 'lr.d'],
-    'triple': ['add', 'sub', 'sll', 'slt', 'sltu', 'xor', 'srl', 'sra', 'or', 'and', 'addw', 'subw', 'sllw', 'srlw',
-               'sraw', 'mul', 'mulh', 'mulhsu', 'div', 'divu', 'rem', 'remu', 'mulw', 'divw', 'divuw',
-               'remw', 'remuw', 'sc.w', 'amoswap.w', 'amoadd.w', 'amoxor.w', 'amoor.w', 'amoand.w', 'amomin.w',
-               'amomax.w', 'amominu.w', 'amomaxu.w', 'sc.d', 'amoswap.d', 'amoadd.d', 'amoxor.d', 'amoor.d',
-               'amoand.d', 'amomin.d', 'amomax.d', 'amominu.d', 'amomaxu.d']
+opcodes = {
+    'lui': (1, True), 'auipc': (1, True), 'jal': (1, True), 'jalr': (2, True), 'lb': (2, True), 'lh': (2, True),
+    'lw': (2, True), 'lbu': (2, True), 'lhu': (2, True), 'addi': (2, True), 'slti': (2, True),
+    'sltiu': (2, True), 'xori': (2, True), 'ori': (2, True), 'andi': (2, True), 'slli': (2, True),
+    'srli': (2, True), 'srai': (2, True), 'lwu': (2, True), 'ld': (2, True), 'addiw': (2, True),
+    'slliw': (2, True), 'srliw': (2, True), 'sext.w': (2, True), 'mv': (2, True), 'sraiw': (2, True), 'lr.w': (2, True),
+    'lr.d': (2, True), 'add': (3, True), 'sub': (3, True), 'sll': (3, True), 'slt': (3, True),
+    'sltu': (3, True), 'xor': (3, True), 'srl': (3, True), 'sra': (3, True), 'or': (3, True), 'and': (3, True),
+    'addw': (3, True), 'subw': (3, True), 'sllw': (3, True), 'srlw': (3, True), 'sraw': (3, True), 'mul': (3, True),
+    'mulh': (3, True), 'mulhsu': (3, True), 'div': (3, True), 'divu': (3, True), 'rem': (3, True),
+    'remu': (3, True), 'mulw': (3, True), 'divw': (3, True), 'divuw': (3, True), 'remw': (3, True),
+    'remuw': (3, True), 'sc.w': (3, True), 'amoswap.w': (3, True), 'amoadd.w': (3, True),
+    'amoxor.w': (3, True), 'amoor.w': (3, True), 'amoand.w': (3, True), 'amomin.w': (3, True), 'amomax.w': (3, True),
+    'amominu.w': (3, True), 'amomaxu.w': (3, True), 'sc.d': (3, True), 'amoswap.d': (3, True), 'amoadd.d': (3, True),
+    'amoxor.d': (3, True), 'amoor.d': (3, True), 'amoand.d': (3, True), 'amomin.d': (3, True),
+    'amomax.d': (3, True), 'amominu.d': (3, True), 'amomaxu.d': (3, True), 'jr': (1, False), 'j': (1, False),
+    'beq': (2, False), 'bne': (2, False), 'blt': (2, False), 'bge': (2, False), 'ble': (2, False), 'bltu': (2, False),
+    'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
+    'beqz': (1, False), 'bnez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False)
 }
 
-# Dictionary to classify the operations that read only from the register,
-# the keys in the dictionary indicates the amount of register used by the operations in the associated list
-read_operations = {
-    'single': [],
-    'double': ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'sb', 'sh', 'sw', 'sd'],
-    'triple': []
-}
 
-
-def reg_read(regdict, reg, line):
+def reg_read(regdict, reg, line, actval):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to him is set to the current line,
     otherwise the register is added to the dictionary and a new block will be created
     :param regdict: is the dictionary that store the register accessed in the node under analysis
     :param reg: is the register accessed by the operation under analysis
     :param line: is the line at which the operation occurs
+    :param actval: the last value assigned to the register if exist, otherwise None
     """
+
     if reg not in regdict.keys():
-        value_count.__next__()
-        block = ValueBlock(line, line, value_count.getvalue())
+        if actval is None:
+            value_count.__next__()
+            block = ValueBlock(line, line, value_count.getvalue())
+            register_status[reg] = value_count.getvalue()
+        else:
+            block = ValueBlock(line, line, actval)
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
@@ -78,39 +84,53 @@ def loop_manager(cfg: DiGraph, confreg: set, confnode: int, analizednode: int):
         if len(cfg.nodes[analizednode]['reg_bind'][val]) == 1:
             newconfreg.append(val)
     pred = list(cfg.predecessors(analizednode))
-    if (len(newconfreg) > 0) and (len(pred) == 1):
-        loop_manager(cfg, set(newconfreg), confnode, pred[1])
+    if (len(newconfreg) > 0) and (len(pred) == 1) and (pred[0] != confnode):
+        loop_manager(cfg, set(newconfreg), confnode, pred[0])
 
 
-def bind_register_to_value(cfg: DiGraph):
+def bind_register_to_value(src: rep.Source, cfg: DiGraph):
     nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
-    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
+    nodelist.remove(0)
+    reader = transform.SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
 
     for i in nodelist:
-        lineiterator = reader.get_line_iterator(cfg.nodes[nodelist[i]]['start'])
+        linelist = []
         localreg = {}
 
-        if 'reg_bind' in cfg.nodes[i]:
+        for x in range(cfg.nodes[i]["start"], cfg.nodes[i]["end"], 1):
+            linelist.append((x, src.lines[x]))
+
+        if ('reg_bind' in cfg.nodes[i]) and ('reg_bind') in cfg.nodes[i-1]:
             # a loop is detected
-            conflict = cfg.nodes[nodelist[i]]['reg_bind'] & cfg.nodes[nodelist[i-1]]['reg_bind']
-            loop_manager(cfg, conflict, nodelist[i], nodelist[i - 1])
-        for line in lineiterator:
-            if type(line.st) is rep.Instruction:
-                if line.st.opcode in write_operations['single']:
+            conflict = cfg.nodes[i]['reg_bind'] & cfg.nodes[i-1]['reg_bind']
+            loop_manager(cfg, conflict, i, i-1)
+        for l in linelist:
+            line = l[1]
+            if type(line) is rep.Instruction:
+                # Check if the opcode corresponds to a write operation
+                if opcodes[line.opcode][1]:
                     value_count.__next__()
-                    register_status[line.st.instr_args['r1']] = value_count.getvalue()
-                    block = ValueBlock(line, cfg.nodes[i]['end'], value_count.getvalue())
-                    if line.st.instr_args['r1'] in localreg.keys():
-                        localreg[line.st.instr_args['r1']][-1].endline = (line - 1)
-                        localreg[line.st.instr_args['r1']].append(block)
+                    block = ValueBlock(l[0], cfg.nodes[i]['end'], value_count.getvalue())
+                    if line.instr_args['r1'] in localreg.keys():
+                        localreg[line.instr_args['r1']][-1].endline = (l[0] - 1)
+                        localreg[line.instr_args['r1']].append(block)
                     else:
-                        localreg[line.st.instr_args['r1']] = [block]
-                if line.st.opcode in write_operations['double']:
-                    reg_read(localreg, line.st.instr_args['r2'], line)
-                if line.st.opcode in write_operations['triple']:
-                    reg_read(localreg, line.st.instr_args['r3'], line)
-                if line.st.opcode in read_operations['single']:
-                    reg_read(localreg, line.st.instr_args['r1'], line)
-                if line.st.opcode in read_operations['double']:
-                    reg_read(localreg, line.st.instr_args['r2'], line)
-        cfg.nodes[nodelist[i]]['reg_bind'] = localreg
+                        localreg[line.instr_args['r1']] = [block]
+                        register_status[line.instr_args['r1']] = value_count.getvalue()
+                else:
+                    # the opcode correspond to a read operation
+                    if line.instr_args['r1'] in register_status:
+                        reg_read(localreg, line.instr_args['r1'], l[0], register_status[line.instr_args['r1']])
+                    else:
+                        reg_read(localreg, line.instr_args['r1'], l[0], None)
+                if opcodes[line.opcode][0] == 2:
+                    if line.instr_args['r2'] in register_status:
+                        reg_read(localreg, line.instr_args['r2'], l[0], register_status[line.instr_args['r1']])
+                    else:
+                        reg_read(localreg, line.instr_args['r2'], l[0], None)
+                if opcodes[line.opcode][0] == 3:
+                    if line.instr_args['r3'] in register_status:
+                        reg_read(localreg, line.instr_args['r3'], l[0], register_status[line.instr_args['r1']])
+                    else:
+                        reg_read(localreg, line.instr_args['r3'], l[0], None)
+        cfg.nodes[i]['reg_bind'] = localreg
