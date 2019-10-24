@@ -341,6 +341,15 @@ class FragmentCopy(CodeFragment):
         return len(self.__lines__)
 
     def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, FragmentCopy]:
+        """
+        Access the contained statements through the Sequence interface.
+
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
+
+        :param line_number: line number(s) to be targeted
+        :return: the selected statement(s), encapsulated in a FragmentCopy in case of access by slices
+        """
         if type(line_number) is int:
             return self.__lines__[self.__line_to_index__(line_number)]
         elif type(line_number) is slice:
@@ -355,6 +364,15 @@ class FragmentCopy(CodeFragment):
             raise TypeError("Integer index or slice expected")
 
     def __setitem__(self, line_number: Union[int, slice], statement: Union[Statement, Sequence[Statement]]) -> None:
+        """
+        Modify the contained statements through the Sequence interface.
+
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
+
+        :param line_number: line number(s) to be targeted
+        :param statement: statement(s) to be set
+        """
         if type(line_number) is int:
             self.__lines__[self.__line_to_index__(line_number)] = statement
         elif type(line_number) is slice:
@@ -369,6 +387,14 @@ class FragmentCopy(CodeFragment):
             raise TypeError("Integer index/statement or slice/list expected")
 
     def __delitem__(self, line_number: Union[int, slice]) -> None:
+        """
+        Delete the contained statements through the Sequence interface.
+
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
+
+        :param line_number: line number(s) to be targeted
+        """
         if type(line_number) is int:
             del self.__lines__[self.__line_to_index__(line_number)]
             self.end -= 1
@@ -555,7 +581,7 @@ class FragmentView(CodeFragment):
         and the end of this fragment.
 
         :param line_number: line number(s) to be targeted
-        :return: the selected statement(s), encapsulated in a fragment in case of access by slices
+        :return: the selected statement(s), encapsulated in a FragmentView in case of access by slices
         """
         if type(line_number) is int:
             return self.__origin__[self.__line_to_index__(line_number)]
