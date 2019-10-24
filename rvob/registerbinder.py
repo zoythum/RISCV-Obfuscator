@@ -1,15 +1,21 @@
 from networkx import DiGraph, nx
-
 import rvob.rep as rep
 import json
 import rvob.transform as transform
 
 
 class ValueBlock:
+    """
+    These class represent a block that identifies a contiguous set of line, in a node, in which a certain register
+    maintain the same value
+    initline: the absolute number of the line from which the register have the value indicated in the block
+    endline: the absolute number of the last line in which the register hold the value indicated by the block
+    value: the value holds by the register
+    """
     def __init__(self, initline, endline, value: int):
         self.initline = initline
-        self.value = value
         self.endline = endline
+        self.value = value
 
 
 class Counter:
@@ -23,6 +29,7 @@ class Counter:
         return self.value
 
 
+# a global register to maintain the last value kept by a register
 register_status = {}
 value_count = Counter()
 
@@ -89,48 +96,52 @@ def loop_manager(cfg: DiGraph, confreg: set, confnode: int, analizednode: int):
 
 
 def bind_register_to_value(src: rep.Source, cfg: DiGraph):
+    """
+    :param src: the source file that contain the assembly program
+    :param cfg: the DiGraph that represent the program to be analyzed
+    """
+
     nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
+    # remove the exterior root node
     nodelist.remove(0)
-    reader = transform.SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
 
     for i in nodelist:
+        # linelist: contains tuple <'line_number', 'line'> of all the lines that appartains to the current node
         linelist = []
+        # localreg: the dictionary that will be put into the node at the end of the binding process
         localreg = {}
 
         for x in range(cfg.nodes[i]["start"], cfg.nodes[i]["end"], 1):
             linelist.append((x, src.lines[x]))
 
-        if ('reg_bind' in cfg.nodes[i]) and ('reg_bind') in cfg.nodes[i-1]:
-            # a loop is detected
-            conflict = cfg.nodes[i]['reg_bind'] & cfg.nodes[i-1]['reg_bind']
-            loop_manager(cfg, conflict, i, i-1)
-        for l in linelist:
-            line = l[1]
-            if type(line) is rep.Instruction:
-                # Check if the opcode corresponds to a write operation
-                if opcodes[line.opcode][1]:
-                    value_count.__next__()
-                    block = ValueBlock(l[0], cfg.nodes[i]['end'], value_count.getvalue())
-                    if line.instr_args['r1'] in localreg.keys():
-                        localreg[line.instr_args['r1']][-1].endline = (l[0] - 1)
-                        localreg[line.instr_args['r1']].append(block)
+        if 'reg_bind' not in cfg.nodes[i]:
+            for l in linelist:
+                line = l[1]
+                if type(line) is rep.Instruction:
+                    if opcodes[line.opcode][0] == 2:
+                        if line.instr_args['r2'] in register_status:
+                            reg_read(localreg, line.instr_args['r2'], l[0], register_status[line.instr_args['r2']])
+                        else:
+                            reg_read(localreg, line.instr_args['r2'], l[0], None)
+                    if opcodes[line.opcode][0] == 3:
+                        if line.instr_args['r3'] in register_status:
+                            reg_read(localreg, line.instr_args['r3'], l[0], register_status[line.instr_args['r3']])
+                        else:
+                            reg_read(localreg, line.instr_args['r3'], l[0], None)
+                    # Check if the opcode corresponds to a write operation
+                    if opcodes[line.opcode][1]:
+                        value_count.__next__()
+                        block = ValueBlock(l[0], cfg.nodes[i]['end'], value_count.getvalue())
+                        if line.instr_args['r1'] in localreg.keys():
+                            localreg[line.instr_args['r1']][-1].endline = (l[0] - 1)
+                            localreg[line.instr_args['r1']].append(block)
+                        else:
+                            localreg[line.instr_args['r1']] = [block]
+                            register_status[line.instr_args['r1']] = value_count.getvalue()
                     else:
-                        localreg[line.instr_args['r1']] = [block]
-                        register_status[line.instr_args['r1']] = value_count.getvalue()
-                else:
-                    # the opcode correspond to a read operation
-                    if line.instr_args['r1'] in register_status:
-                        reg_read(localreg, line.instr_args['r1'], l[0], register_status[line.instr_args['r1']])
-                    else:
-                        reg_read(localreg, line.instr_args['r1'], l[0], None)
-                if opcodes[line.opcode][0] == 2:
-                    if line.instr_args['r2'] in register_status:
-                        reg_read(localreg, line.instr_args['r2'], l[0], register_status[line.instr_args['r1']])
-                    else:
-                        reg_read(localreg, line.instr_args['r2'], l[0], None)
-                if opcodes[line.opcode][0] == 3:
-                    if line.instr_args['r3'] in register_status:
-                        reg_read(localreg, line.instr_args['r3'], l[0], register_status[line.instr_args['r1']])
-                    else:
-                        reg_read(localreg, line.instr_args['r3'], l[0], None)
-        cfg.nodes[i]['reg_bind'] = localreg
+                        # the opcode correspond to a read operation
+                        if line.instr_args['r1'] in register_status:
+                            reg_read(localreg, line.instr_args['r1'], l[0], register_status[line.instr_args['r1']])
+                        else:
+                            reg_read(localreg, line.instr_args['r1'], l[0], None)
+            cfg.nodes[i]['reg_bind'] = localreg
