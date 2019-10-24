@@ -547,19 +547,85 @@ class FragmentView(CodeFragment):
     def __len__(self) -> int:
         return self.get_end() - self.get_begin()
 
-    # TODO add support for slices
-    def __getitem__(self, line_number: int) -> Statement:
-        return self.__origin__[self.__line_to_index__(line_number)]
+    def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, FragmentView]:
+        """
+        Access the contained statements through the Sequence interface.
 
-    # TODO add support for slices
-    def __setitem__(self, line_number: int, new_statement: Statement) -> None:
-        self.__origin__[self.__line_to_index__(line_number)] = new_statement
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
 
-    # TODO add support for slices
-    def __delitem__(self, line_number: int) -> None:
-        deletion_point = self.__line_to_index__(line_number)
-        del self.__origin__[deletion_point]
-        self.__grow__(line_number, -1)
+        :param line_number: line number(s) to be targeted
+        :return: the selected statement(s), encapsulated in a fragment in case of access by slices
+        """
+        if type(line_number) is int:
+            return self.__origin__[self.__line_to_index__(line_number)]
+        elif type(line_number) is slice:
+
+            if line_number.step is not None:
+                # Nothing like sparse views exist, so reject extended slices
+                raise ValueError("'step' not supported by views")
+            elif line_number.start < self.get_begin() or line_number.stop > self.get_end():
+                # We don't support slice truncation, so we reject slices not fitting inside the fragment
+                raise ValueError("Slice exceeds fragment size")
+
+            return FragmentView(self.__origin__,
+                                line_number.start,
+                                line_number.stop,
+                                self.get_offset() + line_number.start - self.get_begin())
+        else:
+            raise TypeError("Integer index or slice expected")
+
+    def __setitem__(self, line_number: Union[int, slice], statement: Union[Statement, Sequence[Statement]]) -> None:
+        """
+        Modify the contained statements through the Sequence interface.
+
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
+
+        :param line_number: line number(s) to be targeted
+        :param statement: statement(s) to be set
+        """
+        if type(line_number) is int:
+            self.__origin__[self.__line_to_index__(line_number)] = statement
+        elif type(line_number) is slice:
+            # Be aware of the ugly workaround used to let __line_to_index__() process a slice reaching the end of the
+            # fragment. Without the decrement-call-increment, it would report an IndexError
+            start = self.__line_to_index__(line_number.start)
+            stop = self.__line_to_index__(line_number.stop - 1) + 1 if line_number.stop == self.get_end() \
+                else self.__line_to_index__(line_number)
+            self.__origin__[start:stop:line_number.step] = statement
+
+            if len(statement) == 0:
+                # A funky deletion just took place, so we must treat it appropriately
+                self.__grow__(self.__line_to_index__(line_number.start), -(line_number.stop - line_number.start))
+        else:
+            raise TypeError("Integer index or slice expected")
+
+    def __delitem__(self, line_number: Union[int, slice]) -> None:
+        """
+        Delete the contained statements through the Sequence interface.
+
+        Due to the underlying implementation, access by slices only works if the extremes are included between the start
+        and the end of this fragment.
+
+        :param line_number: line number(s) to be targeted
+        """
+        if type(line_number) is int:
+            deletion_point = self.__line_to_index__(line_number)
+            del self.__origin__[deletion_point]
+            self.__grow__(line_number, -1)
+        elif type(line_number) is slice:
+            # Be aware of the ugly workaround used to let __line_to_index__() process a slice reaching the end of the
+            # fragment. Without the decrement-call-increment, it would report an IndexError
+            start = self.__line_to_index__(line_number.start)
+            stop = self.__line_to_index__(line_number.stop - 1) + 1 if line_number.stop == self.get_end()\
+                else self.__line_to_index__(line_number)
+            del self.__origin__[start:stop:line_number.step]
+
+            # Decrease the list's size according to the number of elements that got deleted
+            self.__grow__(line_number.start, -len(range(line_number.start, line_number.stop, line_number.step)))
+        else:
+            raise TypeError("Integer index/statement or slice/list expected")
 
     def __hash__(self) -> int:
         # IDs are unique for the entire life of an object, so no collisions should take place inside the shared
