@@ -171,6 +171,7 @@ def load_src(descriptions: list) -> Source:
             labs.append(d["name"])
         else:
             constructor = classes[d["role"]]
+            # We don't need a role inside our structure because the type of structure already defines the role
             del d["role"]
             statements.append(constructor(labels=labs, **d))
             labs = []

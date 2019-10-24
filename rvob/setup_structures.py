@@ -1,6 +1,7 @@
 from networkx import DiGraph, neighbors, reverse, simple_cycles
 import rvob.rep as rep
 
+
 # This is a classification of all the possible opcodes.
 # Each opcode is paired with a tuple (<int>, <boolean>) where the int value represents the number of registers used
 # by that specific opcode, the boolean value instead tells if we are dealing with a write function (True)
@@ -22,7 +23,8 @@ opcodes = {
     'amoxor.d': (3, True), 'amoor.d': (3, True), 'amoand.d': (3, True), 'amomin.d': (3, True),
     'amomax.d': (3, True), 'amominu.d': (3, True), 'amomaxu.d': (3, True), 'jr': (1, False), 'j': (1, False),
     'beq': (2, False), 'bne': (2, False), 'blt': (2, False), 'bge': (2, False), 'ble': (2, False), 'bltu': (2, False),
-    'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False)
+    'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
+    'beqz': (1, False), 'bnez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False)
 }
 
 
@@ -163,3 +165,4 @@ def setup_contracts(src: rep.Source, cfg: DiGraph):
                 remaining_nodes.append(parent)
 
     sanitize_contracts(cfg)
+
