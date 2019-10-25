@@ -248,6 +248,14 @@ class FragmentCopy(CodeFragment):
     :var offset: the offset of this fragment wrt the start of the original source sequence
     """
 
+    # Reference frame of the fragment
+    begin: int
+    end: int
+    offset: int
+
+    # Instance variable containing the list containing a certain code fragment
+    _lines: List[Statement]
+
     def __init__(self, src: Sequence[Statement], begin: int = 0, end: int = 0, offset: int = 0) -> None:
         """
         Generates a new copy-fragment object from a sequence of assembly statements.
@@ -262,13 +270,13 @@ class FragmentCopy(CodeFragment):
         # Delegate consistency checks
         super().__init__(src, begin, end, offset)
 
-        self.begin: int = begin
-        self.end: int = end
-        self.offset: int = offset
-        self.__lines__: List[Statement] = list(src[offset:offset + end - begin])
+        self.begin = begin
+        self.end = end
+        self.offset = offset
+        self._lines = list(src[offset:offset + end - begin])
 
     # Utility method for calculating a line's position inside the origin list, given its line number
-    def __line_to_index__(self, line_number: int) -> int:
+    def _line_to_index(self, line_number: int) -> int:
         index = line_number - self.begin
 
         # Negative line numbers have no meaning
@@ -302,22 +310,22 @@ class FragmentCopy(CodeFragment):
 
         # Delegate consistency checks
         super().slice(start, end)
-        return FragmentCopy(self.__lines__, start, end, start - self.begin)
+        return FragmentCopy(self._lines, start, end, start - self.begin)
 
     def append(self, statement: Statement) -> None:
-        self.__lines__.append(statement)
+        self._lines.append(statement)
         self.end += 1
 
     def extend(self, statements: List[Statement]) -> None:
-        self.__lines__.extend(statements)
+        self._lines.extend(statements)
         self.end += len(statements)
 
     def insert(self, line_number: int, statement: Statement) -> None:
-        self.__lines__.insert(self.__line_to_index__(line_number), statement)
+        self._lines.insert(self._line_to_index(line_number), statement)
         self.end += 1
 
     def pop(self, line_number: int = -1) -> Statement:
-        popped = self.__lines__.pop(self.__line_to_index__(line_number))
+        popped = self._lines.pop(self._line_to_index(line_number))
         self.end -= 1
         return popped
 
@@ -328,17 +336,17 @@ class FragmentCopy(CodeFragment):
         :return: a shallow copy of this fragment
         """
 
-        return FragmentCopy(self.__lines__, self.begin, self.end, self.offset)
+        return FragmentCopy(self._lines, self.begin, self.end, self.offset)
 
     def clear(self) -> None:
-        self.__lines__.clear()
+        self._lines.clear()
         self.end = self.begin
 
     def __iter__(self) -> Iterator[Statement]:
-        return self.__lines__.__iter__()
+        return self._lines.__iter__()
 
     def __len__(self) -> int:
-        return len(self.__lines__)
+        return len(self._lines)
 
     def __getitem__(self, line_number: Union[int, slice]) -> Union[Statement, FragmentCopy]:
         """
@@ -351,12 +359,12 @@ class FragmentCopy(CodeFragment):
         :return: the selected statement(s), encapsulated in a FragmentCopy in case of access by slices
         """
         if type(line_number) is int:
-            return self.__lines__[self.__line_to_index__(line_number)]
+            return self._lines[self._line_to_index(line_number)]
         elif type(line_number) is slice:
             # We return a FragmentCopy representing the slice, but notice how the offset info gets lost
-            return FragmentCopy(self.__lines__[self.__line_to_index__(line_number.start):
-                                               self.__line_to_index__(line_number.stop):
-                                               line_number.step],
+            return FragmentCopy(self._lines[self._line_to_index(line_number.start):
+                                            self._line_to_index(line_number.stop):
+                                            line_number.step],
                                 line_number.start,
                                 line_number.stop,
                                 0)
@@ -374,11 +382,11 @@ class FragmentCopy(CodeFragment):
         :param statement: statement(s) to be set
         """
         if type(line_number) is int:
-            self.__lines__[self.__line_to_index__(line_number)] = statement
+            self._lines[self._line_to_index(line_number)] = statement
         elif type(line_number) is slice:
-            self.__lines__[self.__line_to_index__(line_number.start):
-                           self.__line_to_index__(line_number.stop):
-                           line_number.step] = statement
+            self._lines[self._line_to_index(line_number.start):
+                        self._line_to_index(line_number.stop):
+                        line_number.step] = statement
 
             if len(statement) == 0:
                 # A funky deletion just took place, so we must treat it accordingly
@@ -396,12 +404,12 @@ class FragmentCopy(CodeFragment):
         :param line_number: line number(s) to be targeted
         """
         if type(line_number) is int:
-            del self.__lines__[self.__line_to_index__(line_number)]
+            del self._lines[self._line_to_index(line_number)]
             self.end -= 1
         elif type(line_number) is slice:
-            del self.__lines__[self.__line_to_index__(line_number.start):
-                               self.__line_to_index__(line_number.stop):
-                               line_number.step]
+            del self._lines[self._line_to_index(line_number.start):
+                            self._line_to_index(line_number.stop):
+                            line_number.step]
 
             # Decrease the list's size according to the number of elements that got deleted
             self.end -= len(range(line_number.start,
@@ -412,7 +420,7 @@ class FragmentCopy(CodeFragment):
 
     def __hash__(self) -> int:
         # The embedded list's lifecycle is tightly coupled with the fragment's one, so this should suffice
-        return hash((id(self), id(self.__lines__)))
+        return hash((id(self), id(self._lines)))
 
 
 class FragmentView(CodeFragment):
@@ -427,20 +435,23 @@ class FragmentView(CodeFragment):
     inconsistent state. To regain consistency, discard the corrupted views and recreate them.
     """
 
-    # Named tuple used for containing views' metadata
+    # Named tuple used for containing views' metadata (aka its reference frame)
     class FragmentReferenceFrame(NamedTuple):
         begin: int
         end: int
         offset: int
 
     # Declare and allocate the shared catalogue of source fragments
-    __sources_catalogue__: ClassVar[
+    _sources_catalogue: ClassVar[
         MutableMapping[
             CodeFragment, MutableMapping[
                 FragmentView, FragmentReferenceFrame]]] = WeakKeyDictionary()
 
     # Instance variable containing a reference to the views ensemble a view belongs to
-    __views_catalogue__: MutableMapping[FragmentView, FragmentReferenceFrame]
+    _views_catalogue: MutableMapping[FragmentView, FragmentReferenceFrame]
+
+    # Instance variable containing a reference to the backing fragment
+    _origin: CodeFragment
 
     def __init__(self, src: CodeFragment, begin: int = 0, end: int = 0, offset: int = 0) -> None:
         """
@@ -455,24 +466,24 @@ class FragmentView(CodeFragment):
 
         # Delegate consistency checks
         super().__init__(src, begin, end, offset)
-        self.__origin__ = src
+        self._origin = src
 
-        if src not in FragmentView.__sources_catalogue__:
+        if src not in FragmentView._sources_catalogue:
             # If this source fragment has never been seen before, add it to the shared catalogue and allocate the views
             # catalogue
-            self.__views_catalogue__ = WeakKeyDictionary()
-            FragmentView.__sources_catalogue__[src] = self.__views_catalogue__
+            self._views_catalogue = WeakKeyDictionary()
+            FragmentView._sources_catalogue[src] = self._views_catalogue
         else:
             # Otherwise, set the local reference to the views catalogue associated with the provided source
-            self.__views_catalogue__ = FragmentView.__sources_catalogue__[src]
+            self._views_catalogue = FragmentView._sources_catalogue[src]
 
         # Add the new view's metadata to the catalogue
-        self.__views_catalogue__[self] = FragmentView.FragmentReferenceFrame(begin, end, offset)
+        self._views_catalogue[self] = FragmentView.FragmentReferenceFrame(begin, end, offset)
 
     # Utility method used for updating all the views' metadata after a structural change
-    def __grow__(self, growth_point: int, size: int) -> None:
+    def _grow(self, growth_point: int, size: int) -> None:
         # Iterate over all the registered views for the current origin
-        for view, frame in self.__views_catalogue__.items():
+        for view, frame in self._views_catalogue.items():
             mutated: bool = False
             begin, end, offset = frame
 
@@ -489,11 +500,11 @@ class FragmentView(CodeFragment):
 
             # If any metadata changes were needed, update the catalogue
             if mutated:
-                self.__views_catalogue__[view] = FragmentView.FragmentReferenceFrame(begin, end, offset)
+                self._views_catalogue[view] = FragmentView.FragmentReferenceFrame(begin, end, offset)
 
     # Utility method for calculating a line's position inside the origin list, given its line number
-    def __line_to_index__(self, line_number: int) -> int:
-        frame = self.__views_catalogue__[self]
+    def _line_to_index(self, line_number: int) -> int:
+        frame = self._views_catalogue[self]
 
         # Verify that the calculated index falls within this fragment's range
         if not frame.begin <= line_number < frame.end:
@@ -502,13 +513,13 @@ class FragmentView(CodeFragment):
         return line_number - self.get_begin() + self.get_offset()
 
     def get_begin(self) -> int:
-        return self.__views_catalogue__[self].begin
+        return self._views_catalogue[self].begin
 
     def get_end(self) -> int:
-        return self.__views_catalogue__[self].end
+        return self._views_catalogue[self].end
 
     def get_offset(self) -> int:
-        return self.__views_catalogue__[self].offset
+        return self._views_catalogue[self].offset
 
     def slice(self, start: int, end: int) -> FragmentView:
         """
@@ -523,51 +534,51 @@ class FragmentView(CodeFragment):
         :raises ValueError: when the specified interval doesn't fit inside the existing fragment
         """
         super().slice(start, end)
-        return FragmentView(self.__origin__, start, end, self.__line_to_index__(start))
+        return FragmentView(self._origin, start, end, self._line_to_index(start))
 
     def append(self, statement: Statement) -> None:
-        self.__origin__.insert(self.get_offset() + len(self), statement)
+        self._origin.insert(self.get_offset() + len(self), statement)
         # Growth point is at the end of the slice
-        self.__grow__(self.get_end(), 1)
+        self._grow(self.get_end(), 1)
 
     def extend(self, statements: List[Statement]) -> None:
         insertion_point = self.get_offset() + len(self)
         for st in statements:
-            self.__origin__.insert(insertion_point, st)
+            self._origin.insert(insertion_point, st)
             insertion_point += 1
 
         # Growth point is at the end of the slice
-        self.__grow__(self.get_end(), len(statements))
+        self._grow(self.get_end(), len(statements))
 
     def insert(self, line_number: int, statement: Statement) -> None:
-        self.__origin__.insert(self.__line_to_index__(line_number), statement)
-        self.__grow__(line_number, 1)
+        self._origin.insert(self._line_to_index(line_number), statement)
+        self._grow(line_number, 1)
 
     def pop(self, line_number: int = -1) -> Statement:
         if line_number == -1:
             line_number = self.get_end() - 1
 
-        popping_point = self.__line_to_index__(line_number)
-        popped = self.__origin__.pop(popping_point)
-        self.__grow__(line_number, -1)
+        popping_point = self._line_to_index(line_number)
+        popped = self._origin.pop(popping_point)
+        self._grow(line_number, -1)
         return popped
 
     def copy(self) -> FragmentView:
-        return FragmentView(src=self.__origin__, begin=self.get_begin(), end=self.get_end(), offset=self.get_offset())
+        return FragmentView(src=self._origin, begin=self.get_begin(), end=self.get_end(), offset=self.get_offset())
 
     def clear(self) -> None:
         offset = self.get_offset()
         length = len(self)
-        del self.__origin__[offset:offset + length]
+        del self._origin[offset:offset + length]
         # View size shrinks to zero, with growth point set to end as not to influence this view's begin
-        self.__grow__(self.get_end(), -length)
+        self._grow(self.get_end(), -length)
 
     def __iter__(self) -> Iterator[Statement]:
         curr = self.get_offset()
         stop = curr + len(self)
 
         while curr < stop:
-            yield self.__origin__[curr]
+            yield self._origin[curr]
             curr += 1
 
     def __len__(self) -> int:
@@ -584,7 +595,7 @@ class FragmentView(CodeFragment):
         :return: the selected statement(s), encapsulated in a FragmentView in case of access by slices
         """
         if type(line_number) is int:
-            return self.__origin__[self.__line_to_index__(line_number)]
+            return self._origin[self._line_to_index(line_number)]
         elif type(line_number) is slice:
 
             if line_number.step is not None:
@@ -594,7 +605,7 @@ class FragmentView(CodeFragment):
                 # We don't support slice truncation, so we reject slices not fitting inside the fragment
                 raise ValueError("Slice exceeds fragment size")
 
-            return FragmentView(self.__origin__,
+            return FragmentView(self._origin,
                                 line_number.start,
                                 line_number.stop,
                                 self.get_offset() + line_number.start - self.get_begin())
@@ -612,18 +623,18 @@ class FragmentView(CodeFragment):
         :param statement: statement(s) to be set
         """
         if type(line_number) is int:
-            self.__origin__[self.__line_to_index__(line_number)] = statement
+            self._origin[self._line_to_index(line_number)] = statement
         elif type(line_number) is slice:
-            # Be aware of the ugly workaround used to let __line_to_index__() process a slice reaching the end of the
+            # Be aware of the ugly workaround used to let _line_to_index() process a slice reaching the end of the
             # fragment. Without the decrement-call-increment, it would report an IndexError
-            start = self.__line_to_index__(line_number.start)
-            stop = self.__line_to_index__(line_number.stop - 1) + 1 if line_number.stop == self.get_end() \
-                else self.__line_to_index__(line_number)
-            self.__origin__[start:stop:line_number.step] = statement
+            start = self._line_to_index(line_number.start)
+            stop = self._line_to_index(line_number.stop - 1) + 1 if line_number.stop == self.get_end() \
+                else self._line_to_index(line_number)
+            self._origin[start:stop:line_number.step] = statement
 
             if len(statement) == 0:
                 # A funky deletion just took place, so we must treat it appropriately
-                self.__grow__(self.__line_to_index__(line_number.start), -(line_number.stop - line_number.start))
+                self._grow(self._line_to_index(line_number.start), -(line_number.stop - line_number.start))
         else:
             raise TypeError("Integer index or slice expected")
 
@@ -637,26 +648,26 @@ class FragmentView(CodeFragment):
         :param line_number: line number(s) to be targeted
         """
         if type(line_number) is int:
-            deletion_point = self.__line_to_index__(line_number)
-            del self.__origin__[deletion_point]
-            self.__grow__(line_number, -1)
+            deletion_point = self._line_to_index(line_number)
+            del self._origin[deletion_point]
+            self._grow(line_number, -1)
         elif type(line_number) is slice:
-            # Be aware of the ugly workaround used to let __line_to_index__() process a slice reaching the end of the
+            # Be aware of the ugly workaround used to let _line_to_index() process a slice reaching the end of the
             # fragment. Without the decrement-call-increment, it would report an IndexError
-            start = self.__line_to_index__(line_number.start)
-            stop = self.__line_to_index__(line_number.stop - 1) + 1 if line_number.stop == self.get_end()\
-                else self.__line_to_index__(line_number)
-            del self.__origin__[start:stop:line_number.step]
+            start = self._line_to_index(line_number.start)
+            stop = self._line_to_index(line_number.stop - 1) + 1 if line_number.stop == self.get_end() \
+                else self._line_to_index(line_number)
+            del self._origin[start:stop:line_number.step]
 
             # Decrease the list's size according to the number of elements that got deleted
-            self.__grow__(line_number.start, -len(range(line_number.start, line_number.stop, line_number.step)))
+            self._grow(line_number.start, -len(range(line_number.start, line_number.stop, line_number.step)))
         else:
             raise TypeError("Integer index/statement or slice/list expected")
 
     def __hash__(self) -> int:
         # IDs are unique for the entire life of an object, so no collisions should take place inside the shared
         # catalogue with this
-        return hash((id(self), id(self.__origin__)))
+        return hash((id(self), id(self._origin)))
 
 
 class Source:
