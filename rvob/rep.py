@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import namedtuple, MutableSequence, Hashable
-from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union
+from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict
 from weakref import WeakKeyDictionary
 
 # The standard section's names
@@ -670,47 +670,35 @@ class FragmentView(CodeFragment):
         return hash((id(self), id(self._origin)))
 
 
-class Source:
-    """A parsed assembler source file"""
+class Source(FragmentCopy):
+    """
+    A parsed assembler source file.
 
-    def __init__(self, statements=None):
+    This class is a specialization of FragmentCopy that represents an entire assembler source file, offering a couple of
+    utility methods to extract labels and sections from the corpus.
+    """
+
+    def __init__(self, statements: Sequence[Statement]):
         """
-        Instantiates a new assembler source file representation
+        Instantiates a new assembler source file representation.
+
         :param statements: the statements of which the assembler source is composed
         """
 
-        if statements is None:
-            self.lines = []
-        else:
-            self.lines = list(statements)
+        # It's just a FragmentCopy that represents the entire source
+        super().__init__(statements, begin=0, end=len(statements), offset=0)
 
-    def append(self, new_statements):
+    def get_labels(self) -> Dict[str, int]:
         """
-        Appends a new set of statements to the end of the source
-        :param new_statements: the statements to be appended
-        :return: None
+        Returns a dictionary of labels mapped to the lines they point at.
+
+        :return a dictionary of string labels mapped to the lines they tag
         """
 
-        self.lines.extend(new_statements)
-
-    def replace(self, start, end, replacement):
-        """
-        Replaces a set of statements with the provided ones
-        :param start: the line number of the first statement to be replaced
-        :param end: the line number of the statement after the last one being replaced
-        :param replacement: a list of replacement statements
-        :return: None
-        """
-
-        self.lines[start:end] = replacement
-
-    def get_labels(self):
-        """Returns a dictionary of labels mapped to the lines they point to"""
-
-        labd = {}
+        labd: Dict[str, int] = {}
         lc = 0
 
-        for statement in self.lines:
+        for statement in self:
             for label in statement.labels:
                 labd[label] = lc
 
@@ -735,12 +723,12 @@ class Source:
         # TODO  maybe define this as a special fake section?
         curr_sec = None
 
-        for statement in self.lines[1:]:
+        for statement in self[1:self.get_end()]:
             if (type(statement) is Directive) and \
                     (standard_sections.__contains__(statement.name) or ".section" == statement.name):
                 # If not the first section, conclude the previous one and add it to the returned list
                 if curr_sec is not None:
-                    sec_ls.append(section_nt(curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+                    sec_ls.append(section_nt(curr_sec, start, curr_ln, self[start:curr_ln]))
 
                 start = curr_ln + 1
                 # Remember to update this argument retrieval statement in case we decide to name arguments
@@ -748,7 +736,7 @@ class Source:
 
             curr_ln += 1
 
-        sec_ls.append(section_nt(curr_sec, start, curr_ln, self.lines[start:curr_ln]))
+        sec_ls.append(section_nt(curr_sec, start, curr_ln, self[start:curr_ln]))
 
         return sec_ls
 

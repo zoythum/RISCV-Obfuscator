@@ -21,7 +21,7 @@ def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
     fine = cfg.nodes[int(node_id)]["end"]
 
     for i in range(int(fine), int(inizio)-1, -1):
-        current_line = src.lines[i]
+        current_line = src[i]
         if type(current_line) == rep.Instruction:
             r1 = current_line.instr_args['r1']
             r2 = current_line.instr_args['r2']
