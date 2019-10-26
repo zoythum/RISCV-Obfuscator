@@ -3,7 +3,7 @@ from collections import deque, namedtuple
 from itertools import count
 from bisect import bisect_right
 from networkx import DiGraph
-import rvob.rep as rep
+from rvob.rep import Instruction, Source
 
 # Type of jumps:
 # U: unconditional jump without side effects
@@ -108,7 +108,7 @@ class SectionUnroller:
 
 
 # TODO include some sort of code view inside nodes
-def build_cfg(src: rep.Source, entry_point: str = "main"):
+def build_cfg(src: Source, entry_point: str = "main"):
     
     def explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
@@ -130,7 +130,7 @@ def build_cfg(src: rep.Source, entry_point: str = "main"):
                 ancestors[start_line] = rid
                 cfg.add_edge(rid, explorer(line.ln, __ret_stack__))
                 break
-            elif type(line.st) is rep.Instruction and line.st.opcode in jump_ops:
+            elif type(line.st) is Instruction and line.st.opcode in jump_ops:
                 # Create node
                 cfg.add_node(rid, start=start_line, end=line.ln)
                 ancestors[start_line] = rid
