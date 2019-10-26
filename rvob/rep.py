@@ -392,7 +392,7 @@ class FragmentCopy(CodeFragment):
                 # A funky deletion just took place, so we must treat it accordingly
                 self.end -= line_number.stop - line_number.start
         else:
-            raise TypeError("Integer index/statement or slice/list expected")
+            raise TypeError("Integer index or slice expected")
 
     def __delitem__(self, line_number: Union[int, slice]) -> None:
         """
@@ -416,7 +416,7 @@ class FragmentCopy(CodeFragment):
                                   line_number.stop,
                                   1 if line_number.step is None else line_number.step))
         else:
-            raise TypeError("Integer index/statement or slice/list expected")
+            raise TypeError("Integer index or slice expected")
 
     def __hash__(self) -> int:
         # The embedded list's lifecycle is tightly coupled with the fragment's one, so this should suffice
@@ -555,6 +555,7 @@ class FragmentView(CodeFragment):
         self._grow(line_number, 1)
 
     def pop(self, line_number: int = -1) -> Statement:
+        # We emulate the signature of the standard pop() method
         if line_number == -1:
             line_number = self.get_end() - 1
 
@@ -662,7 +663,7 @@ class FragmentView(CodeFragment):
             # Decrease the list's size according to the number of elements that got deleted
             self._grow(line_number.start, -len(range(line_number.start, line_number.stop, line_number.step)))
         else:
-            raise TypeError("Integer index/statement or slice/list expected")
+            raise TypeError("Integer index or slice expected")
 
     def __hash__(self) -> int:
         # IDs are unique for the entire life of an object, so no collisions should take place inside the shared
