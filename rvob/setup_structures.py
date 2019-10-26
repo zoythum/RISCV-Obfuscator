@@ -21,7 +21,7 @@ def fill_contract(cfg: DiGraph, node_id: str, src: rep.Source):
     fine = cfg.nodes[int(node_id)]["end"]
 
     for i in range(int(fine), int(inizio)-1, -1):
-        current_line = src.lines[i]
+        current_line = src[i]
         if type(current_line) == rep.Instruction:
             r1 = current_line.instr_args['r1']
             r2 = current_line.instr_args['r2']
@@ -62,7 +62,7 @@ def get_children(cfg: DiGraph, node_id: str):
 
 def setup_contracts():
     file = open("duefunz.json")
-    src = rep.load_src(json.load(file))
+    src = rep.load_src_from_maps(json.load(file))
     # TODO check the entry point
     cfg = transform.build_cfg(src)
     for i in range(0, len(cfg.nodes)):
