@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import MutableSequence, Hashable
-from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict
+from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict, Mapping
 from weakref import WeakKeyDictionary
 
 # The standard section's names
@@ -762,21 +762,30 @@ classes = {
 }
 
 
-def load_src(descriptions: list) -> Source:
-    """Loads a list of dictionary descriptions of parsed assembler statements
-    :param descriptions: a list of dictionaries, describing a single assembler statement each
-    :return: a new source object
+def load_src_from_maps(descriptions: Sequence[Mapping[str, str]]) -> Source:
+    """Loads a sequence of mappings describing parsed assembler statements into a Source.
+    
+    Each map should describe what kind of symbol it represents (label/directive/instruction) and the mapping between
+    formal and actual arguments.
+    Be aware that labels will be included in the object representing the statement they tag (i.e. the next directive or
+    instruction).
+    
+    :param descriptions: a list of maps, describing a single assembler statement each
+    :return: a new Source object made of the described statements
     """
 
     labs = []
     statements = []
     for d in descriptions:
         if "label" == d["role"]:
+            # Keep accumulating labels until we process the statement they tag
             labs.append(d["name"])
         else:
+            # Retrieve the constructor for the stated role
             constructor = classes[d["role"]]
-            del d["role"]
+            # Remove the "role" annotation before invoking the constructor
+            d = {k: v for k, v in d.items() if k != "role"}
             statements.append(constructor(labels=labs, **d))
-            labs = []
+            labs.clear()
 
     return Source(statements)
