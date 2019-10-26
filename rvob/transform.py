@@ -46,8 +46,8 @@ class SectionUnroller:
         self.__sections__ = {}
 
         for section in sections:
-            self.__header_lines__.append(section.start)
-            self.__sections__[section.start] = section
+            self.__header_lines__.append(section.scope.get_begin())
+            self.__sections__[section.scope.get_begin()] = section
 
     def get_containing_section(self, line_number: int):
         # Find a section that sports the last starting line that precedes the one passed as argument
@@ -55,7 +55,7 @@ class SectionUnroller:
 
         # Check for line membership: if the received line belongs to the candidate, return it, otherwise it is outside
         # of the sections selected for scanning
-        if candidate.start <= line_number < candidate.end:
+        if candidate.scope.get_begin() <= line_number < candidate.scope.get_end():
             return candidate
         else:
             raise KeyError
@@ -77,12 +77,12 @@ class SectionUnroller:
         current_section = self.get_containing_section(line_number)
 
         # Check code contiguity between the received line and the one which should follow
-        if line_number < current_section.end:
+        if line_number < current_section.scope.get_end():
             return line_number + 1
         else:
             # If the following line falls outside of the section in which the received line resides, then such line must
             # be the header line of the following section
-            return self.get_nearest_following_section(line_number + 1).start
+            return self.get_nearest_following_section(line_number + 1).scope.get_begin()
 
     def get_line_iterator(self, starting_line: int):
         line = namedtuple("Line", 'ln st')
@@ -97,12 +97,12 @@ class SectionUnroller:
                 # header line of the nearest following section wrt the stated starting line
                 try:
                     curr_section = self.get_nearest_following_section(curr_line)
-                    curr_line = curr_section.start
+                    curr_line = curr_section.scope.get_begin()
                 except ValueError:
                     # No nearest following section exists, so we must have reached the end
                     break
 
-            for statement in curr_section.statements[curr_line - curr_section.start:]:
+            for statement in curr_section.scope[curr_line:curr_section.scope.get_end()]:
                 yield line(curr_line, statement)
                 curr_line += 1
 
@@ -189,7 +189,7 @@ def build_cfg(src: rep.Source):
     label_dict = src.get_labels()
 
     # Instantiate the section un-roller
-    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
+    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.identifier])
 
     # Instantiate the node id supplier
     id_sup = count()
@@ -210,7 +210,7 @@ def build_cfg(src: rep.Source):
     ret_stack.append(-1)
 
     # Call the explorer and append the resulting graph to the root node
-    child_id = explorer(reader.get_nearest_following_section(0).start, ret_stack)
+    child_id = explorer(reader.get_nearest_following_section(0).scope.get_begin(), ret_stack)
     cfg.add_edge(root_id, child_id)
 
     return cfg

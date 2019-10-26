@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import namedtuple, MutableSequence, Hashable
+from collections import MutableSequence, Hashable
 from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict
 from weakref import WeakKeyDictionary
 
@@ -677,6 +677,19 @@ class Source(FragmentCopy):
     This class is a specialization of FragmentCopy that represents an entire assembler source file, offering a couple of
     utility methods to extract labels and sections from the corpus.
     """
+    
+    class Section(NamedTuple):
+        """
+        A code fragment representing a section of the assembler source.
+        
+        The reported code doesn't include the statement declaring the section in question (if any).
+
+        :var Section.identifier: the section's identifier
+        :var Section.scope: a view on the source code that captures the section
+        """
+        
+        identifier: str
+        scope: FragmentView
 
     def __init__(self, statements: Sequence[Statement]):
         """
@@ -706,37 +719,37 @@ class Source(FragmentCopy):
 
         return labd
 
-    def get_sections(self):
+    def get_sections(self) -> List[Source.Section]:
         """
-        Returns a list of sections, represented as tuples of (<section name>, <start>, <end>, <statements list>).
+        Orderly extracts sections from this source.
 
-        Keep in mind that <start> and <end> represent the index of the first line of the section and the position
-        after the last line, respectively, much like as in the list slicing convention.
+        Since many assembler sources include a header not contained in any section, the statements found therein get
+        arbitrarily included in a special section named "<meta>", placed at the top of the list.
+
+        :return a list of the sections of which this source is composed
         """
-
-        # Create a named tuple class for storing the section's information
-        section_nt = namedtuple("Section", 'name start end statements')
 
         sec_ls = []
-        curr_ln, start = 1, 1
-        # The first part of an assembler source contains options for GAS, so we ignore it
-        # TODO  maybe define this as a special fake section?
-        curr_sec = None
+        curr_ln, start = 0, 0
+        # Initialize the current section name with this special string, as to represent the initial few statements that
+        # GAS uses to set some metadata
+        curr_sec = "<meta>"
 
-        for statement in self[1:self.get_end()]:
+        for statement in self[0:self.get_end()]:
             if (type(statement) is Directive) and \
-                    (standard_sections.__contains__(statement.name) or ".section" == statement.name):
-                # If not the first section, conclude the previous one and add it to the returned list
-                if curr_sec is not None:
-                    sec_ls.append(section_nt(curr_sec, start, curr_ln, self[start:curr_ln]))
+                    (statement.name in standard_sections or ".section" == statement.name):
+                # Sections are just plain old FragmentViews with a fancy name attached
+                sec_ls.append(Source.Section(curr_sec, FragmentView(self, start, curr_ln, start)))
 
+                # The new section will start at the next line
                 start = curr_ln + 1
-                # Remember to update this argument retrieval statement in case we decide to name arguments
+                # Recognize the name of the section we just stepped into
                 curr_sec = statement.args["args"][0] if ".section" == statement.name else statement.name
 
             curr_ln += 1
 
-        sec_ls.append(section_nt(curr_sec, start, curr_ln, self[start:curr_ln]))
+        # Reached EOF, append the last section
+        sec_ls.append(Source.Section(curr_sec, FragmentView(self, start, curr_ln, start)))
 
         return sec_ls
 
