@@ -1,5 +1,8 @@
+from typing import Dict, Any
+
 from networkx import DiGraph, nx
 import rvob.rep as rep
+import copy
 import json
 import rvob.transform as transform
 
@@ -31,6 +34,7 @@ class Counter:
 
 # a global register to maintain the last value kept by a register
 register_status = {}
+snapshot_register_copy = {}
 value_count = Counter()
 
 opcodes = {
@@ -114,6 +118,10 @@ def bind_register_to_value(src: rep.Source, cfg: DiGraph):
         for x in range(cfg.nodes[i]["start"], cfg.nodes[i]["end"], 1):
             linelist.append((x, src.lines[x]))
 
+        if i in snapshot_register_copy:
+            global register_status
+            register_status = snapshot_register_copy[i]
+
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
@@ -145,3 +153,8 @@ def bind_register_to_value(src: rep.Source, cfg: DiGraph):
                         else:
                             reg_read(localreg, line.instr_args['r1'], l[0], None)
             cfg.nodes[i]['reg_bind'] = localreg
+            childnodes = list(cfg.successors(i))
+            if len(childnodes) >= 2:
+                for n in range(len(childnodes)):
+                    if childnodes[n] != nodelist[i]:
+                        snapshot_register_copy[childnodes[n]] = copy.deepcopy(register_status)
