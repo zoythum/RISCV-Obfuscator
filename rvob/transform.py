@@ -3,7 +3,7 @@ from collections import deque, namedtuple
 from itertools import count
 from bisect import bisect_right
 from networkx import DiGraph
-from rvob.rep import Instruction, Source
+from rvob.rep import Instruction, Source, FragmentView
 
 
 # Types of jump
@@ -132,13 +132,13 @@ def build_cfg(src: Source, entry_point: str = "main"):
             if len(line.st.labels) != 0 and line.ln != start_line:
                 # TODO maybe we can make this iterative?
                 # We stepped inside a new contiguous block: build the node for the previous block and relay
-                cfg.add_node(rid, start=start_line, end=previous_line)
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.ln, start_line))
                 ancestors[start_line] = rid
                 cfg.add_edge(rid, _explorer(line.ln, __ret_stack__))
                 break
             elif type(line.st) is Instruction and line.st.opcode in jump_ops:
                 # Create node
-                cfg.add_node(rid, start=start_line, end=line.ln)
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.ln + 1, start_line))
                 ancestors[start_line] = rid
 
                 if jump_ops[line.st.opcode] == JumpType.U:
@@ -187,7 +187,7 @@ def build_cfg(src: Source, entry_point: str = "main"):
 
             previous_line = line.ln
         else:
-            cfg.add_node(rid, start=start_line, end=previous_line)
+            cfg.add_node(rid, block=FragmentView(src, start_line, previous_line + 1, start_line))
 
         return rid
 

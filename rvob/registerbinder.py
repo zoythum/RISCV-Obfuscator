@@ -97,9 +97,8 @@ def loop_manager(cfg: DiGraph, confreg: set, confnode: int, analizednode: int):
         loop_manager(cfg, set(newconfreg), confnode, pred[0])
 
 
-def bind_register_to_value(src: rep.Source, cfg: DiGraph):
+def bind_register_to_value(cfg: DiGraph):
     """
-    :param src: the source file that contain the assembly program
     :param cfg: the DiGraph that represent the program to be analyzed
     """
 
@@ -113,8 +112,9 @@ def bind_register_to_value(src: rep.Source, cfg: DiGraph):
         # localreg: the dictionary that will be put into the node at the end of the binding process
         localreg = {}
 
-        for x in range(cfg.nodes[i]["start"], cfg.nodes[i]["end"], 1):
-            linelist.append((x, src[x]))
+        line_number = cfg.nodes[i]["block"].get_begin()
+        for line in cfg.nodes[i]["block"]:
+            linelist.append((line_number, line))
 
         if i in snapshot_register_copy:
             global register_status
@@ -137,7 +137,7 @@ def bind_register_to_value(src: rep.Source, cfg: DiGraph):
                     # Check if the opcode corresponds to a write operation
                     if opcodes[line.opcode][1]:
                         value_count.__next__()
-                        block = ValueBlock(l[0], cfg.nodes[i]['end'], value_count.getvalue())
+                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end(), value_count.getvalue())
                         if line.instr_args['r1'] in localreg.keys():
                             localreg[line.instr_args['r1']][-1].endline = (l[0] - 1)
                             localreg[line.instr_args['r1']].append(block)

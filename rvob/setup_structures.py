@@ -1,5 +1,5 @@
 from networkx import DiGraph, neighbors, reverse, simple_cycles
-import rvob.rep as rep
+from rvob.rep import FragmentView, Instruction
 
 
 # This is a classification of all the possible opcodes.
@@ -28,7 +28,7 @@ opcodes = {
 }
 
 
-def fill_contract(cfg: DiGraph, node_id: int, src: rep.Source):
+def fill_contract(cfg: DiGraph, node_id: int):
     # Function that creates the contract for a single node, we use two different sets:
     # 1) provides contains all the registers written in this node's code block
     # 2) requires contains all the registers that are read in this node's code block
@@ -42,12 +42,11 @@ def fill_contract(cfg: DiGraph, node_id: int, src: rep.Source):
         for elem in cfg.nodes[child]["requires"]:
             requires.add(elem)
 
-    start = cfg.nodes[node_id]["start"]
-    end = cfg.nodes[node_id]["end"]
+    block: FragmentView = cfg.nodes[node_id]["block"]
 
-    for i in range(end, start - 1, -1):
-        current_line = src[i]
-        if type(current_line) == rep.Instruction:
+    for i in range(block.get_end() - 1, block.get_begin() - 1, -1):
+        current_line = block[i]
+        if type(current_line) == Instruction:
             opcode = current_line.opcode
             r1 = current_line.instr_args['r1']
             r2 = current_line.instr_args['r2']
@@ -133,7 +132,7 @@ def sanitize_contracts(cfg: DiGraph):
             cfg.nodes[node]['requires'] = req
 
 
-def setup_contracts(src: rep.Source, cfg: DiGraph):
+def setup_contracts(cfg: DiGraph):
     for i in range(0, len(cfg.nodes)):
         cfg.nodes[i]['provides'] = set()
         cfg.nodes[i]['requires'] = set()
@@ -157,7 +156,7 @@ def setup_contracts(src: rep.Source, cfg: DiGraph):
         try:
             # We need to check if the node we're dealing with has a start attribute, otherwise we ignore the node and
             # skip to the next one (should happen only at the end when dealing with the head of the cfg)
-            fill_contract(cfg, node, src)
+            fill_contract(cfg, node)
         except KeyError:
             continue
         for parent in reverse(cfg, False).neighbors(node):
