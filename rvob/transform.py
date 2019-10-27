@@ -1,40 +1,46 @@
-from enum import Enum
+from enum import Enum, auto
 from collections import deque, namedtuple
 from itertools import count
 from bisect import bisect_right
 from networkx import DiGraph
 from rvob.rep import Instruction, Source
 
-# Type of jumps:
-# U: unconditional jump without side effects
-# C: conditional jump/branching instruction
-# F: unconditional jump with return-address memorization (procedure call)
-# R: unconditional jump to memorized return-address (procedure return)
-jump_type = Enum('JUMP', 'U, C, F, R')
+
+# Types of jump
+class JumpType(Enum):
+    # U: unconditional jump without side effects
+    U = auto()
+    # C: conditional jump/branching instruction
+    C = auto()
+    # F: unconditional jump with return-address memorization (procedure call)
+    F = auto()
+    # R: unconditional jump to memorized return-address (procedure return)
+    R = auto()
+
 
 # Dictionary of jump instructions
 jump_ops = {
-    "call": jump_type.F,
-    "jr": jump_type.R,
-    "j": jump_type.U,
-    "jal": jump_type.F,
-    "jalr": jump_type.F,
-    "beq": jump_type.C,
-    "beqz": jump_type.C,
-    "bne": jump_type.C,
-    "bnez": jump_type.C,
-    "blt": jump_type.C,
-    "bltz": jump_type.C,
-    "bltu": jump_type.C,
-    "ble": jump_type.C,
-    "blez": jump_type.C,
-    "bleu": jump_type.C,
-    "bgt": jump_type.C,
-    "bgtz": jump_type.C,
-    "bgtu": jump_type.C,
-    "bge": jump_type.C,
-    "bgez": jump_type.C,
-    "bgeu": jump_type.C
+    "call": JumpType.F,
+    "jr": JumpType.R,
+    "j": JumpType.U,
+    "jal": JumpType.F,
+    "jalr": JumpType.F,
+    "beq": JumpType.C,
+    "beqz": JumpType.C,
+    "bne": JumpType.C,
+    "bnez": JumpType.C,
+    "blt": JumpType.C,
+    "bltz": JumpType.C,
+    "bltu": JumpType.C,
+    "ble": JumpType.C,
+    "blez": JumpType.C,
+    "bleu": JumpType.C,
+    "bgt": JumpType.C,
+    "bgtz": JumpType.C,
+    "bgtu": JumpType.C,
+    "bge": JumpType.C,
+    "bgez": JumpType.C,
+    "bgeu": JumpType.C
 }
 
 
@@ -135,11 +141,11 @@ def build_cfg(src: Source, entry_point: str = "main"):
                 cfg.add_node(rid, start=start_line, end=line.ln)
                 ancestors[start_line] = rid
 
-                if jump_ops[line.st.opcode] == jump_type.U:
+                if jump_ops[line.st.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
                     cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.F:
+                elif jump_ops[line.st.opcode] == JumpType.F:
                     # Function call: start by resolving destination
                     target = line.st.instr_args["immediate"]
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
@@ -166,13 +172,13 @@ def build_cfg(src: Source, entry_point: str = "main"):
                     # Perform the actual recursive call
                     cfg.add_edge(home, explorer(dst, __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.C:
+                elif jump_ops[line.st.opcode] == JumpType.C:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
                     cfg.add_edge(rid, explorer(reader.get_following_line(line.ln), __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
                     cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.R:
+                elif jump_ops[line.st.opcode] == JumpType.R:
                     # Procedure return: close the edge on the return address by invoking an explorer there
                     cfg.add_edge(rid, explorer(__ret_stack__.pop(), __ret_stack__))
                     break
