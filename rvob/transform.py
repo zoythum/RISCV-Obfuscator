@@ -116,7 +116,7 @@ class SectionUnroller:
 # TODO include some sort of code view inside nodes
 def build_cfg(src: Source, entry_point: str = "main"):
     
-    def explorer(start_line: int, __ret_stack__: deque):
+    def _explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
         if start_line in ancestors:
             return ancestors[start_line]
@@ -134,7 +134,7 @@ def build_cfg(src: Source, entry_point: str = "main"):
                 # We stepped inside a new contiguous block: build the node for the previous block and relay
                 cfg.add_node(rid, start=start_line, end=previous_line)
                 ancestors[start_line] = rid
-                cfg.add_edge(rid, explorer(line.ln, __ret_stack__))
+                cfg.add_edge(rid, _explorer(line.ln, __ret_stack__))
                 break
             elif type(line.st) is Instruction and line.st.opcode in jump_ops:
                 # Create node
@@ -143,7 +143,7 @@ def build_cfg(src: Source, entry_point: str = "main"):
 
                 if jump_ops[line.st.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
-                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
+                    cfg.add_edge(rid, _explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
                     break
                 elif jump_ops[line.st.opcode] == JumpType.F:
                     # Function call: start by resolving destination
@@ -170,17 +170,17 @@ def build_cfg(src: Source, entry_point: str = "main"):
                         home = target
 
                     # Perform the actual recursive call
-                    cfg.add_edge(home, explorer(dst, __ret_stack__))
+                    cfg.add_edge(home, _explorer(dst, __ret_stack__))
                     break
                 elif jump_ops[line.st.opcode] == JumpType.C:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
-                    cfg.add_edge(rid, explorer(reader.get_following_line(line.ln), __ret_stack__))
+                    cfg.add_edge(rid, _explorer(reader.get_following_line(line.ln), __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
-                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
+                    cfg.add_edge(rid, _explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
                     break
                 elif jump_ops[line.st.opcode] == JumpType.R:
                     # Procedure return: close the edge on the return address by invoking an explorer there
-                    cfg.add_edge(rid, explorer(__ret_stack__.pop(), __ret_stack__))
+                    cfg.add_edge(rid, _explorer(__ret_stack__.pop(), __ret_stack__))
                     break
                 else:
                     raise LookupError("Unrecognized jump type")
@@ -216,7 +216,7 @@ def build_cfg(src: Source, entry_point: str = "main"):
     ret_stack.append(-1)
 
     # Call the explorer on the entry point and append the resulting graph to the root node
-    child_id = explorer(label_dict[entry_point], ret_stack)
+    child_id = _explorer(label_dict[entry_point], ret_stack)
     cfg.add_edge(root_id, child_id)
 
     return cfg
