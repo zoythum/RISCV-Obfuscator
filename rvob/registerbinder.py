@@ -1,10 +1,8 @@
-from typing import Dict, Any
+import copy
 
 from networkx import DiGraph, nx
+
 import rvob.rep as rep
-import copy
-import json
-import rvob.transform as transform
 
 
 class ValueBlock:
@@ -116,7 +114,7 @@ def bind_register_to_value(src: rep.Source, cfg: DiGraph):
         localreg = {}
 
         for x in range(cfg.nodes[i]["start"], cfg.nodes[i]["end"], 1):
-            linelist.append((x, src.lines[x]))
+            linelist.append((x, src[x]))
 
         if i in snapshot_register_copy:
             global register_status

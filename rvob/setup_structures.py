@@ -46,7 +46,7 @@ def fill_contract(cfg: DiGraph, node_id: int, src: rep.Source):
     end = cfg.nodes[node_id]["end"]
 
     for i in range(end, start - 1, -1):
-        current_line = src.lines[i]
+        current_line = src[i]
         if type(current_line) == rep.Instruction:
             opcode = current_line.opcode
             r1 = current_line.instr_args['r1']
