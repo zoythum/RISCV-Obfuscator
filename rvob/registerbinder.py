@@ -1,8 +1,6 @@
 import copy
-
 from networkx import DiGraph, nx
 from rvob.structures import opcodes
-
 import rvob.rep as rep
 
 
@@ -22,6 +20,10 @@ class ValueBlock:
 
 
 class Counter:
+    """
+    this class is a simple sequential number generator, it's needed to generate the value that must be associated
+    with the registers
+    """
     def __init__(self):
         self.value = 0
 
@@ -29,6 +31,9 @@ class Counter:
         self.value += 1
 
     def getvalue(self):
+        """
+        :return: the actual value of the counter
+        """
         return self.value
 
 
@@ -40,7 +45,8 @@ value_count = Counter()
 
 def reg_read(regdict, reg, line, actval):
     """
-    manage the read of a register, if the register is already in the dict the endline of the last block associated to him is set to the current line,
+    manage the read of a register, if the register is already in the dict the endline of the last block associated to
+    him is set to the current line,
     otherwise the register is added to the dictionary and a new block will be created
     :param regdict: is the dictionary that store the register accessed in the node under analysis
     :param reg: is the register accessed by the operation under analysis
@@ -60,26 +66,11 @@ def reg_read(regdict, reg, line, actval):
         regdict[reg][-1].endline = line
 
 
-def loop_manager(cfg: DiGraph, confreg: set, confnode: int, analizednode: int):
-    """
-
-    :param cfg: the DiGraph representing the program under analysis
-    :param confreg: the set containing the register that are conflicting
-    :param confnode: the node that already have a reg-value binding dictionary
-    :param analizednode: the predecessor node of the conflicting ones
-    """
-    newconfreg = []
-    for val in confreg:
-        cfg.nodes[analizednode]['reg_bind'][val][-1].value = cfg.nodes[confnode]['reg_bind'][val][-1].value
-        if len(cfg.nodes[analizednode]['reg_bind'][val]) == 1:
-            newconfreg.append(val)
-    pred = list(cfg.predecessors(analizednode))
-    if (len(newconfreg) > 0) and (len(pred) == 1) and (pred[0] != confnode):
-        loop_manager(cfg, set(newconfreg), confnode, pred[0])
-
-
 def bind_register_to_value(cfg: DiGraph):
     """
+    This is the main function, it is responsible for the binding process that associate to every register used in a
+    certain node a value. This association is represented by a dictionary that use as key the register's name and as
+    value a list of block that contains the value holds by the register and it's range of validity
     :param cfg: the DiGraph that represent the program to be analyzed
     """
 
