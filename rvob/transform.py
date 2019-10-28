@@ -130,7 +130,6 @@ class SectionUnroller:
                 curr_line += 1
 
 
-# TODO include some sort of code view inside nodes
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     """
     Builds the CFG of the supplied assembly code, starting from the specified entry point.
