@@ -46,6 +46,11 @@ jump_ops = {
 
 # TODO Is this a good object? Can it belong to a narrower namespace?
 class SectionUnroller:
+    """
+    Collects sections together and provides methods for accessing them as a contiguous list of statements.
+
+    Be aware that this class is unstable, badly documented and could disappear overnight.
+    """
 
     def __init__(self, sections):
         self.__header_lines__ = []
@@ -56,6 +61,9 @@ class SectionUnroller:
             self.__sections__[section.scope.get_begin()] = section
 
     def get_containing_section(self, line_number: int):
+        """
+        Retrieves the section containing the specified line.
+        """
         # Find a section that sports the last starting line that precedes the one passed as argument
         candidate = self.__sections__[self.__header_lines__[bisect_right(self.__header_lines__, line_number) - 1]]
 
@@ -67,6 +75,9 @@ class SectionUnroller:
             raise KeyError
 
     def get_nearest_following_section(self, line_number: int):
+        """
+        Retrieves the nearest section that follows the specified line.
+        """
         # Find the index of the __header_lines__ entry which could indicate the starting line of the nearest following
         # section
         tentative_index = bisect_right(self.__header_lines__, line_number)
@@ -79,6 +90,9 @@ class SectionUnroller:
             return self.__sections__[self.__header_lines__[tentative_index]]
 
     def get_following_line(self, line_number):
+        """
+        Given a line number, finds the line number of the following statement, wrt the configured sections.
+        """
         # Get the section containing the received line
         current_section = self.get_containing_section(line_number)
 
@@ -91,6 +105,9 @@ class SectionUnroller:
             return self.get_nearest_following_section(line_number + 1).scope.get_begin()
 
     def get_line_iterator(self, starting_line: int):
+        """
+        Iterates over all the statements contained in the configured sections, presenting them as a whole.
+        """
         line = namedtuple("Line", 'ln st')
 
         curr_line = starting_line
@@ -114,7 +131,22 @@ class SectionUnroller:
 
 
 # TODO include some sort of code view inside nodes
-def build_cfg(src: Source, entry_point: str = "main"):
+def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
+    """
+    Builds the CFG of the supplied assembly code, starting from the specified entry point.
+    
+    The entry point consists of a valid label pointing to what will be considered by the algorithm as the first
+    instruction executed by a caller.
+    The graph is built through a recursive DFS algorithm that follows the control flow.
+    The resulting graph's nodes either contain a reference to a view, which represents the block of serial instructions
+    associated with the node, or an `external` flag, signifying that the referenced code is external to the analyzed
+    code.
+    
+    :param src: the assembler source to be analyzed
+    :param entry_point: the entry point from which the execution flow will be followed
+    :return: a directed graph representing the CFG of the analyzed code
+    :raise ValueError: when the entry point couldn't be found
+    """
     
     def _explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
@@ -216,7 +248,11 @@ def build_cfg(src: Source, entry_point: str = "main"):
     ret_stack.append(-1)
 
     # Call the explorer on the entry point and append the resulting graph to the root node
-    child_id = _explorer(label_dict[entry_point], ret_stack)
+    try:
+        child_id = _explorer(label_dict[entry_point], ret_stack)
+    except KeyError:
+        raise ValueError("Entry point [" + entry_point + "] not found")
+
     cfg.add_edge(root_id, child_id)
 
     return cfg
