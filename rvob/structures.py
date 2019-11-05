@@ -15,13 +15,13 @@ jump_ops -- a dictionary associating each jump instruction to its type
 """
 
 from enum import Enum, auto
+from typing import Set, Mapping, Tuple
 
 # This is a classification of all the possible opcodes.
 # Each opcode is paired with a tuple (<int>, <boolean>) where the int value represents the number of registers used
 # by that specific opcode, the boolean value instead tells if we are dealing with a write function (True)
 # or a read only one (False)
-
-opcodes = {
+opcodes: Mapping[str, Tuple[int, bool]] = {
     'lui': (1, True), 'auipc': (1, True), 'jal': (1, True), 'jalr': (2, True), 'lb': (2, True), 'lh': (2, True),
     'lw': (2, True), 'lbu': (2, True), 'lhu': (2, True), 'addi': (2, True), 'slti': (2, True),
     'sltiu': (2, True), 'xori': (2, True), 'ori': (2, True), 'andi': (2, True), 'slli': (2, True),
@@ -45,7 +45,7 @@ opcodes = {
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
-standard_sections = {".text", ".data", ".bss"}
+standard_sections: Set[str] = {".text", ".data", ".bss"}
 
 
 # Types of jump
@@ -62,7 +62,7 @@ class JumpType(Enum):
 
 # Dictionary of jump instructions
 # The key is a jump opcode in its string form, the value is one of the enumerated jump types.
-jump_ops = {
+jump_ops: Mapping[str, JumpType] = {
     "call": JumpType.F,
     "jr": JumpType.R,
     "j": JumpType.U,
