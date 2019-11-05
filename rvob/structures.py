@@ -1,3 +1,21 @@
+"""
+Provide the common structures necessary for syntactic and semantic interpretation of the parsed code.
+
+This module contains a collection of data structures which are used in other parts of the package that must interpret in
+some way the contents of some assembly statements or assembler source.
+The information contained in this module describes things such as the formal arguments of the statemets, the format of
+instructions, etc.
+
+Structures:
+opcodes -- a dictionary containing information about the number of arguments of each supported instruction, and whether
+           or not they are read-only
+standard_sections -- a set containing the identifiers of the standard sections that can be found in an assembler source
+JumpType -- an enumeration of all the possible types of jump that are supported
+jump_ops -- a dictionary associating each jump instruction to its type
+"""
+
+from enum import Enum, auto
+
 # This is a classification of all the possible opcodes.
 # Each opcode is paired with a tuple (<int>, <boolean>) where the int value represents the number of registers used
 # by that specific opcode, the boolean value instead tells if we are dealing with a write function (True)
@@ -24,3 +42,46 @@ opcodes = {
     'beqz': (1, False), 'bnez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False),
     'call': (0, False)
     }
+
+# The standard section's names
+# Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
+standard_sections = {".text", ".data", ".bss"}
+
+
+# Types of jump
+class JumpType(Enum):
+    # U: unconditional jump without side effects
+    U = auto()
+    # C: conditional jump/branching instruction
+    C = auto()
+    # F: unconditional jump with return-address memorization (procedure call)
+    F = auto()
+    # R: unconditional jump to memorized return-address (procedure return)
+    R = auto()
+
+
+# Dictionary of jump instructions
+# The key is a jump opcode in its string form, the value is one of the enumerated jump types.
+jump_ops = {
+    "call": JumpType.F,
+    "jr": JumpType.R,
+    "j": JumpType.U,
+    "jal": JumpType.F,
+    "jalr": JumpType.F,
+    "beq": JumpType.C,
+    "beqz": JumpType.C,
+    "bne": JumpType.C,
+    "bnez": JumpType.C,
+    "blt": JumpType.C,
+    "bltz": JumpType.C,
+    "bltu": JumpType.C,
+    "ble": JumpType.C,
+    "blez": JumpType.C,
+    "bleu": JumpType.C,
+    "bgt": JumpType.C,
+    "bgtz": JumpType.C,
+    "bgtu": JumpType.C,
+    "bge": JumpType.C,
+    "bgez": JumpType.C,
+    "bgeu": JumpType.C
+}

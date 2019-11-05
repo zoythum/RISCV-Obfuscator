@@ -5,8 +5,7 @@ from collections import MutableSequence, Hashable
 from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict, Mapping
 from weakref import WeakKeyDictionary
 
-# The standard section's names
-standard_sections = {".text", ".data", ".bss"}
+from structures import standard_sections
 
 
 class Statement:

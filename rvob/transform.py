@@ -1,47 +1,10 @@
-from enum import Enum, auto
 from collections import deque, namedtuple
 from itertools import count
 from bisect import bisect_right
 from networkx import DiGraph
 from rvob.rep import Instruction, Source, FragmentView
 
-
-# Types of jump
-class JumpType(Enum):
-    # U: unconditional jump without side effects
-    U = auto()
-    # C: conditional jump/branching instruction
-    C = auto()
-    # F: unconditional jump with return-address memorization (procedure call)
-    F = auto()
-    # R: unconditional jump to memorized return-address (procedure return)
-    R = auto()
-
-
-# Dictionary of jump instructions
-jump_ops = {
-    "call": JumpType.F,
-    "jr": JumpType.R,
-    "j": JumpType.U,
-    "jal": JumpType.F,
-    "jalr": JumpType.F,
-    "beq": JumpType.C,
-    "beqz": JumpType.C,
-    "bne": JumpType.C,
-    "bnez": JumpType.C,
-    "blt": JumpType.C,
-    "bltz": JumpType.C,
-    "bltu": JumpType.C,
-    "ble": JumpType.C,
-    "blez": JumpType.C,
-    "bleu": JumpType.C,
-    "bgt": JumpType.C,
-    "bgtz": JumpType.C,
-    "bgtu": JumpType.C,
-    "bge": JumpType.C,
-    "bgez": JumpType.C,
-    "bgeu": JumpType.C
-}
+from structures import jump_ops, JumpType
 
 
 # TODO Is this a good object? Can it belong to a narrower namespace?
