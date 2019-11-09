@@ -85,3 +85,13 @@ jump_ops: Mapping[str, JumpType] = {
     "bgez": JumpType.C,
     "bgeu": JumpType.C
 }
+
+# Dictionary of immediate formats with associated immediate field size
+# TODO complete with the pseudo-instruction formats immediate sizes
+imm_sizes: Mapping[str, int] = {
+    "i": 12,
+    "s": 12,
+    "b": 12,
+    "u": 20,
+    "j": 20
+}
