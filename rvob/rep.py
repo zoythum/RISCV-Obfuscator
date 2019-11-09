@@ -41,6 +41,7 @@ def to_line_iterator(statement_iterator: Iterator[Statement], starting_line: int
     :param starting_line: the line number from which line numbering will start
     :return: an iterator over ASM lines
     """
+
     current_line = starting_line
     for statement in statement_iterator:
         yield ASMLine(current_line, statement)
