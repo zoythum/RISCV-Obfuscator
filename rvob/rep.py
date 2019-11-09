@@ -30,9 +30,19 @@ class ASMLine(NamedTuple):
     statement: Statement
 
 
-def to_line_iterator(code_iterator: Iterator[Statement], starting_line: int = 0) -> Iterator[ASMLine]:
+def to_line_iterator(statement_iterator: Iterator[Statement], starting_line: int = 0) -> Iterator[ASMLine]:
+    """
+    Wrap an iterator over statements to make it an iterator over assembly lines.
+
+    For every statement returned by the wrapped iterator, an ASMLine object is made out of it, incrementing the line
+    number starting from the provided one, or 0 by default.
+
+    :param statement_iterator: the iterator to be wrapped
+    :param starting_line: the line number from which line numbering will start
+    :return: an iterator over ASM lines
+    """
     current_line = starting_line
-    for statement in code_iterator:
+    for statement in statement_iterator:
         yield ASMLine(current_line, statement)
         current_line += 1
 
