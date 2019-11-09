@@ -5,7 +5,7 @@ from collections import MutableSequence, Hashable
 from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict, Mapping
 from weakref import WeakKeyDictionary
 
-from structures import standard_sections
+from rvob.structures import standard_sections
 
 
 class Statement:

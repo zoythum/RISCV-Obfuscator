@@ -2,9 +2,9 @@ from collections import deque, namedtuple
 from itertools import count
 from bisect import bisect_right
 from networkx import DiGraph
-from rvob.rep import Instruction, Source, FragmentView
 
-from structures import jump_ops, JumpType
+from rvob.rep import Instruction, Source, FragmentView
+from rvob.structures import jump_ops, JumpType
 
 
 # TODO Is this a good object? Can it belong to a narrower namespace?
@@ -109,7 +109,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     :return: a directed graph representing the CFG of the analyzed code
     :raise ValueError: when the entry point couldn't be found
     """
-    
+
     def _explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
         if start_line in ancestors:
@@ -196,7 +196,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
 
     # Instantiate an empty di-graph for hosting the CFG
     cfg = DiGraph()
-    
+
     # Initialize the dictionary mapping blocks' initial lines to nodes
     ancestors = {}
 
