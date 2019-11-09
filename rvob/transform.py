@@ -1,7 +1,7 @@
-from collections import deque, namedtuple
+from collections import deque
 from itertools import count
-from bisect import bisect_right
 from typing import Sequence, Iterator
+
 from networkx import DiGraph
 
 from rvob.rep import Instruction, Source, FragmentView, CodeFragment, ASMLine, to_line_iterator
@@ -44,92 +44,6 @@ def get_stepper(fragments: Sequence[CodeFragment], entry_point: int = None) -> I
                 yield line
 
 
-# TODO Is this a good object? Can it belong to a narrower namespace?
-class SectionUnroller:
-    """
-    Collects sections together and provides methods for accessing them as a contiguous list of statements.
-
-    Be aware that this class is unstable, badly documented and could disappear overnight.
-    """
-
-    def __init__(self, sections):
-        self.__header_lines__ = []
-        self.__sections__ = {}
-
-        for section in sections:
-            self.__header_lines__.append(section.scope.get_begin())
-            self.__sections__[section.scope.get_begin()] = section
-
-    def get_containing_section(self, line_number: int):
-        """
-        Retrieves the section containing the specified line.
-        """
-        # Find a section that sports the last starting line that precedes the one passed as argument
-        candidate = self.__sections__[self.__header_lines__[bisect_right(self.__header_lines__, line_number) - 1]]
-
-        # Check for line membership: if the received line belongs to the candidate, return it, otherwise it is outside
-        # of the sections selected for scanning
-        if candidate.scope.get_begin() <= line_number < candidate.scope.get_end():
-            return candidate
-        else:
-            raise KeyError
-
-    def get_nearest_following_section(self, line_number: int):
-        """
-        Retrieves the nearest section that follows the specified line.
-        """
-        # Find the index of the __header_lines__ entry which could indicate the starting line of the nearest following
-        # section
-        tentative_index = bisect_right(self.__header_lines__, line_number)
-
-        # Check if we've reached the end of the index and didn't find a suitable section
-        if tentative_index == len(self.__header_lines__):
-            raise ValueError
-        else:
-            # Return the nearest following section
-            return self.__sections__[self.__header_lines__[tentative_index]]
-
-    def get_following_line(self, line_number):
-        """
-        Given a line number, finds the line number of the following statement, wrt the configured sections.
-        """
-        # Get the section containing the received line
-        current_section = self.get_containing_section(line_number)
-
-        # Check code contiguity between the received line and the one which should follow
-        if line_number < current_section.scope.get_end():
-            return line_number + 1
-        else:
-            # If the following line falls outside of the section in which the received line resides, then such line must
-            # be the header line of the following section
-            return self.get_nearest_following_section(line_number + 1).scope.get_begin()
-
-    def get_line_iterator(self, starting_line: int):
-        """
-        Iterates over all the statements contained in the configured sections, presenting them as a whole.
-        """
-        line = namedtuple("Line", 'ln st')
-
-        curr_line = starting_line
-        while True:
-            try:
-                # If the starting line exists inside the considered sections, then find the section it belongs to
-                curr_section = self.get_containing_section(curr_line)
-            except KeyError:
-                # The starting line falls outside of the considered sections, so the real starting line must be the
-                # header line of the nearest following section wrt the stated starting line
-                try:
-                    curr_section = self.get_nearest_following_section(curr_line)
-                    curr_line = curr_section.scope.get_begin()
-                except ValueError:
-                    # No nearest following section exists, so we must have reached the end
-                    break
-
-            for statement in curr_section.scope[curr_line:curr_section.scope.get_end()]:
-                yield line(curr_line, statement)
-                curr_line += 1
-
-
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     """
     Builds the CFG of the supplied assembly code, starting from the specified entry point.
@@ -152,7 +66,8 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
         if start_line in ancestors:
             return ancestors[start_line]
 
-        line_supplier = reader.get_line_iterator(start_line)
+        # Instantiate the stepper for code exploration
+        line_supplier = get_stepper(code_sections, start_line)
         # Generate node ID for the root of the local subtree
         rid = id_sup.__next__()
 
@@ -160,30 +75,30 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
         previous_line = None
 
         for line in line_supplier:
-            if len(line.st.labels) != 0 and line.ln != start_line:
+            if len(line.statement.labels) != 0 and line.number != start_line:
                 # TODO maybe we can make this iterative?
                 # We stepped inside a new contiguous block: build the node for the previous block and relay
-                cfg.add_node(rid, block=FragmentView(src, start_line, line.ln, start_line))
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.number, start_line))
                 ancestors[start_line] = rid
-                cfg.add_edge(rid, _explorer(line.ln, __ret_stack__))
+                cfg.add_edge(rid, _explorer(line.number, __ret_stack__))
                 break
-            elif type(line.st) is Instruction and line.st.opcode in jump_ops:
+            elif line.statement.opcode in jump_ops:
                 # Create node
-                cfg.add_node(rid, block=FragmentView(src, start_line, line.ln + 1, start_line))
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.number + 1, start_line))
                 ancestors[start_line] = rid
 
-                if jump_ops[line.st.opcode] == JumpType.U:
+                if jump_ops[line.statement.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
-                    cfg.add_edge(rid, _explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
+                    cfg.add_edge(rid, _explorer(label_dict[line.statement.instr_args["immediate"]], __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == JumpType.F:
+                elif jump_ops[line.statement.opcode] == JumpType.F:
                     # Function call: start by resolving destination
-                    target = line.st.instr_args["immediate"]
+                    target = line.statement.instr_args["immediate"]
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
                     try:
                         dst = label_dict[target]
                         # Update the return address
-                        ret_stack.append(reader.get_following_line(line.ln))
+                        ret_stack.append(line_supplier.__next__().number)
                         # Set the current node as ancestor for the recursive explorer
                         home = rid
                     except KeyError:
@@ -196,27 +111,27 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                         cfg.add_edge(rid, target)
 
                         # Set the following line as destination
-                        dst = reader.get_following_line(line.ln)
+                        dst = line_supplier.__next__().number
                         # Set the external node as ancestor for the recursive explorer
                         home = target
 
                     # Perform the actual recursive call
                     cfg.add_edge(home, _explorer(dst, __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == JumpType.C:
+                elif jump_ops[line.statement.opcode] == JumpType.C:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
-                    cfg.add_edge(rid, _explorer(reader.get_following_line(line.ln), __ret_stack__))
+                    cfg.add_edge(rid, _explorer(line_supplier.__next__().number, __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
-                    cfg.add_edge(rid, _explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
+                    cfg.add_edge(rid, _explorer(label_dict[line.statement.instr_args["immediate"]], __ret_stack__.copy()))
                     break
-                elif jump_ops[line.st.opcode] == JumpType.R:
+                elif jump_ops[line.statement.opcode] == JumpType.R:
                     # Procedure return: close the edge on the return address by invoking an explorer there
                     cfg.add_edge(rid, _explorer(__ret_stack__.pop(), __ret_stack__))
                     break
                 else:
                     raise LookupError("Unrecognized jump type")
 
-            previous_line = line.ln
+            previous_line = line.number
         else:
             cfg.add_node(rid, block=FragmentView(src, start_line, previous_line + 1, start_line))
 
@@ -225,8 +140,8 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     # Generate the dictionary containing label mappings
     label_dict = src.get_labels()
 
-    # Instantiate the section un-roller
-    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.identifier])
+    # Create a list of fragments containing code
+    code_sections = [tsec.scope for tsec in src.get_sections() if ".text" == tsec.identifier]
 
     # Instantiate the node id supplier
     id_sup = count()
