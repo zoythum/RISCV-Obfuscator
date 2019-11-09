@@ -38,7 +38,7 @@ def get_stepper(fragments: Sequence[CodeFragment], entry_point: int = None) -> I
         raise IndexError("The specified entry point doesn't belong to any of the provided sections")
 
     for fragment in fragments[starting_fragment_index:]:
-        for line in to_line_iterator(fragment.__iter__(), fragment.get_begin()):
+        for line in to_line_iterator(iter(fragment), fragment.get_begin()):
             # Fast-forward until we find a line after the entry-point containing an instruction
             if line.number >= entry_point and type(line.statement) is Instruction:
                 yield line
@@ -69,7 +69,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
         # Instantiate the stepper for code exploration
         line_supplier = get_stepper(code_sections, start_line)
         # Generate node ID for the root of the local subtree
-        rid = id_sup.__next__()
+        rid = next(id_sup)
 
         # Variable for keeping track of the previous line, in case we need to reference it
         previous_line = None
@@ -98,7 +98,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                     try:
                         dst = label_dict[target]
                         # Update the return address
-                        ret_stack.append(line_supplier.__next__().number)
+                        ret_stack.append(next(line_supplier).number)
                         # Set the current node as ancestor for the recursive explorer
                         home = rid
                     except KeyError:
@@ -111,7 +111,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                         cfg.add_edge(rid, target)
 
                         # Set the following line as destination
-                        dst = line_supplier.__next__().number
+                        dst = next(line_supplier).number
                         # Set the external node as ancestor for the recursive explorer
                         home = target
 
@@ -120,9 +120,10 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.C:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
-                    cfg.add_edge(rid, _explorer(line_supplier.__next__().number, __ret_stack__))
+                    cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
-                    cfg.add_edge(rid, _explorer(label_dict[line.statement.instr_args["immediate"]], __ret_stack__.copy()))
+                    cfg.add_edge(rid,
+                                 _explorer(label_dict[line.statement.instr_args["immediate"]], __ret_stack__.copy()))
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.R:
                     # Procedure return: close the edge on the return address by invoking an explorer there
@@ -153,7 +154,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     ancestors = {}
 
     # Initialize the graph with a special root node
-    root_id = id_sup.__next__()
+    root_id = next(id_sup)
     cfg.add_node(root_id, external=True)
     ancestors[-1] = root_id
 
