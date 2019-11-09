@@ -23,6 +23,20 @@ class Statement:
             self.labels = list(labels)
 
 
+class ASMLine(NamedTuple):
+    """An assembler source line."""
+
+    number: int
+    statement: Statement
+
+
+def to_line_iterator(code_iterator: Iterator[Statement], starting_line: int = 0) -> Iterator[ASMLine]:
+    current_line = starting_line
+    for statement in code_iterator:
+        yield ASMLine(current_line, statement)
+        current_line += 1
+
+
 class Instruction(Statement):
     """A parsed assembly instruction"""
 
