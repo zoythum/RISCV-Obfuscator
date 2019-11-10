@@ -67,7 +67,7 @@ class Instruction(Statement):
         _symbol: str
         _value: BitVector
 
-        def __init__(self, size, symbol=None, value=None):
+        def __init__(self, size, symbol: str = None, value: int = None):
             if symbol is None and value is None:
                 raise ValueError("Constant must have some sort of value")
 
@@ -79,24 +79,24 @@ class Instruction(Statement):
                 self._negative = True if value < 0 else False
 
         @property
-        def evaluated(self):
+        def evaluated(self) -> bool:
             return self._evaluated
 
         @property
-        def negative(self):
+        def negative(self) -> bool:
             return self._negative
 
         @property
-        def symbol(self):
+        def symbol(self) -> str:
             return self._symbol
 
         @property
-        def value(self):
+        def value(self) -> BitVector:
             return self._value
 
         @value.setter
-        def value(self, value):
-            self._value = value
+        def value(self, value: BitVector) -> None:
+            self._value = value.deep_copy()
             self._evaluated = True
 
         def __repr__(self):
