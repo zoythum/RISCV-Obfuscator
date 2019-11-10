@@ -100,14 +100,16 @@ class Instruction(Statement):
 
         def __repr__(self):
             return "Instruction.ImmediateConstant(size=" + repr(self._size) + ", symbol=" + repr(self._symbol) + \
-                   ", value=" + (
-                       str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + ")"
+                   ", value=" + (repr(None) if self._value is None else (
+                        repr(-((~self._value).int_val() + 1)) if self._value[0] == 1 else repr(self._value.int_val())
+                    )) + ")"
 
         def __str__(self):
             value = ""
             if self._value is not None:
-                value = " [" +\
-                        (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + "]"
+                value = " [" + \
+                        (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else str(self._value.int_val())) +\
+                        "]"
 
             return str(self._symbol) + value
 
