@@ -92,6 +92,7 @@ imm_sizes: Mapping[str, int] = {
     "i": 12,
     "s": 12,
     "b": 12,
+    "bz": 12,
     "u": 20,
     "j": 20
 }
