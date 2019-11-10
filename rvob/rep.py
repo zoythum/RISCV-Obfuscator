@@ -58,6 +58,12 @@ class Instruction(Statement):
         
         This class represents some sort of constant used as an immediate value by an instruction.
         Such constant can be a literal value or a symbolic one.
+        Immediate formats can differ in size, so a size must be specified at creation time for faithful representation
+        and correct manipulation of the binary value.
+
+        :var symbol: the symbolic identifier of the constant, if any
+        :var value: the binary representation of the value, if assigned
+        :var size: the size in bits of the containing immediate field
         """
 
         _symbol: Union[str, None]
@@ -65,6 +71,15 @@ class Instruction(Statement):
         _size: int
 
         def __init__(self, size, symbol: str = None, value: int = None):
+            """
+            Instantiate an immediate constant of the specified size and value, identified by a symbol.
+
+            :param size: the size in bits of the constant
+            :param symbol: the symbol identifying the constant, if any
+            :param value: the integer value of the constant, if any
+            :raise ValueError: when both symbol and value are left unspecified
+            """
+
             if symbol is None and value is None:
                 raise ValueError("Constant must be symbolic or have a value")
 
