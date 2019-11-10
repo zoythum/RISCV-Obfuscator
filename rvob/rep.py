@@ -58,11 +58,8 @@ class Instruction(Statement):
         
         This class represents some sort of constant used as an immediate value by an instruction.
         Such constant can be a literal value or a symbolic one.
-        In case an actual value is associated with the constant, either at creation time or later, the flag `evaluated`
-        is set to true.
         """
 
-        _evaluated: bool
         _symbol: Union[str, None]
         _value: Union[BitVector, None]
         _size: int
@@ -75,7 +72,6 @@ class Instruction(Statement):
             self._symbol = symbol
 
             if value is not None:
-                self._evaluated = True
 
                 # Prepare the mask for cutting the supplied value's bit representation to the specified size
                 mask = 0
@@ -88,12 +84,7 @@ class Instruction(Statement):
                 # Sizes must be coherent
                 assert self._size == len(self._value)
             else:
-                self._evaluated = False
                 self._value = None
-
-        @property
-        def evaluated(self) -> bool:
-            return self._evaluated
 
         @property
         def symbol(self) -> str:
@@ -114,7 +105,7 @@ class Instruction(Statement):
 
         def __str__(self):
             value = ""
-            if self._evaluated:
+            if self._value is not None:
                 value = " [" +\
                         (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + "]"
 
