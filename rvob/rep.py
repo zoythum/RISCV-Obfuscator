@@ -111,7 +111,7 @@ class Instruction(Statement):
                         (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else str(self._value.int_val())) +\
                         "]"
 
-            return str(self._symbol) + value
+            return ("<literal>" if self._symbol is None else str(self._symbol)) + value
 
     def __init__(self, opcode, family, labels=None, **instr_args):
         """
