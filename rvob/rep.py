@@ -146,7 +146,7 @@ class Instruction(Statement):
                 # Constant as literal value
                 self.instr_args["immediate"] = Instruction.ImmediateConstant(value=instr_args["immediate"],
                                                                              size=imm_sizes[family])
-            else:
+            elif isinstance(instr_args["immediate"], str):
                 # Constant as symbolic value
                 self.instr_args["immediate"] = Instruction.ImmediateConstant(symbol=instr_args["immediate"],
                                                                              size=imm_sizes[family])
