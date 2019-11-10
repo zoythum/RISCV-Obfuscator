@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 from collections import MutableSequence, Hashable
 from typing import List, Iterator, MutableMapping, ClassVar, NamedTuple, Sequence, Union, Dict, Mapping
 from weakref import WeakKeyDictionary
+from BitVector import BitVector
 
-from rvob.structures import standard_sections
+from rvob.structures import standard_sections, imm_sizes
 
 
 class Statement:
@@ -51,9 +52,68 @@ def to_line_iterator(statement_iterator: Iterator[Statement], starting_line: int
 class Instruction(Statement):
     """A parsed assembly instruction"""
 
+    class ImmediateConstant:
+        """
+        An immediate constant.
+        
+        This class represents some sort of constant used as an immediate value by an instruction.
+        Such constant can be a literal value or a symbolic one.
+        In case an actual value is associated with the constant, either at creation time or later, the flag `evaluated`
+        is set to true.
+        """
+
+        _evaluated: bool
+        _negative: bool
+        _symbol: str
+        _value: BitVector
+
+        def __init__(self, size, symbol=None, value=None):
+            if symbol is None and value is None:
+                raise ValueError("Constant must have some sort of value")
+
+            self._symbol = symbol
+            self._value = BitVector(intVal=abs(value), size=size - 1) if value is not None else None
+
+            if value is not None:
+                self._evaluated = True
+                self._negative = True if value < 0 else False
+
+        @property
+        def evaluated(self):
+            return self._evaluated
+
+        @property
+        def negative(self):
+            return self._negative
+
+        @property
+        def symbol(self):
+            return self._symbol
+
+        @property
+        def value(self):
+            return self._value
+
+        @value.setter
+        def value(self, value):
+            self._value = value
+            self._evaluated = True
+
+        def __repr__(self):
+            return "Instruction.ImmediateConstant(size=" + repr(self._value.size + 1) + ", symbol=" +\
+                   repr(self._symbol) + ", value=" + ("-" if self._negative else "") + repr(self._value.int_val()) + ")"
+
+        def __str__(self):
+            value = ""
+            if self._evaluated:
+                value = " [" + ("-" if self._negative else "") + str(self._value) + "]"
+            
+            return str(self._symbol) + value
+
     def __init__(self, opcode, family, labels=None, **instr_args):
         """
-        Instantiates a new instruction statement
+        Instantiates a new instruction statement.
+
         :param op_code: the opcode for the new instruction
         :param i_type: the instruction's type
         :param instr_args: the instruction's arguments
@@ -63,6 +123,16 @@ class Instruction(Statement):
         self.opcode = opcode
         self.family = family
         self.instr_args = dict(instr_args)
+
+        if family in imm_sizes:
+            if isinstance(instr_args["immediate"], int):
+                # Constant as literal value
+                self.instr_args["immediate"] = Instruction.ImmediateConstant(value=instr_args["immediate"],
+                                                                             size=imm_sizes[family])
+            else:
+                # Constant as symbolic value
+                self.instr_args["immediate"] = Instruction.ImmediateConstant(symbol=instr_args["immediate"],
+                                                                             size=imm_sizes[family])
 
     def __repr__(self):
         return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + repr(self.instr_args)
@@ -702,7 +772,7 @@ class Source(FragmentCopy):
     This class is a specialization of FragmentCopy that represents an entire assembler source file, offering a couple of
     utility methods to extract labels and sections from the corpus.
     """
-    
+
     class Section(NamedTuple):
         """
         A code fragment representing a section of the assembler source.
@@ -712,7 +782,7 @@ class Source(FragmentCopy):
         :var Section.identifier: the section's identifier
         :var Section.scope: a view on the source code that captures the section
         """
-        
+
         identifier: str
         scope: FragmentView
 
@@ -789,7 +859,7 @@ classes = {
 def load_src_from_maps(descriptions: Sequence[Mapping[str, str]]) -> Source:
     """Loads a sequence of mappings describing parsed assembler statements into a Source.
     
-    Each map should describe what kind of symbol it represents (label/directive/instruction) and the mapping between
+    Each map should describe what kind of _symbol it represents (label/directive/instruction) and the mapping between
     formal and actual arguments.
     Be aware that labels will be included in the object representing the statement they tag (i.e. the next directive or
     instruction).
