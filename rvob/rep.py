@@ -63,6 +63,7 @@ class Instruction(Statement):
 
         :var symbol: the symbolic identifier of the constant, if any
         :var value: the binary representation of the value, if assigned
+        :var int_val: the integer representation of the value, if assigned
         :var size: the size in bits of the containing immediate field
         """
 
@@ -110,23 +111,21 @@ class Instruction(Statement):
             return self._value.deep_copy()
 
         @property
+        def int_val(self) -> int:
+            # Return the constant's integer representation, preserving its sign through an overly complicated procedure
+            return -((~self._value).int_val() + 1) if self._value[0] == 1 else self._value.int_val()
+
+        @property
         def size(self):
             return self._size
 
         def __repr__(self):
             return "Instruction.ImmediateConstant(size=" + repr(self._size) + ", symbol=" + repr(self._symbol) + \
-                   ", value=" + (repr(None) if self._value is None else (
-                        repr(-((~self._value).int_val() + 1)) if self._value[0] == 1 else repr(self._value.int_val())
-                    )) + ")"
+                   ", value=" + repr(None if self._value is None else self.int_val) + ")"
 
         def __str__(self):
-            value = ""
-            if self._value is not None:
-                value = " [" + \
-                        (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else str(self._value.int_val())) +\
-                        "]"
-
-            return ("<literal>" if self._symbol is None else str(self._symbol)) + value
+            value_str = " [" + str(self.int_val) + "]" if self._value is not None else ""
+            return ("<literal>" if self._symbol is None else str(self._symbol)) + value_str
 
     def __init__(self, opcode, family, labels=None, **instr_args):
         """
