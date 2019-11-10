@@ -65,11 +65,13 @@ class Instruction(Statement):
         _evaluated: bool
         _symbol: Union[str, None]
         _value: Union[BitVector, None]
+        _size: int
 
         def __init__(self, size, symbol: str = None, value: int = None):
             if symbol is None and value is None:
                 raise ValueError("Constant must be symbolic or have a value")
 
+            self._size = size
             self._symbol = symbol
 
             if value is not None:
@@ -82,6 +84,9 @@ class Instruction(Statement):
 
                 value = value & mask
                 self._value = BitVector(intVal=value, size=size)
+
+                # Sizes must be coherent
+                assert self._size == len(self._value)
             else:
                 self._evaluated = False
                 self._value = None
@@ -98,8 +103,12 @@ class Instruction(Statement):
         def value(self) -> BitVector:
             return self._value.deep_copy()
 
+        @property
+        def size(self):
+            return self._size
+
         def __repr__(self):
-            return "Instruction.ImmediateConstant(size=" + repr(self._value.size) + ", symbol=" + repr(self._symbol) + \
+            return "Instruction.ImmediateConstant(size=" + repr(self._size) + ", symbol=" + repr(self._symbol) + \
                    ", value=" + (
                        str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + ")"
 
