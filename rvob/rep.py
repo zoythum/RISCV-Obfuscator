@@ -63,28 +63,32 @@ class Instruction(Statement):
         """
 
         _evaluated: bool
-        _negative: bool
-        _symbol: str
-        _value: BitVector
+        _symbol: Union[str, None]
+        _value: Union[BitVector, None]
 
         def __init__(self, size, symbol: str = None, value: int = None):
             if symbol is None and value is None:
-                raise ValueError("Constant must have some sort of value")
+                raise ValueError("Constant must be symbolic or have a value")
 
             self._symbol = symbol
-            self._value = BitVector(intVal=abs(value), size=size - 1) if value is not None else None
 
             if value is not None:
                 self._evaluated = True
-                self._negative = True if value < 0 else False
+
+                # Prepare the mask for cutting the supplied value's bit representation to the specified size
+                mask = 0
+                for f in range(1, size):
+                    mask += 2 ** f
+
+                value = value & mask
+                self._value = BitVector(intVal=value, size=size)
+            else:
+                self._evaluated = False
+                self._value = None
 
         @property
         def evaluated(self) -> bool:
             return self._evaluated
-
-        @property
-        def negative(self) -> bool:
-            return self._negative
 
         @property
         def symbol(self) -> str:
@@ -100,14 +104,16 @@ class Instruction(Statement):
             self._evaluated = True
 
         def __repr__(self):
-            return "Instruction.ImmediateConstant(size=" + repr(self._value.size + 1) + ", symbol=" +\
-                   repr(self._symbol) + ", value=" + ("-" if self._negative else "") + repr(self._value.int_val()) + ")"
+            return "Instruction.ImmediateConstant(size=" + repr(self._value.size) + ", symbol=" + repr(self._symbol) + \
+                   ", value=" + (
+                       str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + ")"
 
         def __str__(self):
             value = ""
             if self._evaluated:
-                value = " [" + ("-" if self._negative else "") + str(self._value) + "]"
-            
+                value = " [" +\
+                        (str(-((~self._value).int_val() + 1)) if self._value[0] == 1 else self._value.int_val()) + "]"
+
             return str(self._symbol) + value
 
     def __init__(self, opcode, family, labels=None, **instr_args):
