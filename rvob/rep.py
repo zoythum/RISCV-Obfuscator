@@ -96,12 +96,7 @@ class Instruction(Statement):
 
         @property
         def value(self) -> BitVector:
-            return self._value
-
-        @value.setter
-        def value(self, value: BitVector) -> None:
-            self._value = value.deep_copy()
-            self._evaluated = True
+            return self._value.deep_copy()
 
         def __repr__(self):
             return "Instruction.ImmediateConstant(size=" + repr(self._value.size) + ", symbol=" + repr(self._symbol) + \
