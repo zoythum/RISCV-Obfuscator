@@ -12,6 +12,7 @@ opcodes -- a dictionary containing information about the number of arguments of 
 standard_sections -- a set containing the identifiers of the standard sections that can be found in an assembler source
 JumpType -- an enumeration of all the possible types of jump that are supported
 jump_ops -- a dictionary associating each jump instruction to its type
+imm_sizes -- a dictionary associating instruction formats possessing an immediate field with the bit size of such field
 """
 
 from enum import Enum, auto
