@@ -4,7 +4,8 @@ from typing import Sequence, Iterator
 
 from networkx import DiGraph
 
-from rvob.rep import Instruction, Source, FragmentView, CodeFragment, ASMLine, to_line_iterator
+from rep.base import Instruction, ASMLine, to_line_iterator
+from rep.fragments import CodeFragment, Source, FragmentView
 from rvob.structures import jump_ops, JumpType
 
 

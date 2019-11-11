@@ -1,7 +1,7 @@
 import copy
 from networkx import DiGraph, nx
 from rvob.structures import opcodes
-import rvob.rep as rep
+from rep.base import Instruction
 
 
 class ValueBlock:
@@ -95,7 +95,7 @@ def bind_register_to_value(cfg: DiGraph):
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
-                if type(line) is rep.Instruction:
+                if type(line) is Instruction:
                     if opcodes[line.opcode][0] == 2:
                         if line.instr_args['r2'] in register_status:
                             reg_read(localreg, line.instr_args['r2'], l[0], register_status[line.instr_args['r2']])

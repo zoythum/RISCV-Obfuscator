@@ -1,5 +1,7 @@
 from networkx import DiGraph, neighbors, reverse, simple_cycles
-from rvob.rep import FragmentView, Instruction
+
+from rep.base import Instruction
+from rep.fragments import FragmentView
 from rvob.structures import opcodes
 
 
