@@ -1,152 +1,106 @@
-from enum import Enum
-from collections import deque, namedtuple
+from collections import deque
 from itertools import count
-from bisect import bisect_right
+from typing import Sequence, Iterator
+
 from networkx import DiGraph
-import rvob.rep as rep
 
-# Type of jumps:
-# U: unconditional jump without side effects
-# C: conditional jump/branching instruction
-# F: unconditional jump with return-address memorization (procedure call)
-# R: unconditional jump to memorized return-address (procedure return)
-jump_type = Enum('JUMP', 'U, C, F, R')
-
-# Dictionary of jump instructions
-jump_ops = {
-    "call": jump_type.F,
-    "jr": jump_type.R,
-    "j": jump_type.U,
-    "jal": jump_type.F,
-    "jalr": jump_type.F,
-    "beq": jump_type.C,
-    "beqz": jump_type.C,
-    "bne": jump_type.C,
-    "bnez": jump_type.C,
-    "blt": jump_type.C,
-    "bltz": jump_type.C,
-    "bltu": jump_type.C,
-    "ble": jump_type.C,
-    "blez": jump_type.C,
-    "bleu": jump_type.C,
-    "bgt": jump_type.C,
-    "bgtz": jump_type.C,
-    "bgtu": jump_type.C,
-    "bge": jump_type.C,
-    "bgez": jump_type.C,
-    "bgeu": jump_type.C
-}
+from rep.base import Instruction, ASMLine, to_line_iterator
+from rep.fragments import CodeFragment, Source, FragmentView
+from rvob.structures import jump_ops, JumpType
 
 
-# TODO Is this a good object? Can it belong to a narrower namespace?
-class SectionUnroller:
+def get_stepper(fragments: Sequence[CodeFragment], entry_point: int = None) -> Iterator[ASMLine]:
+    """
+    Generate an instruction stepper over an ordered sequence of non-overlapping code fragments.
 
-    def __init__(self, sections):
-        self.__header_lines__ = []
-        self.__sections__ = {}
+    The instruction stepper is an iterator over ASMLines that skips over any non-instruction statement, starting its
+    iteration from the specified entry-point, or the first instruction of the first section otherwise.
+    The fragments must be provided to this generator in an orderly fashion, devoid of overlaps, unless iteration order
+    is not of concern. Keep in mind, though, that any instruction preceding the entry-point will be ignored.
+    Contiguity between fragments is irrelevant.
 
-        for section in sections:
-            self.__header_lines__.append(section.start)
-            self.__sections__[section.start] = section
+    :param fragments: a sequence of ordered non-overlapping fragments
+    :param entry_point: the line number from which the stepper should start iterating
+    :return: an instruction stepper
+    :raise IndexError: when the specified entry-point does not belong to the code contained in the fragments
+    """
 
-    def get_containing_section(self, line_number: int):
-        # Find a section that sports the last starting line that precedes the one passed as argument
-        candidate = self.__sections__[self.__header_lines__[bisect_right(self.__header_lines__, line_number) - 1]]
+    # Start stepping from the first available line, if not told otherwise
+    if entry_point is None:
+        entry_point = fragments[0].get_begin()
 
-        # Check for line membership: if the received line belongs to the candidate, return it, otherwise it is outside
-        # of the sections selected for scanning
-        if candidate.start <= line_number < candidate.end:
-            return candidate
-        else:
-            raise KeyError
+    # Find the fragment from which we should start stepping
+    for candidate in fragments:
+        if candidate.get_begin() <= entry_point < candidate.get_end():
+            starting_fragment_index = fragments.index(candidate)
+            break
+    else:
+        # The entry-point falls out of range
+        raise IndexError("The specified entry point doesn't belong to any of the provided sections")
 
-    def get_nearest_following_section(self, line_number: int):
-        # Find the index of the __header_lines__ entry which could indicate the starting line of the nearest following
-        # section
-        tentative_index = bisect_right(self.__header_lines__, line_number)
-
-        # Check if we've reached the end of the index and didn't find a suitable section
-        if tentative_index == len(self.__header_lines__):
-            raise ValueError
-        else:
-            # Return the nearest following section
-            return self.__sections__[self.__header_lines__[tentative_index]]
-
-    def get_following_line(self, line_number):
-        # Get the section containing the received line
-        current_section = self.get_containing_section(line_number)
-
-        # Check code contiguity between the received line and the one which should follow
-        if line_number < current_section.end:
-            return line_number + 1
-        else:
-            # If the following line falls outside of the section in which the received line resides, then such line must
-            # be the header line of the following section
-            return self.get_nearest_following_section(line_number + 1).start
-
-    def get_line_iterator(self, starting_line: int):
-        line = namedtuple("Line", 'ln st')
-
-        curr_line = starting_line
-        while True:
-            try:
-                # If the starting line exists inside the considered sections, then find the section it belongs to
-                curr_section = self.get_containing_section(curr_line)
-            except KeyError:
-                # The starting line falls outside of the considered sections, so the real starting line must be the
-                # header line of the nearest following section wrt the stated starting line
-                try:
-                    curr_section = self.get_nearest_following_section(curr_line)
-                    curr_line = curr_section.start
-                except ValueError:
-                    # No nearest following section exists, so we must have reached the end
-                    break
-
-            for statement in curr_section.statements[curr_line - curr_section.start:]:
-                yield line(curr_line, statement)
-                curr_line += 1
+    for fragment in fragments[starting_fragment_index:]:
+        for line in to_line_iterator(iter(fragment), fragment.get_begin()):
+            # Fast-forward until we find a line after the entry-point containing an instruction
+            if line.number >= entry_point and type(line.statement) is Instruction:
+                yield line
 
 
-# TODO include some sort of code view inside nodes
-def build_cfg(src: rep.Source):
+def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
+    """
+    Builds the CFG of the supplied assembly code, starting from the specified entry point.
     
-    def explorer(start_line: int, __ret_stack__: deque):
+    The entry point consists of a valid label pointing to what will be considered by the algorithm as the first
+    instruction executed by a caller.
+    The graph is built through a recursive DFS algorithm that follows the control flow.
+    The resulting graph's nodes either contain a reference to a view, which represents the block of serial instructions
+    associated with the node, or an `external` flag, signifying that the referenced code is external to the analyzed
+    code.
+    
+    :param src: the assembler source to be analyzed
+    :param entry_point: the entry point from which the execution flow will be followed
+    :return: a directed graph representing the CFG of the analyzed code
+    :raise ValueError: when the entry point couldn't be found
+    """
+
+    def _explorer(start_line: int, __ret_stack__: deque):
         # Detect if there's a loop and eventually return the ancestor's ID to the caller
         if start_line in ancestors:
             return ancestors[start_line]
 
-        line_supplier = reader.get_line_iterator(start_line)
+        # Instantiate the stepper for code exploration
+        line_supplier = get_stepper(code_sections, start_line)
         # Generate node ID for the root of the local subtree
-        rid = id_sup.__next__()
+        rid = next(id_sup)
 
         # Variable for keeping track of the previous line, in case we need to reference it
         previous_line = None
 
         for line in line_supplier:
-            if len(line.st.labels) != 0 and line.ln != start_line:
+            if len(line.statement.labels) != 0 and line.number != start_line:
                 # TODO maybe we can make this iterative?
                 # We stepped inside a new contiguous block: build the node for the previous block and relay
-                cfg.add_node(rid, start=start_line, end=previous_line)
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.number, start_line))
                 ancestors[start_line] = rid
-                cfg.add_edge(rid, explorer(line.ln, __ret_stack__))
+                cfg.add_edge(rid, _explorer(line.number, __ret_stack__))
                 break
-            elif type(line.st) is rep.Instruction and line.st.opcode in jump_ops:
+            elif line.statement.opcode in jump_ops:
                 # Create node
-                cfg.add_node(rid, start=start_line, end=line.ln)
+                cfg.add_node(rid, block=FragmentView(src, start_line, line.number + 1, start_line))
                 ancestors[start_line] = rid
 
-                if jump_ops[line.st.opcode] == jump_type.U:
+                if jump_ops[line.statement.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
-                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__))
+                    cfg.add_edge(rid,
+                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol], __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.F:
+                elif jump_ops[line.statement.opcode] == JumpType.F:
                     # Function call: start by resolving destination
-                    target = line.st.instr_args["immediate"]
+                    target = line.statement.instr_args["immediate"].symbol
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
                     try:
                         dst = label_dict[target]
                         # Update the return address
-                        ret_stack.append(reader.get_following_line(line.ln))
+                        ret_stack.append(next(line_supplier).number)
                         # Set the current node as ancestor for the recursive explorer
                         home = rid
                     except KeyError:
@@ -159,49 +113,51 @@ def build_cfg(src: rep.Source):
                         cfg.add_edge(rid, target)
 
                         # Set the following line as destination
-                        dst = reader.get_following_line(line.ln)
+                        dst = next(line_supplier).number
                         # Set the external node as ancestor for the recursive explorer
                         home = target
 
                     # Perform the actual recursive call
-                    cfg.add_edge(home, explorer(dst, __ret_stack__))
+                    cfg.add_edge(home, _explorer(dst, __ret_stack__))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.C:
+                elif jump_ops[line.statement.opcode] == JumpType.C:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
-                    cfg.add_edge(rid, explorer(reader.get_following_line(line.ln), __ret_stack__))
+                    cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
-                    cfg.add_edge(rid, explorer(label_dict[line.st.instr_args["immediate"]], __ret_stack__.copy()))
+                    cfg.add_edge(rid,
+                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol],
+                                           __ret_stack__.copy()))
                     break
-                elif jump_ops[line.st.opcode] == jump_type.R:
+                elif jump_ops[line.statement.opcode] == JumpType.R:
                     # Procedure return: close the edge on the return address by invoking an explorer there
-                    cfg.add_edge(rid, explorer(__ret_stack__.pop(), __ret_stack__))
+                    cfg.add_edge(rid, _explorer(__ret_stack__.pop(), __ret_stack__))
                     break
                 else:
                     raise LookupError("Unrecognized jump type")
 
-            previous_line = line.ln
+            previous_line = line.number
         else:
-            cfg.add_node(rid, start=start_line, end=previous_line)
+            cfg.add_node(rid, block=FragmentView(src, start_line, previous_line + 1, start_line))
 
         return rid
 
     # Generate the dictionary containing label mappings
     label_dict = src.get_labels()
 
-    # Instantiate the section un-roller
-    reader = SectionUnroller([tsec for tsec in src.get_sections() if ".text" == tsec.name])
+    # Create a list of fragments containing code
+    code_sections = [tsec.scope for tsec in src.get_sections() if ".text" == tsec.identifier]
 
     # Instantiate the node id supplier
     id_sup = count()
 
     # Instantiate an empty di-graph for hosting the CFG
     cfg = DiGraph()
-    
+
     # Initialize the dictionary mapping blocks' initial lines to nodes
     ancestors = {}
 
     # Initialize the graph with a special root node
-    root_id = id_sup.__next__()
+    root_id = next(id_sup)
     cfg.add_node(root_id, external=True)
     ancestors[-1] = root_id
 
@@ -209,8 +165,12 @@ def build_cfg(src: rep.Source):
     ret_stack = deque()
     ret_stack.append(-1)
 
-    # Call the explorer and append the resulting graph to the root node
-    child_id = explorer(reader.get_nearest_following_section(0).start, ret_stack)
+    # Call the explorer on the entry point and append the resulting graph to the root node
+    try:
+        child_id = _explorer(label_dict[entry_point], ret_stack)
+    except KeyError:
+        raise ValueError("Entry point [" + entry_point + "] not found")
+
     cfg.add_edge(root_id, child_id)
 
     return cfg
