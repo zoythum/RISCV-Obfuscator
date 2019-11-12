@@ -13,9 +13,17 @@ def substitute_reg(cfg: DiGraph):
         return
     nodes = shortest_path(cfg, initial_id, final_id)
     counter = 0
-    while counter < len(nodes)-1:
+    while counter < len(nodes) - 1:
         unmodifiable = find_unmodifiable_regs(cfg, counter, nodes)
         used_register, unused_register = find_valid_registers(cfg, counter)
+        used_values = cfg.nodes[counter]['reg_bind'][used_register][random
+            .randint(0, len(cfg.nodes[counter]['reg_bind'][used_register]))]
+        # TODO insert line 'mv unused used' in position used_values[initline]-1
+        line_num = used_values.initline
+        while line_num < used_values.endline:
+            # TODO sostituire used con unused
+            line_num += 1
+        counter += 1
 
 
 def find_valid_registers(cfg: DiGraph, current_node) -> (int, int):
@@ -46,3 +54,5 @@ def find_unmodifiable_regs(cfg: DiGraph, current_node, nodes) -> set:
                     unmodifiable.add(reg)
 
     return unmodifiable
+
+
