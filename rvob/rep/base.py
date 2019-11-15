@@ -10,7 +10,7 @@ class Statement:
 
     labels: Sequence[str]
 
-    def __init__(self, labels=None):
+    def __init__(self, labels: Optional[Sequence[str]] = None):
         """
         Instantiates a new assembler source statement.
 
@@ -169,7 +169,7 @@ class Directive(Statement):
     # TODO args is not being used as intended; think about restructuring it
     args: Mapping[str, object]
 
-    def __init__(self, name, labels=None, **kwargs):
+    def __init__(self, name: str, labels: Optional[Sequence[str]] = None, **kwargs):
         """
         Instantiates a new assembler directive statement.
 
