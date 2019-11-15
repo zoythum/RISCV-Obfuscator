@@ -1,4 +1,4 @@
-from typing import NamedTuple, Union, Iterator, Sequence
+from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
 
 from BitVector import BitVector
 
@@ -6,11 +6,14 @@ from structures import Register, imm_sizes
 
 
 class Statement:
-    """An assembler source statement"""
+    """An assembler source statement."""
 
-    def __init__(self, labels=None):
+    labels: Sequence[str]
+
+    def __init__(self, labels: Optional[Sequence[str]] = None):
         """
-        Instantiates a new assembler source statement
+        Instantiates a new assembler source statement.
+
         :param labels: an optional set of labels to mark the new statement with
         """
 
@@ -38,8 +41,8 @@ class Instruction(Statement):
         :var size: the size in bits of the containing immediate field
         """
 
-        _symbol: Union[str, None]
-        _value: Union[BitVector, None]
+        _symbol: Optional[str]
+        _value: Optional[BitVector]
         _size: int
 
         def __init__(self, size, symbol: str = None, value: int = None):
@@ -100,10 +103,10 @@ class Instruction(Statement):
 
     opcode: str
     family: str
-    r1: Union[Register, None]
-    r2: Union[Register, None]
-    r3: Union[Register, None]
-    immediate: Union[ImmediateConstant, None]
+    r1: Optional[Register]
+    r2: Optional[Register]
+    r3: Optional[Register]
+    immediate: Optional[ImmediateConstant]
 
     def __init__(self, opcode: str, family: str, labels: Sequence[str] = None, r1: Union[str, Register] = None,
                  r2: Union[str, Register] = None, r3: Union[str, Register] = None,
@@ -160,14 +163,19 @@ class Instruction(Statement):
 
 
 class Directive(Statement):
-    """A parsed assembler directive"""
+    """A parsed assembler directive."""
 
-    def __init__(self, name, labels=None, **kwargs):
+    name: str
+    # TODO args is not being used as intended; think about restructuring it
+    args: Mapping[str, object]
+
+    def __init__(self, name: str, labels: Optional[Sequence[str]] = None, **kwargs):
         """
-        Instantiates a new assembler directive statement
+        Instantiates a new assembler directive statement.
+
         :param name: the directives name
         :param labels: an optional list of labels to mark the directive with
-        :param kwargs: a optional list of arguments for the directive
+        :param kwargs: a optional dictionary of arguments for the directive
         """
 
         super().__init__(labels)
