@@ -151,12 +151,12 @@ class Instruction(Statement):
             self.immediate = None
 
     def __repr__(self):
-        # TODO re-implement this
-        return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels)
+        return "Instruction(" + repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + \
+               repr(self.r1) + ", " + repr(self.r2) + ", " + repr(self.r3) + ", " + repr(self.immediate) + ")"
 
     def __str__(self):
-        # TODO re-implement this
-        return str(self.opcode)
+        return str(self.opcode) + " " + str(self.r1) + ", " + str(self.r2) + ", " + str(self.r3) + ", " + \
+               str(self.immediate)
 
 
 class Directive(Statement):
