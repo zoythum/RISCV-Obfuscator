@@ -1,42 +1,89 @@
 from networkx import DiGraph, shortest_path, neighbors
-from rvob.structures import opcodes
+from rvob.structures import registers
 from rvob.rep.base import Instruction
-import random
+from rvob.setup_structures import setup_contracts
+from rvob.registerbinder import bind_register_to_value
+from random import randint
 
 
 def substitute_reg(cfg: DiGraph):
     # first we generate two random numbers which identify the two node defining the branch of the tree in which
     # we are going to change the registers
-    initial_id = random.randint(1, len(cfg.nodes) - 2)
+    initial_id = randint(1, len(cfg.nodes) - 2)
     try:
-        final_id = random.randint(initial_id + 1, len(cfg.nodes) - 2)
+        final_id = randint(initial_id + 1, len(cfg.nodes) - 2)
     except ValueError:
         return
     nodes = shortest_path(cfg, initial_id, final_id)
-    counter = 0
-    while counter < len(nodes) - 1:
+    counter = initial_id
+    while counter < final_id:
+        extended = False
+        current_node = cfg.nodes[counter]
         unmodifiable = find_unmodifiable_regs(cfg, counter, nodes)
         used_register, unused_register = find_valid_registers(cfg, counter, unmodifiable)
-        used_values = cfg.nodes[counter]['reg_bind'][used_register][random
-            .randint(0, len(cfg.nodes[counter]['reg_bind'][used_register]))]
+        # requires_other is a set that contains all the registers that are required by blocks that are not part of the
+        # path we are analyzing
+        requires_other = set()
+        for neigh in neighbors(cfg, counter):
+            if neigh not in nodes:
+                for reg in cfg.nodes[neigh]['requires']:
+                    requires_other.add(reg)
+
+        # In different parts of a block in a register we can find different values, each of those values is saved
+        # in the reg_bind structure. To obfuscate we randomly chose a value, whose id is saved in value_id
+        if used_register in unmodifiable:
+            value_id = randint(1, len(current_node['reg_bind'][used_register]) - 2)
+            used_values = current_node['reg_bind'][used_register][value_id]
+        else:
+            value_id = randint(0, len(current_node['reg_bind'][used_register]) - 1)
+            used_values = current_node['reg_bind'][used_register][value_id]
+
+        # If the used_register we chose is required from one of the blocks
+        if used_register in current_node['provides'] and used_register in requires_other:
+            current_node['block'].insert(current_node['block'].get_begin() + used_values.endline, "mv "
+                                         + used_register + " " + unused_register)
+
+        if value_id == randint(0, len(current_node['reg_bind'][used_register]) - 1) and \
+            used_register in cfg.nodes[counter+1]['requires']:
+            if len(list(cfg.predecessors(counter+1))) > 1:
+                # Our child has more than one parent, we can't be sure that the value we are considering is preserved
+                # in the next block so better ignore and move on
+                counter += 1
+                continue
+            else:
+                # Otherwise we know that the first value we are encountering in the next block is the same as this one
+                extended = True
+
         line_num = used_values.initline
-        cfg.nodes[counter]['block'].insert(line_num-1, "mv " + unused_register + " " + used_register)
+
+        if type(current_node['block'][line_num]) is Instruction and \
+                current_node['block'][line_num]['r1'] == used_register:
+            current_node['block'][line_num]['r1'] = unused_register
 
         # For each line in which the used_reg contains the same value we operate a switch of registers
         # checking each register
-        while line_num < used_values.endline:
-
-            if type(cfg.nodes[counter]['block'][line_num]) is Instruction:
-
-                if cfg.nodes[counter]['block'][line_num]['r1'] == used_register:
-                    cfg.nodes[counter]['block'][line_num]['r1'] = unused_register
-                if cfg.nodes[counter]['block'][line_num]['r2'] == used_register:
-                    cfg.nodes[counter]['block'][line_num]['r2'] = unused_register
-                if cfg.nodes[counter]['block'][line_num]['r3'] == used_register:
-                    cfg.nodes[counter]['block'][line_num]['r3'] = unused_register
-
-            line_num += 1
+        switch_regs(line_num, used_values.endline, current_node, used_register, unused_register)
+        if extended:
+            # If the value continues in the next block we must change also the next value
+            used_values = cfg.nodes[counter+1]['reg_bind'][used_register][0]
+            switch_regs(used_values.initline, used_values.endline, cfg.nodes[counter+1], used_register, unused_register)
         counter += 1
+
+        setup_contracts(cfg)
+        bind_register_to_value(cfg)
+
+
+def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
+    while line_num < endline:
+        if type(current_node['block'][line_num]) is Instruction:
+            if current_node['block'][line_num]['r1'] == used_register:
+                current_node['block'][line_num]['r1'] = unused_register
+            if current_node['block'][line_num]['r2'] == used_register:
+                current_node['block'][line_num]['r2'] = unused_register
+            if current_node['block'][line_num]['r3'] == used_register:
+                current_node['block'][line_num]['r3'] = unused_register
+
+        line_num += 1
 
 
 def find_valid_registers(cfg: DiGraph, current_node, unmodifiable) -> (int, int):
@@ -45,24 +92,18 @@ def find_valid_registers(cfg: DiGraph, current_node, unmodifiable) -> (int, int)
     # unmodifiable registers
     used_regs = list(cfg.nodes[current_node]['reg_bind'].keys())
 
-    unused_regs = list(opcodes)
+    unused_regs = list(registers)
+
     for reg in used_regs:
         unused_regs.remove(reg)
 
-    for unmod_reg in unmodifiable:
-        if unmod_reg in used_regs:
-            used_regs.remove(unmod_reg)
-    try:
-        used_regs.remove('ra')
-    except ValueError:
-        pass
-    try:
-        used_regs.remove('sp')
-    except ValueError:
-        pass
+    # for unmod_reg in unmodifiable:
+    #     if unmod_reg in used_regs:
+    #         used_regs.remove(unmod_reg)
 
-    chosen_used = used_regs[random.randint(0, len(used_regs))]
-    chosen_unused = unused_regs[random.randint(0, len(unused_regs))]
+    chosen_used = used_regs[randint(0, len(used_regs) - 1)]
+
+    chosen_unused = unused_regs[randint(0, len(unused_regs) - 1)]
     return chosen_used, chosen_unused
 
 
@@ -79,3 +120,4 @@ def find_unmodifiable_regs(cfg: DiGraph, current_node, nodes) -> set:
                     unmodifiable.add(reg)
 
     return unmodifiable
+
