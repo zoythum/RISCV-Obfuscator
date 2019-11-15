@@ -1,7 +1,9 @@
 import copy
+import itertools
+
 from networkx import DiGraph, nx
 from rvob.structures import opcodes
-from rep.base import Instruction
+from rvob.rep.base import Instruction
 
 
 class ValueBlock:
@@ -19,31 +21,10 @@ class ValueBlock:
         self.value = value
 
 
-class Counter:
-    """
-    this class is a simple sequential number generator, it's needed to generate the value that must be associated
-    with the registers
-    """
-    def __init__(self):
-        self.value = 0
-
-    def __next__(self):
-        self.value += 1
-
-    def getvalue(self):
-        """
-        :return: the actual value of the counter
-        """
-        return self.value
+counter = itertools.count()
 
 
-# a global register to maintain the last value kept by a register
-register_status = {}
-snapshot_register_copy = {}
-value_count = Counter()
-
-
-def reg_read(regdict, reg, line, actval):
+def reg_read(regdict, reg, line):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
     him is set to the current line,
@@ -51,16 +32,10 @@ def reg_read(regdict, reg, line, actval):
     :param regdict: is the dictionary that store the register accessed in the node under analysis
     :param reg: is the register accessed by the operation under analysis
     :param line: is the line at which the operation occurs
-    :param actval: the last value assigned to the register if exist, otherwise None
     """
 
     if reg not in regdict.keys():
-        if actval is None:
-            value_count.__next__()
-            block = ValueBlock(line, line, value_count.getvalue())
-            register_status[reg] = value_count.getvalue()
-        else:
-            block = ValueBlock(line, line, actval)
+        block = ValueBlock(line, line, counter.__next__())
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
@@ -87,44 +62,29 @@ def bind_register_to_value(cfg: DiGraph):
         line_number = cfg.nodes[i]["block"].get_begin()
         for line in cfg.nodes[i]["block"]:
             linelist.append((line_number, line))
-
-        if i in snapshot_register_copy:
-            global register_status
-            register_status = snapshot_register_copy[i]
+            line_number += 1
 
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
                 if type(line) is Instruction:
                     if opcodes[line.opcode][0] == 2:
-                        if line.r2 in register_status:
-                            reg_read(localreg, line.r2, l[0], register_status[line.r2])
-                        else:
-                            reg_read(localreg, line.r2, l[0], None)
+                        reg_read(localreg, line.r2, l[0])
                     if opcodes[line.opcode][0] == 3:
-                        if line.r3 in register_status:
-                            reg_read(localreg, line.r3, l[0], register_status[line.r3])
-                        else:
-                            reg_read(localreg, line.r3, l[0], None)
+                        reg_read(localreg, line.r3, l[0])
+
                     # Check if the opcode corresponds to a write operation
                     if opcodes[line.opcode][1]:
-                        value_count.__next__()
-                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end(), value_count.getvalue())
+                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end(), counter.__next__())
                         if line.r1 in localreg.keys():
-                            localreg[line.r1][-1].endline = (l[0] - 1)
-                            localreg[line.r1].append(block)
+                            if localreg[line.r1][-1].endline == l[0]:
+                                localreg[line.r1].append(block)
+                            else:
+                                localreg[line.r1][-1].endline = (l[0] - 1)
+                                localreg[line.r1].append(block)
                         else:
                             localreg[line.r1] = [block]
-                            register_status[line.r1] = value_count.getvalue()
                     else:
                         # the opcode correspond to a read operation
-                        if line.r1 in register_status:
-                            reg_read(localreg, line.r1, l[0], register_status[line.r1])
-                        else:
-                            reg_read(localreg, line.r1, l[0], None)
+                        reg_read(localreg, line.r1, l[0])
             cfg.nodes[i]['reg_bind'] = localreg
-            childnodes = list(cfg.successors(i))
-            if len(childnodes) >= 2:
-                for n in range(len(childnodes)):
-                    if childnodes[n] != nodelist[i]:
-                        snapshot_register_copy[childnodes[n]] = copy.deepcopy(register_status)
