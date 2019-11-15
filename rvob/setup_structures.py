@@ -25,9 +25,9 @@ def fill_contract(cfg: DiGraph, node_id: int):
         current_line = block[i]
         if type(current_line) == Instruction:
             opcode = current_line.opcode
-            r1 = current_line.instr_args['r1']
-            r2 = current_line.instr_args['r2']
-            r3 = current_line.instr_args['r3']
+            r1 = current_line.r1
+            r2 = current_line.r2
+            r3 = current_line.r3
             # Different actions are taken depending on the type of opcode we are analizing, if we have a read only
             # opcode provides set will not be modified, otherwise we make sure to deal with that set too
             if opcode in opcodes.keys():
@@ -54,13 +54,11 @@ def fill_contract(cfg: DiGraph, node_id: int):
     if len(errors) > 0:
         raise Exception("Encountered one or more unexpected opcodes, {}".format(errors))
 
-    # no need to keep unused and reg_err (which should not appear anyway) in our contracts
-    if 'unused' in requires:
-        requires.remove('unused')
-    if 'unused' in provides:
-        requires.remove('unused')
-    if 'reg_err' in requires or 'reg_err' in provides:
-        raise Exception("Reg_err found in requires/provides set")
+    # no need to keep 'unused' in our contracts
+    if None in requires:
+        requires.remove(None)
+    if None in provides:
+        requires.remove(None)
 
     cfg.nodes[node_id]['requires'] = requires
     cfg.nodes[node_id]['provides'] = provides

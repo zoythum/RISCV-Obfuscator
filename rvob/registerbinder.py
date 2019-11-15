@@ -97,31 +97,31 @@ def bind_register_to_value(cfg: DiGraph):
                 line = l[1]
                 if type(line) is Instruction:
                     if opcodes[line.opcode][0] == 2:
-                        if line.instr_args['r2'] in register_status:
-                            reg_read(localreg, line.instr_args['r2'], l[0], register_status[line.instr_args['r2']])
+                        if line.r2 in register_status:
+                            reg_read(localreg, line.r2, l[0], register_status[line.r2])
                         else:
-                            reg_read(localreg, line.instr_args['r2'], l[0], None)
+                            reg_read(localreg, line.r2, l[0], None)
                     if opcodes[line.opcode][0] == 3:
-                        if line.instr_args['r3'] in register_status:
-                            reg_read(localreg, line.instr_args['r3'], l[0], register_status[line.instr_args['r3']])
+                        if line.r3 in register_status:
+                            reg_read(localreg, line.r3, l[0], register_status[line.r3])
                         else:
-                            reg_read(localreg, line.instr_args['r3'], l[0], None)
+                            reg_read(localreg, line.r3, l[0], None)
                     # Check if the opcode corresponds to a write operation
                     if opcodes[line.opcode][1]:
                         value_count.__next__()
                         block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end(), value_count.getvalue())
-                        if line.instr_args['r1'] in localreg.keys():
-                            localreg[line.instr_args['r1']][-1].endline = (l[0] - 1)
-                            localreg[line.instr_args['r1']].append(block)
+                        if line.r1 in localreg.keys():
+                            localreg[line.r1][-1].endline = (l[0] - 1)
+                            localreg[line.r1].append(block)
                         else:
-                            localreg[line.instr_args['r1']] = [block]
-                            register_status[line.instr_args['r1']] = value_count.getvalue()
+                            localreg[line.r1] = [block]
+                            register_status[line.r1] = value_count.getvalue()
                     else:
                         # the opcode correspond to a read operation
-                        if line.instr_args['r1'] in register_status:
-                            reg_read(localreg, line.instr_args['r1'], l[0], register_status[line.instr_args['r1']])
+                        if line.r1 in register_status:
+                            reg_read(localreg, line.r1, l[0], register_status[line.r1])
                         else:
-                            reg_read(localreg, line.instr_args['r1'], l[0], None)
+                            reg_read(localreg, line.r1, l[0], None)
             cfg.nodes[i]['reg_bind'] = localreg
             childnodes = list(cfg.successors(i))
             if len(childnodes) >= 2:

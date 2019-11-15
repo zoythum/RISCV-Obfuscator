@@ -1,8 +1,8 @@
-from typing import NamedTuple, Union, Iterator
+from typing import NamedTuple, Union, Iterator, Sequence
 
 from BitVector import BitVector
 
-from structures import imm_sizes
+from structures import Register, imm_sizes
 
 
 class Statement:
@@ -21,7 +21,7 @@ class Statement:
 
 
 class Instruction(Statement):
-    """A parsed assembly instruction"""
+    """A parsed assembly instruction."""
 
     class ImmediateConstant:
         """
@@ -98,35 +98,65 @@ class Instruction(Statement):
             value_str = " [" + str(self.int_val) + "]" if self._value is not None else ""
             return ("<literal>" if self._symbol is None else str(self._symbol)) + value_str
 
-    def __init__(self, opcode, family, labels=None, **instr_args):
+    opcode: str
+    family: str
+    r1: Union[Register, None]
+    r2: Union[Register, None]
+    r3: Union[Register, None]
+    immediate: Union[ImmediateConstant, None]
+
+    def __init__(self, opcode: str, family: str, labels: Sequence[str] = None, r1: Union[str, Register] = None,
+                 r2: Union[str, Register] = None, r3: Union[str, Register] = None,
+                 immediate: Union[str, int, ImmediateConstant] = None):
         """
         Instantiates a new instruction statement.
 
-        :param op_code: the opcode for the new instruction
-        :param i_type: the instruction's type
-        :param instr_args: the instruction's arguments
+        :param opcode: the opcode of the new instruction
+        :param family: the instruction's format
         :param labels: an optional list of labels to mark the instruction with
+        :param r1: the first register parameter, if any
+        :param r2: the second register parameter, if any
+        :param r3: the third register parameter, if any
+        :param immediate: the immediate constant passed to the function, if any
         """
+
+        # Clean register arguments from the 'unused' keyword and raise an exception if a 'reg_err' is found
+        if r1 == "reg_err" or r2 == "reg_err" or r3 == "reg_err":
+            raise ValueError("Received the output of a failed parsing pass")
+
+        r1 = r1 if r1 != "unused" else None
+        r2 = r2 if r2 != "unused" else None
+        r3 = r3 if r3 != "unused" else None
+
         super().__init__(labels)
         self.opcode = opcode
         self.family = family
-        self.instr_args = dict(instr_args)
+        self.r1 = Register[r1.upper()] if type(r1) is str else r1
+        self.r2 = Register[r2.upper()] if type(r2) is str else r2
+        self.r3 = Register[r3.upper()] if type(r3) is str else r3
 
         if family in imm_sizes:
-            if isinstance(instr_args["immediate"], int):
+            if isinstance(immediate, int):
                 # Constant as literal value
-                self.instr_args["immediate"] = Instruction.ImmediateConstant(value=instr_args["immediate"],
-                                                                             size=imm_sizes[family])
-            elif isinstance(instr_args["immediate"], str):
+                self.immediate = Instruction.ImmediateConstant(value=immediate,
+                                                               size=imm_sizes[family])
+            elif isinstance(immediate, str):
                 # Constant as symbolic value
-                self.instr_args["immediate"] = Instruction.ImmediateConstant(symbol=instr_args["immediate"],
-                                                                             size=imm_sizes[family])
+                self.immediate = Instruction.ImmediateConstant(symbol=immediate,
+                                                               size=imm_sizes[family])
+            else:
+                # Maybe an ImmediateConstant itself
+                self.immediate = immediate
+        else:
+            self.immediate = None
 
     def __repr__(self):
-        return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + repr(self.instr_args)
+        # TODO re-implement this
+        return repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels)
 
     def __str__(self):
-        return str(self.opcode) + " " + str(self.instr_args)
+        # TODO re-implement this
+        return str(self.opcode)
 
 
 class Directive(Statement):

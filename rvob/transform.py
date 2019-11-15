@@ -91,11 +91,11 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                 if jump_ops[line.statement.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
                     cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol], __ret_stack__))
+                                 _explorer(label_dict[line.statement.immediate.symbol], __ret_stack__))
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.F:
                     # Function call: start by resolving destination
-                    target = line.statement.instr_args["immediate"].symbol
+                    target = line.statement.immediate.symbol
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
                     try:
                         dst = label_dict[target]
@@ -125,7 +125,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                     cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
                     cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol],
+                                 _explorer(label_dict[line.statement.immediate.symbol],
                                            __ret_stack__.copy()))
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.R:
