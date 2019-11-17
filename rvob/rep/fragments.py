@@ -358,6 +358,9 @@ class FragmentCopy(CodeFragment):
         # The embedded list's lifecycle is tightly coupled with the fragment's one, so this should suffice
         return hash((id(self), id(self._lines)))
 
+    def __str__(self):
+        return "".join(str(state) for state in self._lines)
+
 
 class FragmentView(CodeFragment):
     """

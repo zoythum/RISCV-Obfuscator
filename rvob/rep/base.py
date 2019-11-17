@@ -1,7 +1,7 @@
 from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
 
 from BitVector import BitVector
-
+from rvob.rep.instruction_repr import familystr
 from structures import Register, imm_sizes
 
 
@@ -21,6 +21,9 @@ class Statement:
             self.labels = []
         else:
             self.labels = list(labels)
+
+    def __str__(self):
+        return "\n".join(lab for lab in self.labels)
 
 
 class Instruction(Statement):
@@ -158,8 +161,7 @@ class Instruction(Statement):
                repr(self.r1) + ", " + repr(self.r2) + ", " + repr(self.r3) + ", " + repr(self.immediate) + ")"
 
     def __str__(self):
-        return str(self.opcode) + " " + str(self.r1) + ", " + str(self.r2) + ", " + str(self.r3) + ", " + \
-               str(self.immediate)
+        return super().__str__()+familystr[self.family](self)
 
 
 class Directive(Statement):
@@ -190,7 +192,7 @@ class Directive(Statement):
         return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
 
     def __str__(self):
-        return str(self.name) + " " + str(self.args)
+        return super().__str__()+"\t"+str(self.name)+"\t"+",".join((key+",\t"+str(value)) for key, value in self.args.items())+"\n"
 
 
 class ASMLine(NamedTuple):
