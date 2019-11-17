@@ -1,8 +1,8 @@
-import itertools
 
 from networkx import DiGraph, nx
-from rvob.structures import opcodes
+from itertools import count
 from rvob.rep.base import Instruction
+from rvob.structures import opcodes
 
 
 class ValueBlock:
@@ -20,7 +20,7 @@ class ValueBlock:
         self.value = value
 
 
-counter = itertools.count()
+counter = count()
 
 
 def reg_read(regdict, reg, line):
@@ -34,13 +34,13 @@ def reg_read(regdict, reg, line):
     """
 
     if reg not in regdict.keys():
-        block = ValueBlock(line, line, counter.__next__())
+        block = ValueBlock(line, line, next(counter))
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
 
 
-def satisfy_contract_in(node: DiGraph.node, regdict):
+def satisfy_contract_in(cfg: DiGraph, node, nodeid, regdict):
     """
     this function create an entry in the 'reg_bind' for every register that appear in the 'requires' contract of the
     node under analysis. The validity of the value assigned to these register is from the beginning to the end of the
@@ -48,12 +48,15 @@ def satisfy_contract_in(node: DiGraph.node, regdict):
     :param node: the node under analysis
     :param regdict: the dictionary of the used registers
     """
-    for register in node['requires']:
-        block = ValueBlock(node["block"].get_begin(), node["block"].get_end() - 1, counter.__next__())
+    required = node['requires']
+    for child in cfg.successors(nodeid):
+        required = required.union(cfg.nodes[child]['requires'])
+    for register in required:
+        block = ValueBlock(node["block"].get_begin(), node["block"].get_end() - 1, next(counter))
         regdict[register] = [block]
 
 
-def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, regdict):
+def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     """
     this function assure that the register in the 'requires' of the successors nodes have an assigned value, and then
     can't be modified, up to the end of the node's block of code.
@@ -62,8 +65,8 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, regdict):
     :param regdict: the dictionary of the used registers
     """
     required = set()
-    for child in cfg.successors(node):
-        required = required.union(child['requires'])
+    for child in cfg.successors(nodeid):
+        required = required.union(cfg.nodes[child]['requires'])
     for register in required:
         if regdict[register][-1].endline != node['block'].get_end():
             regdict[register][-1].endline = node['block'].get_end()
@@ -91,7 +94,7 @@ def bind_register_to_value(cfg: DiGraph):
         for line in cfg.nodes[i]["block"]:
             linelist.append((line_number, line))
             line_number += 1
-        satisfy_contract_in(i, localreg)
+        satisfy_contract_in(cfg, cfg.nodes[i], i, localreg)
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
@@ -103,7 +106,7 @@ def bind_register_to_value(cfg: DiGraph):
 
                     # Check if the opcode corresponds to a write operation
                     if opcodes[line.opcode][1]:
-                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end() - 1, counter.__next__())
+                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end() - 1, next(counter))
                         if line.r1 in localreg.keys():
                             if localreg[line.r1][-1].endline == l[0]:
                                 localreg[line.r1].append(block)
@@ -115,5 +118,5 @@ def bind_register_to_value(cfg: DiGraph):
                     else:
                         # the opcode correspond to a read operation
                         reg_read(localreg, line.r1, l[0])
-            satisfy_contract_out(cfg, i, localreg)
+            satisfy_contract_out(cfg, cfg.nodes[i], i, localreg)
             cfg.nodes[i]['reg_bind'] = localreg
