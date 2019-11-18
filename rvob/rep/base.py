@@ -2,7 +2,7 @@ from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
 
 from BitVector import BitVector
 from rvob.rep.instruction_repr import familystr
-from structures import Register, imm_sizes
+from rvob.structures import Register, imm_sizes
 
 
 class Statement:
@@ -23,7 +23,7 @@ class Statement:
             self.labels = list(labels)
 
     def __str__(self):
-        return "\n".join(lab for lab in self.labels)
+        return "".join(lab+":\n" for lab in self.labels)
 
 
 class Instruction(Statement):
@@ -168,7 +168,7 @@ class Directive(Statement):
 
     name: str
     # TODO args is not being used as intended; think about restructuring it
-    args: Mapping[str, object]
+    args: Sequence[str]
 
     def __init__(self, name: str, labels: Optional[Sequence[str]] = None, **kwargs):
         """
@@ -183,15 +183,15 @@ class Directive(Statement):
         self.name = name
 
         if kwargs is None:
-            self.args = {}
+            self.args = []
         else:
-            self.args = dict(kwargs)
+            self.args = list(kwargs.values())
 
     def __repr__(self):
         return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
 
     def __str__(self):
-        return super().__str__()+"\t"+str(self.name)+"\t"+",".join((key+",\t"+str(value)) for key, value in self.args.items())+"\n"
+        return super().__str__()+"\t"+str(self.name)+"\t"+", ".join(*self.args)+"\n"
 
 
 class ASMLine(NamedTuple):

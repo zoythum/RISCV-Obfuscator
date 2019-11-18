@@ -684,7 +684,7 @@ class Source(FragmentCopy):
                 # The new section will start at the next line
                 start = curr_ln + 1
                 # Recognize the name of the section we just stepped into
-                curr_sec = statement.args["args"][0] if ".section" == statement.name else statement.name
+                curr_sec = statement.args[0] if ".section" == statement.name else statement.name
 
             curr_ln += 1
 
