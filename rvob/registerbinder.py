@@ -72,17 +72,20 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
             regdict[register][-1].endline = node['block'].get_end()
 
 
-def bind_register_to_value(cfg: DiGraph):
+def bind_register_to_value(cfg: DiGraph, node: int = None):
     """
     This is the main function, it is responsible for the binding process that associate to every register used in a
     certain node a value. This association is represented by a dictionary that use as key the register's name and as
     value a list of block that contains the value holds by the register and it's range of validity
+    :param node: [Optional] to run the algorithm only on a specific node
     :param cfg: the DiGraph that represent the program to be analyzed
     """
-
-    nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
-    # remove the exterior root node
-    nodelist.remove(0)
+    if node is None:
+        nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
+        # remove the exterior root node
+        nodelist.remove(0)
+    else:
+        nodelist = [node]
 
     for i in nodelist:
         # linelist: contains tuple <'line_number', 'line'> of all the lines that appartains to the current node
