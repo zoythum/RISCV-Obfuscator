@@ -94,14 +94,15 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         localreg = {}
 
         line_number = cfg.nodes[i]["block"].get_begin()
-        for line in cfg.nodes[i]["block"]:
+        for line in iter(cfg.nodes[i]["block"]):
             linelist.append((line_number, line))
             line_number += 1
         satisfy_contract_in(cfg, cfg.nodes[i], i, localreg)
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
-                if type(line) is Instruction:
+                #this check is done in this way due to a non proper functioning of type()
+                if line.__class__.__name__ == "Instruction":
                     if opcodes[line.opcode][0] == 2:
                         reg_read(localreg, line.r2, l[0])
                     if opcodes[line.opcode][0] == 3:
