@@ -101,8 +101,7 @@ class Instruction(Statement):
                    ", value=" + repr(None if self._value is None else self.int_val) + ")"
 
         def __str__(self):
-            value_str = " [" + str(self.int_val) + "]" if self._value is not None else ""
-            return ("<literal>" if self._symbol is None else str(self._symbol)) + value_str
+            return str(self.int_val) if self._symbol is None else self.symbol
 
     opcode: str
     family: str
