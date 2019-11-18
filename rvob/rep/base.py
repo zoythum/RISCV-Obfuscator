@@ -1,8 +1,8 @@
 from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
 
 from BitVector import BitVector
-
-from structures import Register, imm_sizes
+from rvob.rep.instruction_repr import familystr
+from rvob.structures import Register, imm_sizes
 
 
 class Statement:
@@ -21,6 +21,9 @@ class Statement:
             self.labels = []
         else:
             self.labels = list(labels)
+
+    def __str__(self):
+        return "".join(lab+":\n" for lab in self.labels)
 
 
 class Instruction(Statement):
@@ -98,8 +101,7 @@ class Instruction(Statement):
                    ", value=" + repr(None if self._value is None else self.int_val) + ")"
 
         def __str__(self):
-            value_str = " [" + str(self.int_val) + "]" if self._value is not None else ""
-            return ("<literal>" if self._symbol is None else str(self._symbol)) + value_str
+            return str(self.int_val) if self._symbol is None else self.symbol
 
     opcode: str
     family: str
@@ -158,8 +160,7 @@ class Instruction(Statement):
                repr(self.r1) + ", " + repr(self.r2) + ", " + repr(self.r3) + ", " + repr(self.immediate) + ")"
 
     def __str__(self):
-        return str(self.opcode) + " " + str(self.r1) + ", " + str(self.r2) + ", " + str(self.r3) + ", " + \
-               str(self.immediate)
+        return super().__str__()+familystr[self.family](self)
 
 
 class Directive(Statement):
@@ -167,7 +168,7 @@ class Directive(Statement):
 
     name: str
     # TODO args is not being used as intended; think about restructuring it
-    args: Mapping[str, object]
+    args: Sequence[str]
 
     def __init__(self, name: str, labels: Optional[Sequence[str]] = None, **kwargs):
         """
@@ -182,15 +183,15 @@ class Directive(Statement):
         self.name = name
 
         if kwargs is None:
-            self.args = {}
+            self.args = []
         else:
-            self.args = dict(kwargs)
+            self.args = list(kwargs.values())
 
     def __repr__(self):
         return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
 
     def __str__(self):
-        return str(self.name) + " " + str(self.args)
+        return super().__str__()+"\t"+str(self.name)+"\t"+", ".join(*self.args)+"\n"
 
 
 class ASMLine(NamedTuple):
