@@ -80,7 +80,7 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
     'beqz': (1, False), 'bnez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False),
     'call': (0, False)
-}
+    }
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
@@ -128,7 +128,7 @@ jump_ops: Mapping[str, JumpType] = {
     "bge": JumpType.C,
     "bgez": JumpType.C,
     "bgeu": JumpType.C
-}
+    }
 
 # Dictionary of immediate formats with associated immediate field size
 # TODO complete with the pseudo-instruction formats immediate sizes
@@ -139,4 +139,4 @@ imm_sizes: Mapping[str, int] = {
     "bz": 12,
     "u": 20,
     "j": 20
-}
+    }
