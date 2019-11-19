@@ -86,6 +86,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         nodelist.remove(0)
     else:
         nodelist = [node]
+        cfg.nodes[node].pop("reg_bind")
 
     for i in nodelist:
         # linelist: contains tuple <'line_number', 'line'> of all the lines that appartains to the current node
