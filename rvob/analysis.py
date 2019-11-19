@@ -165,8 +165,8 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     return cfg
 
 
-def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, int] = "main"
-                  ) -> Iterator[ASMLine]:
+def get_stepper(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, int] = "main"
+                ) -> Iterator[ASMLine]:
     """
     Step execution through the CFG.
 
