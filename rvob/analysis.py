@@ -1,49 +1,13 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Sequence, Iterator, Mapping, Union
+from typing import Iterator, Mapping, Union
 
 from networkx import DiGraph
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
-from rep.fragments import CodeFragment, Source, FragmentView
+from rep.fragments import Source, FragmentView
 from rvob.structures import jump_ops, JumpType
-
-
-def get_stepper(fragments: Sequence[CodeFragment], entry_point: int = None) -> Iterator[ASMLine]:
-    """
-    Generate an instruction stepper over an ordered sequence of non-overlapping code fragments.
-
-    The instruction stepper is an iterator over ASMLines that skips over any non-instruction statement, starting its
-    iteration from the specified entry-point, or the first instruction of the first section otherwise.
-    The fragments must be provided to this generator in an orderly fashion, devoid of overlaps, unless iteration order
-    is not of concern. Keep in mind, though, that any instruction preceding the entry-point will be ignored.
-    Contiguity between fragments is irrelevant.
-
-    :param fragments: a sequence of ordered non-overlapping fragments
-    :param entry_point: the line number from which the stepper should start iterating
-    :return: an instruction stepper
-    :raise IndexError: when the specified entry-point does not belong to the code contained in the fragments
-    """
-
-    # Start stepping from the first available line, if not told otherwise
-    if entry_point is None:
-        entry_point = fragments[0].get_begin()
-
-    # Find the fragment from which we should start stepping
-    for candidate in fragments:
-        if candidate.get_begin() <= entry_point < candidate.get_end():
-            starting_fragment_index = fragments.index(candidate)
-            break
-    else:
-        # The entry-point falls out of range
-        raise IndexError("The specified entry point doesn't belong to any of the provided sections")
-
-    for fragment in fragments[starting_fragment_index:]:
-        for line in to_line_iterator(iter(fragment), fragment.get_begin()):
-            # Fast-forward until we find a line after the entry-point containing an instruction
-            if line.number >= entry_point and type(line.statement) is Instruction:
-                yield line
 
 
 class Transition(Enum):
@@ -89,8 +53,9 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
         if start_line in ancestors:
             return ancestors[start_line]
 
-        # Instantiate the stepper for code exploration
-        line_supplier = get_stepper(code_sections, start_line)
+        # Instantiate an iterator that scans the source, ignoring directives
+        line_supplier = filter(lambda s: isinstance(s.statement, Instruction),
+                               to_line_iterator(src.iter(start_line), start_line))
         # Generate node ID for the root of the local subtree
         rid = next(id_sup)
 
@@ -170,9 +135,6 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
 
     # Generate the dictionary containing label mappings
     label_dict = src.get_labels()
-
-    # Create a list of fragments containing code
-    code_sections = [tsec.scope for tsec in src.get_sections() if ".text" == tsec.identifier]
 
     # Instantiate the node id supplier
     id_sup = count()
