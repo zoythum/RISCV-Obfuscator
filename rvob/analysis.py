@@ -104,18 +104,17 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                         # Set the current node as ancestor for the recursive explorer
                         home = rid
                     except KeyError:
-                        # Calling an external function: add an edge to the external code node
-                        if not cfg.has_node(target):
-                            # First time we call this procedure, so we add its virtual node to the graph
-                            # The keyword external means that this node contains code that is not in the source file
-                            cfg.add_node(target, external=True)
-
-                        cfg.add_edge(rid, target)
+                        # Calling an external function: add an edge to the external code node.
+                        # The external node is uniquely identified by a call ID, so that client code of the graph can
+                        # follow the execution flow among calls to the same external procedures.
+                        call_id = target + str(next(id_sup))
+                        cfg.add_node(call_id, external=True)
+                        cfg.add_edge(rid, call_id)
 
                         # Set the following line as destination
                         dst = next(line_supplier).number
                         # Set the external node as ancestor for the recursive explorer
-                        home = target
+                        home = call_id
 
                     # Perform the actual recursive call
                     cfg.add_edge(home, _explorer(dst, __ret_stack__))
