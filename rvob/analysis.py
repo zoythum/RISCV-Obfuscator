@@ -1,7 +1,7 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Sequence, Iterator, Mapping, Union, Tuple
+from typing import Sequence, Iterator, Mapping, Union
 
 from networkx import DiGraph
 
@@ -205,7 +205,26 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
 
 def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, int] = "main"
                   ) -> Iterator[ASMLine]:
-    # TODO add docstring
+    """
+    Step execution through the CFG.
+
+    Given a CFG, a map for symbol resolution and an optional starting point (entry-point), generates an iterator that
+    follows the program's execution flow.
+
+    When confronted by the bifurcating edges of a conditional branch situation, callers can `.send()` the condition's
+    truth value in order to select the branch to follow.
+
+    If a node representing code not included in the represented source is encountered, the iterator emits the artificial
+    directive:
+        <non-local call $node_id>
+    to signal the fact, then regularly proceeds by following the return arc.
+
+    :param cfg: a control-flow graph representing the program
+    :param sym_tab: a dictionary used for label resolution
+    :param entry_pnt: the entry point from which iteration should start, either in label form or as a line number
+    :return: an iterator that produces ASMLine objects
+    """
+
     if type(entry_pnt) is str:
         # Convert label to an actual entry point
         try:
