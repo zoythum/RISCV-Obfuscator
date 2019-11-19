@@ -218,18 +218,18 @@ def get_stepper(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, 
         for line in line_iterator:
             execute_jump = yield line
 
-        # Singleton list containing the default follower
-        default_follower = [node for node in cfg.successors(current_node)
-                            if cfg.edges[current_node, node]["kind"] is not Transition.C_JUMP]
-        # Singleton list containing the follower in case the caller decides to take a conditional branch, if any
-        conditional_follower = [node for node in cfg.successors(current_node)
-                                if cfg.edges[current_node, node]["kind"] is Transition.C_JUMP]
+        # Identify any conditional branch
+        conditional = None
+        for t, s in [(cfg.edges[current_node, s]["kind"], s) for s in cfg.successors(current_node)]:
+            if t is Transition.C_JUMP:
+                conditional = s
+            else:
+                # We don't expect more than one other "default" path to follow
+                current_node = s
 
-        # Choose the next node
-        if len(conditional_follower) != 0 and execute_jump:
-            current_node = conditional_follower[0]
-        else:
-            current_node = default_follower[0]
+        # Set the conditional branch's destination as the current node, if the caller told us so
+        if conditional is not None and execute_jump:
+            current_node = conditional
 
         # If we're back at node 0, then execution has finished
         if current_node == 0:
