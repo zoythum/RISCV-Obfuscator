@@ -1,8 +1,8 @@
 from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
 
 from BitVector import BitVector
-from rvob.rep.instruction_repr import familystr
-from rvob.structures import Register, imm_sizes
+from rep.instruction_repr import familystr
+from structures import Register, imm_sizes
 
 
 class Statement:
