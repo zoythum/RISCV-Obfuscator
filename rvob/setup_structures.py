@@ -110,6 +110,8 @@ def sanitize_contracts(cfg: DiGraph):
 
 
 def setup_contracts(cfg: DiGraph):
+    # TODO maybe we need to execute this function two times to take care of possible loops that are not
+    #  satfisfied in the first iteration?
     for i in range(0, len(cfg.nodes)):
         cfg.nodes[i]['provides'] = set()
         cfg.nodes[i]['requires'] = set()

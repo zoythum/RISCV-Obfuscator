@@ -7,15 +7,23 @@ from random import randint
 
 
 def substitute_reg(cfg: DiGraph):
-    # first we generate two random numbers which identify the two node defining the branch of the tree in which
-    # we are going to change the registers
-    initial_id = randint(1, len(cfg.nodes) - 2)
+
     try:
-        final_id = randint(initial_id + 1, len(cfg.nodes) - 2)
+        final_id = randint(1, len(cfg.nodes) - 1)
     except ValueError:
         return
-    nodes = shortest_path(cfg, initial_id, final_id)
+
+    # To avoid situations where the shortest path uses the root of the tree (since each leaf is connected to the root)
+    # we find the shortest path from the root itself to a randomly chosen id. Then an intermediate
+    # value that will be our initial_id is selected and the final path is obtained removing each node
+    # from 0 to inital_id
+    nodes = shortest_path(cfg, 0, final_id)
+    initial_id = nodes[randint(0, len(nodes)-2)]
+    while nodes[0] != initial_id:
+        nodes.pop(0)
+
     counter = initial_id
+
     while counter < final_id:
         extended = False
         current_node = cfg.nodes[counter]
@@ -32,7 +40,11 @@ def substitute_reg(cfg: DiGraph):
         # In different parts of a block in a register we can find different values, each of those values is saved
         # in the reg_bind structure. To obfuscate we randomly chose a value, whose id is saved in value_id
         if used_register in unmodifiable:
-            value_id = randint(1, len(current_node['reg_bind'][used_register]) - 2)
+            # TODO da rivedere questo randint, può dare errore
+            try:
+                value_id = randint(1, len(current_node['reg_bind'][used_register]) - 2)
+            except ValueError:
+                return
             used_values = current_node['reg_bind'][used_register][value_id]
         else:
             value_id = randint(0, len(current_node['reg_bind'][used_register]) - 1)
@@ -44,8 +56,8 @@ def substitute_reg(cfg: DiGraph):
                                          + used_register + " " + unused_register)
 
         if value_id == randint(0, len(current_node['reg_bind'][used_register]) - 1) and \
-            used_register in cfg.nodes[counter+1]['requires']:
-            if len(list(cfg.predecessors(counter+1))) > 1:
+                used_register in cfg.nodes[counter + 1]['requires']:
+            if len(list(cfg.predecessors(counter + 1))) > 1:
                 # Our child has more than one parent, we can't be sure that the value we are considering is preserved
                 # in the next block so better ignore and move on
                 counter += 1
@@ -65,8 +77,10 @@ def substitute_reg(cfg: DiGraph):
         switch_regs(line_num, used_values.endline, current_node, used_register, unused_register)
         if extended:
             # If the value continues in the next block we must change also the next value
-            used_values = cfg.nodes[counter+1]['reg_bind'][used_register][0]
-            switch_regs(used_values.initline, used_values.endline, cfg.nodes[counter+1], used_register, unused_register)
+            # TODO potrebbe esserci un problema qui, perché?
+            used_values = cfg.nodes[counter + 1]['reg_bind'][used_register][0]
+            switch_regs(used_values.initline, used_values.endline, cfg.nodes[counter + 1], used_register,
+                        unused_register)
         counter += 1
 
         setup_contracts(cfg)
@@ -75,6 +89,7 @@ def substitute_reg(cfg: DiGraph):
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
     while line_num < endline:
+        # todo modifica seguendo cambio tomas
         if type(current_node['block'][line_num]) is Instruction:
             if current_node['block'][line_num]['r1'] == used_register:
                 current_node['block'][line_num]['r1'] = unused_register
@@ -91,12 +106,14 @@ def find_valid_registers(cfg: DiGraph, current_node, unmodifiable) -> (int, int)
     # in the node and the other is an unused register. During the selection of the used one we keep track of the
     # unmodifiable registers
     used_regs = list(cfg.nodes[current_node]['reg_bind'].keys())
-
+    
     unused_regs = list(registers)
 
     for reg in used_regs:
         unused_regs.remove(reg)
 
+    unused_regs.remove('unused')
+    unused_regs.remove('reg_err')
     # for unmod_reg in unmodifiable:
     #     if unmod_reg in used_regs:
     #         used_regs.remove(unmod_reg)
@@ -120,4 +137,3 @@ def find_unmodifiable_regs(cfg: DiGraph, current_node, nodes) -> set:
                     unmodifiable.add(reg)
 
     return unmodifiable
-
