@@ -247,12 +247,8 @@ def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str
 
     # Prepare objects for iteration
     block: FragmentView = cfg.nodes[current_node]["block"]
-    line_iterator: Iterator[ASMLine] = to_line_iterator(iter(block), block.get_begin())
+    line_iterator: Iterator[ASMLine] = to_line_iterator(block.iter(entry_pnt), entry_pnt)
     line: ASMLine = next(line_iterator)
-
-    # Skip over lines preceding the entry point
-    while line.number < entry_pnt:
-        line = next(line_iterator)
 
     execute_jump = yield line
     while True:

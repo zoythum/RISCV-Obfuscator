@@ -151,6 +151,21 @@ class CodeFragment(ABC, MutableSequence, Hashable):
 
         pass
 
+    # noinspection PyTypeChecker
+    @abstractmethod
+    def iter(self, starting_line: int) -> Iterator[Statement]:
+        """
+        Stub for an offset iterator provider method.
+
+        This abstract implementation simply performs boundaries check.
+
+        :param starting_line: line number from which iteration should start
+        :raises IndexError: when starting line is outside of the boundaries
+        """
+
+        if starting_line < self.get_begin() or starting_line > self.get_end():
+            raise IndexError("Starting point out of range")
+
     @abstractmethod
     def __iter__(self) -> Iterator[Statement]:
         pass
@@ -277,6 +292,14 @@ class FragmentCopy(CodeFragment):
     def clear(self) -> None:
         self._lines.clear()
         self.end = self.begin
+
+    def iter(self, starting_line: int) -> Iterator[Statement]:
+        """Return an iterator that starts iterating from the specified line."""
+
+        super().iter(starting_line)
+
+        for i in range(self._line_to_index(starting_line), len(self._lines)):
+            yield self._lines[i]
 
     def __iter__(self) -> Iterator[Statement]:
         return self._lines.__iter__()
@@ -512,6 +535,14 @@ class FragmentView(CodeFragment):
         del self._origin[offset:offset + length]
         # View size shrinks to zero, with growth point set to end as not to influence this view's begin
         self._grow(self.get_end(), -length)
+
+    def iter(self, starting_line: int) -> Iterator[Statement]:
+        """Return an iterator that starts iterating from the specified line."""
+
+        super().iter(starting_line)
+
+        for s in self[starting_line:self.get_end()]:
+            yield s
 
     def __iter__(self) -> Iterator[Statement]:
         curr = self.get_offset()
