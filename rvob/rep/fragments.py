@@ -358,6 +358,9 @@ class FragmentCopy(CodeFragment):
         # The embedded list's lifecycle is tightly coupled with the fragment's one, so this should suffice
         return hash((id(self), id(self._lines)))
 
+    def __str__(self):
+        return "".join(str(state) for state in self._lines)
+
 
 class FragmentView(CodeFragment):
     """
@@ -681,7 +684,7 @@ class Source(FragmentCopy):
                 # The new section will start at the next line
                 start = curr_ln + 1
                 # Recognize the name of the section we just stepped into
-                curr_sec = statement.args["args"][0] if ".section" == statement.name else statement.name
+                curr_sec = statement.args[0] if ".section" == statement.name else statement.name
 
             curr_ln += 1
 

@@ -7,6 +7,7 @@ The information contained in this module describes things such as the formal arg
 instructions, etc.
 
 Structures:
+Register -- an enumeration of the 32 unprivileged RISC-V integer registers
 opcodes -- a dictionary containing information about the number of arguments of each supported instruction, and whether
            or not they are read-only
 standard_sections -- a set containing the identifiers of the standard sections that can be found in an assembler source
@@ -17,6 +18,43 @@ imm_sizes -- a dictionary associating instruction formats possessing an immediat
 
 from enum import Enum, auto
 from typing import Set, Mapping, Tuple
+
+
+# An enumeration of the 32 unprivileged RISC-V integer registers
+class Register(Enum):
+    ZERO = 0
+    RA = 1
+    SP = 2
+    GP = 3
+    TP = 4
+    T0 = 5
+    T1 = 6
+    T2 = 7
+    S0 = 8
+    S1 = 9
+    A0 = 10
+    A1 = 11
+    A2 = 12
+    A3 = 13
+    A4 = 14
+    A5 = 15
+    A6 = 16
+    A7 = 17
+    S2 = 18
+    S3 = 19
+    S4 = 20
+    S5 = 21
+    S6 = 22
+    S7 = 23
+    S8 = 24
+    S9 = 25
+    S10 = 26
+    S11 = 27
+    T3 = 28
+    T4 = 29
+    T5 = 30
+    T6 = 31
+
 
 # This is a classification of all the possible opcodes.
 # Each opcode is paired with a tuple (<int>, <boolean>) where the int value represents the number of registers used
@@ -42,7 +80,7 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
     'beqz': (1, False), 'bnez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False),
     'call': (0, False)
-    }
+}
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.

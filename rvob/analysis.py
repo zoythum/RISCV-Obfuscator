@@ -91,11 +91,11 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                 if jump_ops[line.statement.opcode] == JumpType.U:
                     # Unconditional jump: resolve destination and relay-call explorer there
                     cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol], __ret_stack__))
+                                 _explorer(label_dict[line.statement.immediate.symbol], __ret_stack__))
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.F:
                     # Function call: start by resolving destination
-                    target = line.statement.instr_args["immediate"].symbol
+                    target = line.statement.immediate.symbol
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
                     try:
                         dst = label_dict[target]
@@ -104,18 +104,17 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                         # Set the current node as ancestor for the recursive explorer
                         home = rid
                     except KeyError:
-                        # Calling an external function: add an edge to the external code node
-                        if not cfg.has_node(target):
-                            # First time we call this procedure, so we add its virtual node to the graph
-                            # The keyword external means that this node contains code that is not in the source file
-                            cfg.add_node(target, external=True)
-
-                        cfg.add_edge(rid, target)
+                        # Calling an external function: add an edge to the external code node.
+                        # The external node is uniquely identified by a call ID, so that client code of the graph can
+                        # follow the execution flow among calls to the same external procedures.
+                        call_id = target + str(next(id_sup))
+                        cfg.add_node(call_id, external=True)
+                        cfg.add_edge(rid, call_id)
 
                         # Set the following line as destination
                         dst = next(line_supplier).number
                         # Set the external node as ancestor for the recursive explorer
-                        home = target
+                        home = call_id
 
                     # Perform the actual recursive call
                     cfg.add_edge(home, _explorer(dst, __ret_stack__))
@@ -125,7 +124,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                     cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__))
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
                     cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.instr_args["immediate"].symbol],
+                                 _explorer(label_dict[line.statement.immediate.symbol],
                                            __ret_stack__.copy()))
                     break
                 elif jump_ops[line.statement.opcode] == JumpType.R:
