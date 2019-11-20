@@ -1,49 +1,13 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Sequence, Iterator, Mapping, Union
+from typing import Iterator, Mapping, Union
 
 from networkx import DiGraph
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
-from rep.fragments import CodeFragment, Source, FragmentView
+from rep.fragments import Source, FragmentView
 from rvob.structures import jump_ops, JumpType
-
-
-def get_stepper(fragments: Sequence[CodeFragment], entry_point: int = None) -> Iterator[ASMLine]:
-    """
-    Generate an instruction stepper over an ordered sequence of non-overlapping code fragments.
-
-    The instruction stepper is an iterator over ASMLines that skips over any non-instruction statement, starting its
-    iteration from the specified entry-point, or the first instruction of the first section otherwise.
-    The fragments must be provided to this generator in an orderly fashion, devoid of overlaps, unless iteration order
-    is not of concern. Keep in mind, though, that any instruction preceding the entry-point will be ignored.
-    Contiguity between fragments is irrelevant.
-
-    :param fragments: a sequence of ordered non-overlapping fragments
-    :param entry_point: the line number from which the stepper should start iterating
-    :return: an instruction stepper
-    :raise IndexError: when the specified entry-point does not belong to the code contained in the fragments
-    """
-
-    # Start stepping from the first available line, if not told otherwise
-    if entry_point is None:
-        entry_point = fragments[0].get_begin()
-
-    # Find the fragment from which we should start stepping
-    for candidate in fragments:
-        if candidate.get_begin() <= entry_point < candidate.get_end():
-            starting_fragment_index = fragments.index(candidate)
-            break
-    else:
-        # The entry-point falls out of range
-        raise IndexError("The specified entry point doesn't belong to any of the provided sections")
-
-    for fragment in fragments[starting_fragment_index:]:
-        for line in to_line_iterator(iter(fragment), fragment.get_begin()):
-            # Fast-forward until we find a line after the entry-point containing an instruction
-            if line.number >= entry_point and type(line.statement) is Instruction:
-                yield line
 
 
 class Transition(Enum):
@@ -89,8 +53,9 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
         if start_line in ancestors:
             return ancestors[start_line]
 
-        # Instantiate the stepper for code exploration
-        line_supplier = get_stepper(code_sections, start_line)
+        # Instantiate an iterator that scans the source, ignoring directives
+        line_supplier = filter(lambda s: isinstance(s.statement, Instruction),
+                               to_line_iterator(src.iter(start_line), start_line))
         # Generate node ID for the root of the local subtree
         rid = next(id_sup)
 
@@ -171,9 +136,6 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     # Generate the dictionary containing label mappings
     label_dict = src.get_labels()
 
-    # Create a list of fragments containing code
-    code_sections = [tsec.scope for tsec in src.get_sections() if ".text" == tsec.identifier]
-
     # Instantiate the node id supplier
     id_sup = count()
 
@@ -203,13 +165,12 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     return cfg
 
 
-def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, int] = "main"
-                  ) -> Iterator[ASMLine]:
+def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
     """
     Step execution through the CFG.
 
-    Given a CFG, a map for symbol resolution and an optional starting point (entry-point), generates an iterator that
-    follows the program's execution flow.
+    Given a CFG and an optional starting point (entry-point), generates an iterator that follows the program's execution
+    flow.
 
     When confronted by the bifurcating edges of a conditional branch situation, callers can `.send()` the condition's
     truth value in order to select the branch to follow.
@@ -220,39 +181,25 @@ def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str
     to signal the fact, then regularly proceeds by following the return arc.
 
     :param cfg: a control-flow graph representing the program
-    :param sym_tab: a dictionary used for label resolution
     :param entry_pnt: the entry point from which iteration should start, either in label form or as a line number
     :return: an iterator that produces ASMLine objects
+    :raise ValueError: when the specified entry point does not belong to any node of the CFG
     """
-
-    if type(entry_pnt) is str:
-        # Convert label to an actual entry point
-        try:
-            entry_pnt = sym_tab[entry_pnt]
-        except KeyError:
-            raise ValueError("Invalid entry-point: label \"" + entry_pnt + "\" does not exist")
 
     # Find the node containing the entry point
     # Be aware that the entry point *MUST* refer to an instruction; nodes only contain those.
-    current_node = None
-    for nid in cfg.nodes.keys():
-        if "external" not in cfg.nodes[nid]:
-            view: FragmentView = cfg.nodes[nid]["block"]
-            if view.get_begin() <= entry_pnt < view.get_end():
-                current_node = nid
-                break
-
-    if current_node is None:
-        raise ValueError("Invalid entry-point: no statement at line " + entry_pnt + "is contained in this graph")
+    for nid in [n for n in cfg.nodes.keys() if "external" not in cfg.nodes[n]]:
+        view: FragmentView = cfg.nodes[nid]["block"]
+        if view.get_begin() <= entry_pnt < view.get_end():
+            current_node = nid
+            break
+    else:
+        raise ValueError("Invalid entry-point: no statement at line " + str(entry_pnt) + "is contained in this graph")
 
     # Prepare objects for iteration
     block: FragmentView = cfg.nodes[current_node]["block"]
-    line_iterator: Iterator[ASMLine] = to_line_iterator(iter(block), block.get_begin())
+    line_iterator: Iterator[ASMLine] = to_line_iterator(block.iter(entry_pnt), entry_pnt)
     line: ASMLine = next(line_iterator)
-
-    # Skip over lines preceding the entry point
-    while line.number < entry_pnt:
-        line = next(line_iterator)
 
     execute_jump = yield line
     while True:
@@ -260,18 +207,18 @@ def flow_follower(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str
         for line in line_iterator:
             execute_jump = yield line
 
-        # Singleton list containing the default follower
-        default_follower = [node for node in cfg.successors(current_node)
-                            if cfg.edges[current_node, node]["kind"] is not Transition.C_JUMP]
-        # Singleton list containing the follower in case the caller decides to take a conditional branch, if any
-        conditional_follower = [node for node in cfg.successors(current_node)
-                                if cfg.edges[current_node, node]["kind"] is Transition.C_JUMP]
+        # Identify any conditional branch
+        conditional = None
+        for t, s in [(cfg.edges[current_node, s]["kind"], s) for s in cfg.successors(current_node)]:
+            if t is Transition.C_JUMP:
+                conditional = s
+            else:
+                # We don't expect more than one other "default" path to follow
+                current_node = s
 
-        # Choose the next node
-        if len(conditional_follower) != 0 and execute_jump:
-            current_node = conditional_follower[0]
-        else:
-            current_node = default_follower[0]
+        # Set the conditional branch's destination as the current node, if the caller told us so
+        if conditional is not None and execute_jump:
+            current_node = conditional
 
         # If we're back at node 0, then execution has finished
         if current_node == 0:
