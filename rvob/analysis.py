@@ -1,7 +1,7 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Iterator, Mapping, Union
+from typing import Iterator
 
 from networkx import DiGraph
 

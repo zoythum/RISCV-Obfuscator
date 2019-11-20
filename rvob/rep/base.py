@@ -1,6 +1,7 @@
-from typing import NamedTuple, Union, Iterator, Sequence, Mapping, Optional
+from typing import NamedTuple, Union, Iterator, Sequence, Optional
 
 from BitVector import BitVector
+
 from rep.instruction_repr import familystr
 from structures import Register, imm_sizes
 
