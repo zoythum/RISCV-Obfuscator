@@ -1,8 +1,8 @@
 
 from networkx import DiGraph, nx
 from itertools import count
-from rvob.rep.base import Instruction
-from rvob.structures import opcodes
+from rep.base import Instruction
+from structures import opcodes
 
 
 class ValueBlock:
@@ -86,6 +86,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         nodelist.remove(0)
     else:
         nodelist = [node]
+        cfg.nodes[node].pop("reg_bind")
 
     for i in nodelist:
         # linelist: contains tuple <'line_number', 'line'> of all the lines that appartains to the current node
@@ -101,8 +102,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
-                # this check is done in this way due to a non proper functioning of type()
-                if line.__class__.__name__ == "Instruction":
+                if type(line) is Instruction:
                     if opcodes[line.opcode][0] == 2:
                         reg_read(localreg, line.r2, l[0])
                     if opcodes[line.opcode][0] == 3:

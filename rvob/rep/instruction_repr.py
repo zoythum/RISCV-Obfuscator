@@ -1,6 +1,4 @@
 
-from rvob.structures import Register
-
 
 def uFamily(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)+"\n"
