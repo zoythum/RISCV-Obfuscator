@@ -168,31 +168,31 @@ class Directive(Statement):
     """A parsed assembler directive."""
 
     name: str
-    # TODO args is not being used as intended; think about restructuring it
     args: Sequence[str]
 
-    def __init__(self, name: str, labels: Optional[Sequence[str]] = None, **kwargs):
+    def __init__(self, name: str, labels: Optional[Sequence[str]] = None, args: Optional[Sequence[str]] = None):
         """
         Instantiates a new assembler directive statement.
 
-        :param name: the directives name
+        :param name: the directive's name
         :param labels: an optional list of labels to mark the directive with
-        :param kwargs: a optional dictionary of arguments for the directive
+        :param args: an optional sequence of arguments for the directive
         """
 
         super().__init__(labels)
         self.name = name
 
-        if kwargs is None:
+        if args is None:
             self.args = []
         else:
-            self.args = list(kwargs.values())
+            self.args = list(args)
 
     def __repr__(self):
         return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
 
     def __str__(self):
-        return super().__str__()+"\t"+str(self.name)+"\t"+", ".join(*self.args)+"\n"
+        # TODO investigate correctness of this string representation
+        return super().__str__() + "\t" + str(self.name) + "\t" + ", ".join(self.args) + "\n"
 
 
 class ASMLine(NamedTuple):
