@@ -188,7 +188,7 @@ class Directive(Statement):
             self.args = list(args)
 
     def __repr__(self):
-        return repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args)
+        return "Directive(" + repr(self.name) + ", " + repr(self.labels) + ", " + repr(self.args) + ")"
 
     def __str__(self):
         # TODO investigate correctness of this string representation
