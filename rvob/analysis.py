@@ -165,13 +165,12 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     return cfg
 
 
-def get_stepper(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, int] = "main"
-                ) -> Iterator[ASMLine]:
+def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
     """
     Step execution through the CFG.
 
-    Given a CFG, a map for symbol resolution and an optional starting point (entry-point), generates an iterator that
-    follows the program's execution flow.
+    Given a CFG and an optional starting point (entry-point), generates an iterator that follows the program's execution
+    flow.
 
     When confronted by the bifurcating edges of a conditional branch situation, callers can `.send()` the condition's
     truth value in order to select the branch to follow.
@@ -182,30 +181,20 @@ def get_stepper(cfg: DiGraph, sym_tab: Mapping[str, int], entry_pnt: Union[str, 
     to signal the fact, then regularly proceeds by following the return arc.
 
     :param cfg: a control-flow graph representing the program
-    :param sym_tab: a dictionary used for label resolution
     :param entry_pnt: the entry point from which iteration should start, either in label form or as a line number
     :return: an iterator that produces ASMLine objects
+    :raise ValueError: when the specified entry point does not belong to any node of the CFG
     """
-
-    if type(entry_pnt) is str:
-        # Convert label to an actual entry point
-        try:
-            entry_pnt = sym_tab[entry_pnt]
-        except KeyError:
-            raise ValueError("Invalid entry-point: label \"" + entry_pnt + "\" does not exist")
 
     # Find the node containing the entry point
     # Be aware that the entry point *MUST* refer to an instruction; nodes only contain those.
-    current_node = None
-    for nid in cfg.nodes.keys():
-        if "external" not in cfg.nodes[nid]:
-            view: FragmentView = cfg.nodes[nid]["block"]
-            if view.get_begin() <= entry_pnt < view.get_end():
-                current_node = nid
-                break
-
-    if current_node is None:
-        raise ValueError("Invalid entry-point: no statement at line " + entry_pnt + "is contained in this graph")
+    for nid in [n for n in cfg.nodes.keys() if "external" not in cfg.nodes[n]]:
+        view: FragmentView = cfg.nodes[nid]["block"]
+        if view.get_begin() <= entry_pnt < view.get_end():
+            current_node = nid
+            break
+    else:
+        raise ValueError("Invalid entry-point: no statement at line " + str(entry_pnt) + "is contained in this graph")
 
     # Prepare objects for iteration
     block: FragmentView = cfg.nodes[current_node]["block"]
