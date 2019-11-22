@@ -102,7 +102,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         if 'reg_bind' not in cfg.nodes[i]:
             for l in linelist:
                 line = l[1]
-                if type(line) is Instruction:
+                if isinstance(line, Instruction):
                     if opcodes[line.opcode][0] == 2:
                         reg_read(localreg, line.r2, l[0])
                     if opcodes[line.opcode][0] == 3:
