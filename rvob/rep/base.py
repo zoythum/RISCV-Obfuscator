@@ -69,7 +69,7 @@ class Instruction(Statement):
 
                 # Prepare the mask for cutting the supplied value's bit representation to the specified size
                 mask = 0
-                for f in range(1, size):
+                for f in range(0, size):
                     mask += 2 ** f
 
                 value = value & mask
