@@ -19,7 +19,10 @@ def substitute_reg(cfg: DiGraph):
     # value that will be our initial_id is selected and the final path is obtained removing each node
     # from 0 to inital_id
     nodes = shortest_path(cfg, 0, final_id)
-    initial_id = nodes[randint(1, len(nodes)-2)]
+    try:
+        initial_id = nodes[randint(1, len(nodes)-2)]
+    except ValueError:
+        return
     while nodes[0] != initial_id:
         nodes.pop(0)
 
@@ -57,7 +60,7 @@ def substitute_reg(cfg: DiGraph):
 
         # If the used_register we chose is required from one of the blocks
         if used_register in current_node['provides'] and used_register in requires_other:
-            current_node['block'].insert(used_values.endline, "mv "
+            current_node['block'].insert(used_values.endline - 1, "mv "
                                          + str(used_register.name).lower() + " " + str(unused_register).lower())
 
         if value_id == randint(0, len(current_node['reg_bind'][used_register]) - 1) and \
@@ -73,8 +76,8 @@ def substitute_reg(cfg: DiGraph):
         line_num = used_values.initline
 
         if isinstance(current_node['block'][line_num], Instruction) and \
-                current_node['block'][line_num]['r1'] == used_register:
-            current_node['block'][line_num]['r1'] = unused_register
+                current_node['block'][line_num].r1 == used_register:
+            current_node['block'][line_num].r1 = unused_register
 
         # For each line in which the used_reg contains the same value we operate a switch of registers
         # checking each register
@@ -88,21 +91,20 @@ def substitute_reg(cfg: DiGraph):
                         unused_register)
 
         setup_contracts(cfg)
-        bind_register_to_value(cfg, current_node)
+        bind_register_to_value(cfg, current_node_id)
         if extended:
             bind_register_to_value(cfg, next_node_id)
 
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
-    # TODO modifica seguendo cambio tomas
     while line_num < endline:
         if isinstance(current_node['block'][line_num], Instruction):
-            if current_node['block'][line_num]['r1'] == used_register:
-                current_node['block'][line_num]['r1'] = unused_register
-            if current_node['block'][line_num]['r2'] == used_register:
-                current_node['block'][line_num]['r2'] = unused_register
-            if current_node['block'][line_num]['r3'] == used_register:
-                current_node['block'][line_num]['r3'] = unused_register
+            if current_node['block'][line_num].r1 == used_register:
+                current_node['block'][line_num].r1 = unused_register
+            if current_node['block'][line_num].r2 == used_register:
+                current_node['block'][line_num].r2 = unused_register
+            if current_node['block'][line_num].r3 == used_register:
+                current_node['block'][line_num].r3 = unused_register
 
         line_num += 1
 
