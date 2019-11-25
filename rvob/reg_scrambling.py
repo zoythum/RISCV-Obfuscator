@@ -60,8 +60,16 @@ def substitute_reg(cfg: DiGraph):
 
         # If the used_register we chose is required from one of the blocks
         if used_register in current_node['provides'] and used_register in requires_other:
-            current_node['block'].insert(used_values.endline - 1, "mv "
-                                         + str(used_register.name).lower() + " " + str(unused_register).lower())
+            try:
+                print("inserito")
+                current_node['block'].insert(used_values.endline - 1,
+                                        Instruction("mv", "_2arg", None, used_register, unused_register, None, None))
+
+            except IndexError:
+                print("node_id: {}".format(current_node_id))
+                print("1: current id: {}, line_num: {}".format(current_node_id, used_values.endline - 1))
+                for i in range(current_node["block"].get_begin(), current_node["block"].get_end()):
+                    print("{}: {}".format(i, current_node["block"][i]))
 
         if value_id == randint(0, len(current_node['reg_bind'][used_register]) - 1) and \
                 used_register in cfg.nodes[next_node_id]['requires']:
@@ -73,21 +81,28 @@ def substitute_reg(cfg: DiGraph):
                 # Otherwise we know that the first value we are encountering in the next block is the same as this one
                 extended = True
 
+        # used_values = current_node['reg_bind'][used_register][value_id]
         line_num = used_values.initline
 
-        if isinstance(current_node['block'][line_num], Instruction) and \
-                current_node['block'][line_num].r1 == used_register:
-            current_node['block'][line_num].r1 = unused_register
+        try:
+            if isinstance(current_node['block'][line_num], Instruction) and \
+                    current_node['block'][line_num].r1 == used_register:
+                current_node['block'][line_num].r1 = unused_register
+        except IndexError:
+            print("node_id: {}".format(current_node_id))
+            print("line_num: {}".format(line_num))
+            for i in range(current_node["block"].get_begin(), current_node["block"].get_end()):
+                print("{}: {}".format(i, current_node["block"][i]))
 
         # For each line in which the used_reg contains the same value we operate a switch of registers
         # checking each register
-        switch_regs(line_num, used_values.endline, current_node, used_register, unused_register)
+        switch_regs(line_num, used_values.endline - 1, current_node, used_register, unused_register)
 
         if extended:
             # If the value continues in the next block we must change also the next value
             # TODO potrebbe esserci un problema qui, perché?
-            used_values = cfg.nodes[current_node_id + 1]['reg_bind'][used_register][0]
-            switch_regs(used_values.initline, used_values.endline, cfg.nodes[next_node_id], used_register,
+            used_values = cfg.nodes[next_node_id]['reg_bind'][used_register][0]
+            switch_regs(used_values.initline, used_values.endline - 1, cfg.nodes[next_node_id], used_register,
                         unused_register)
 
         setup_contracts(cfg)
@@ -98,13 +113,18 @@ def substitute_reg(cfg: DiGraph):
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
     while line_num < endline:
-        if isinstance(current_node['block'][line_num], Instruction):
-            if current_node['block'][line_num].r1 == used_register:
-                current_node['block'][line_num].r1 = unused_register
-            if current_node['block'][line_num].r2 == used_register:
-                current_node['block'][line_num].r2 = unused_register
-            if current_node['block'][line_num].r3 == used_register:
-                current_node['block'][line_num].r3 = unused_register
+        try:
+            if isinstance(current_node['block'][line_num], Instruction):
+                if current_node['block'][line_num].r1 == used_register:
+                    current_node['block'][line_num].r1 = unused_register
+                if current_node['block'][line_num].r2 == used_register:
+                    current_node['block'][line_num].r2 = unused_register
+                if current_node['block'][line_num].r3 == used_register:
+                    current_node['block'][line_num].r3 = unused_register
+        except IndexError:
+            print("2: line_num: {}".format(line_num))
+            for i in range(current_node["block"].get_begin(), current_node["block"].get_end()):
+                print("{}: {}".format(i, current_node["block"][i]))
 
         line_num += 1
 
@@ -149,3 +169,5 @@ def find_unmodifiable_regs(cfg: DiGraph, current_node, nodes) -> set:
                     unmodifiable.add(reg)
 
     return unmodifiable
+
+
