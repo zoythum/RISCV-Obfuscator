@@ -640,6 +640,9 @@ class FragmentView(CodeFragment):
         # catalogue with this
         return hash((id(self), id(self._origin)))
 
+    def __str__(self):
+        return "".join(str(stm) for stm in iter(self))
+
 
 class Source(FragmentCopy):
     """

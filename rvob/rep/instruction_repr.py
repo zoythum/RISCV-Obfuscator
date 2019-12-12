@@ -1,81 +1,81 @@
 
 
-def uFamily(instr):
+def u_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)+"\n"
 
 
-def iFamily(instr):
+def i_family(instr):
     return "\t" + str(instr.opcode) + "\t" + instr.r1.name.lower() + "," + instr.r2.name.lower() \
            + "," + str(instr.immediate) + "\n"
 
 
-def sFamily(instr):
+def s_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)\
            + "(" + instr.r2.name.lower()+")\n"
 
 
-def rFamily(instr):
+def r_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","\
            +instr.r2.name.lower()+","+instr.r3.name.lower()+"\n"
 
 
-def jFamily(instr):
+def j_family(instr):
     return "\t"+str(instr.opcode)+"\t"+str(instr.immediate)+"\n"
 
 
-def jrFamily(instr):
+def jr_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+"\n"
 
 
-def bFamily(instr):
+def b_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+instr.r2.name.lower()+","\
            + str(instr.immediate)+"\n"
 
 
-def alFamily(instr):
+def al_family(instr):
     return "\t" + str(instr.opcode) + "\t" + instr.r1.name.lower() + "," + str(instr.immediate) + "(" \
            + instr.r2.name.lower() + ")\n"
 
 
-def asFamily(instr):
+def as_family(instr):
     return "\t" + str(instr.opcode) + "\t" + instr.r1.name.lower() + "," + instr.r2.name.lower() \
            + "," + str(instr.immediate) + "(" + instr.r3.name.lower() + ")\n"
 
 
-def sextFamily(instr):
+def sext_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+instr.r2.name.lower()+"\n"
 
 
-def _2argFamily(instr):
+def _2arg_family(instr):
     if instr.r2 is None:
         return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)+"\n"
     else:
         return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+instr.r2.name.lower()+"\n"
 
 
-def bzFamily(instr):
+def bz_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)+"\n"
 
 
-def nopFamily(instr):
+def nop_family(instr):
     return "\t"+str(instr.opcode)+"\n"
 
 
-def snezFamily(instr):
+def snez_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+instr.r2.name.lower()+"\n"
 
 
-familystr = {"u": uFamily,
-             "i": iFamily,
-             "s": sFamily,
-             "r": rFamily,
-             "j": jFamily,
-             "jr": jrFamily,
-             "b": bFamily,
-             "al": alFamily,
-             "as": asFamily,
-             "sext": sextFamily,
-             "_2arg": _2argFamily,
-             "bz": bzFamily,
-             "nop": nopFamily,
-             "snez": snezFamily}
+familystr = {"u": u_family,
+             "i": i_family,
+             "s": s_family,
+             "r": r_family,
+             "j": j_family,
+             "jr": jr_family,
+             "b": b_family,
+             "al": al_family,
+             "as": as_family,
+             "sext": sext_family,
+             "_2arg": _2arg_family,
+             "bz": bz_family,
+             "nop": nop_family,
+             "snez": snez_family}
