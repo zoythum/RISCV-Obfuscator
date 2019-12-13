@@ -232,3 +232,8 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
         # Load the next block and continue iteration
         block = cfg.nodes[current_node]["block"]
         line_iterator = to_line_iterator(iter(block), block.get_begin())
+
+
+def free_regs_at(line_num: int, cfg: DiGraph) -> set:
+    # returns a set of all the available registers at line "line_num"
+    pass
