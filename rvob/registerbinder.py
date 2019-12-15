@@ -52,7 +52,7 @@ def satisfy_contract_in(cfg: DiGraph, node, nodeid, regdict):
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        block = ValueBlock(node["block"].get_begin(), node["block"].get_end() - 1, next(counter))
+        block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
         regdict[register] = [block]
 
 
@@ -68,8 +68,8 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        if regdict[register][-1].endline != node['block'].get_end():
-            regdict[register][-1].endline = node['block'].get_end()
+        if regdict[register][-1].endline != node['block'].end:
+            regdict[register][-1].endline = node['block'].end
 
 
 def bind_register_to_value(cfg: DiGraph, node: int = None):
@@ -97,7 +97,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         # localreg: the dictionary that will be put into the node at the end of the binding process
         localreg = {}
 
-        line_number = cfg.nodes[i]["block"].get_begin()
+        line_number = cfg.nodes[i]["block"].begin
         for line in iter(cfg.nodes[i]["block"]):
             linelist.append((line_number, line))
             line_number += 1
@@ -113,7 +113,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
 
                     # Check if the opcode corresponds to a write operation
                     if opcodes[line.opcode][1]:
-                        block = ValueBlock(l[0], cfg.nodes[i]['block'].get_end() - 1, next(counter))
+                        block = ValueBlock(l[0], cfg.nodes[i]['block'].end - 1, next(counter))
                         if line.r1 in localreg.keys():
                             if localreg[line.r1][-1].endline == l[0]:
                                 localreg[line.r1].append(block)
