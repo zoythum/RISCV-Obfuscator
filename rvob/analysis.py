@@ -190,7 +190,7 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
     # Be aware that the entry point *MUST* refer to an instruction; nodes only contain those.
     for nid in [n for n in cfg.nodes.keys() if "external" not in cfg.nodes[n]]:
         view: FragmentView = cfg.nodes[nid]["block"]
-        if view.get_begin() <= entry_pnt < view.get_end():
+        if view.begin <= entry_pnt < view.end:
             current_node = nid
             break
     else:
@@ -231,4 +231,9 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
 
         # Load the next block and continue iteration
         block = cfg.nodes[current_node]["block"]
-        line_iterator = to_line_iterator(iter(block), block.get_begin())
+        line_iterator = to_line_iterator(iter(block), block.begin)
+
+
+def free_regs_at(line_num: int, cfg: DiGraph) -> set:
+    # returns a set of all the available registers at line "line_num"
+    pass

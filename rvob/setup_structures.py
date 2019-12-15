@@ -21,7 +21,7 @@ def fill_contract(cfg: DiGraph, node_id: int):
 
     block: FragmentView = cfg.nodes[node_id]["block"]
 
-    for i in range(block.get_end() - 1, block.get_begin() - 1, -1):
+    for i in range(block.end - 1, block.begin - 1, -1):
         current_line = block[i]
         if type(current_line) == Instruction:
             opcode = current_line.opcode
