@@ -25,7 +25,7 @@ counter = count()
 
 def populate_linelist(cfg: DiGraph, node_num: int) -> list:
     line_list = []
-    line_number = cfg.nodes[node_num]["block"].begin()
+    line_number = cfg.nodes[node_num]["block"].begin
     for line in iter(cfg.nodes[node_num]["block"]):
         line_list.append((line_number, line))
         line_number += 1
@@ -103,7 +103,7 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
-        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end() - 1, next(counter))
+        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter))
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
