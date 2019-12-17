@@ -23,6 +23,15 @@ class ValueBlock:
 counter = count()
 
 
+def populate_linelist(cfg: DiGraph, node_num: int) -> list:
+    line_list = []
+    line_number = cfg.nodes[node_num]["block"].begin()
+    for line in iter(cfg.nodes[node_num]["block"]):
+        line_list.append((line_number, line))
+        line_number += 1
+    return line_list
+
+
 def reg_read(regdict, reg, line):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
@@ -38,6 +47,18 @@ def reg_read(regdict, reg, line):
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
+
+
+def reg_write(block: ValueBlock, ln, localreg):
+    line = ln[1]
+    if line.r1 in localreg.keys():
+        if localreg[line.r1][-1].endline == ln[0]:
+            localreg[line.r1].append(block)
+        else:
+            localreg[line.r1][-1].endline = (ln[0] - 1)
+            localreg[line.r1].append(block)
+    else:
+        localreg[line.r1] = [block]
 
 
 def satisfy_contract_in(cfg: DiGraph, node, nodeid, regdict):
@@ -60,8 +81,9 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     """
     this function assure that the register in the 'requires' of the successors nodes have an assigned value, and then
     can't be modified, up to the end of the node's block of code.
-    ;:param cfg: the graph of the analyzed program
+    :param cfg: the graph of the analyzed program
     :param node: the node under analysis
+    :param nodeid: the id of the node under analysis
     :param regdict: the dictionary of the used registers
     """
     required = set()
@@ -70,6 +92,22 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     for register in required:
         if regdict[register][-1].endline != node['block'].end:
             regdict[register][-1].endline = node['block'].end
+
+
+def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
+    line = ln[1]
+    if opcodes[line.opcode][0] == 2:
+        reg_read(localreg, line.r2, ln[0])
+    if opcodes[line.opcode][0] == 3:
+        reg_read(localreg, line.r3, ln[0])
+
+    # Check if the opcode corresponds to a write operation
+    if opcodes[line.opcode][1]:
+        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end() - 1, next(counter))
+        reg_write(block, ln, localreg)
+    else:
+        # the opcode correspond to a read operation
+        reg_read(localreg, line.r1, ln[0])
 
 
 def bind_register_to_value(cfg: DiGraph, node: int = None):
@@ -92,38 +130,20 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
             return
 
     for i in nodelist:
-        # linelist: contains tuple <'line_number', 'line'> of all the lines that appartains to the current node
-        linelist = []
+        if 'reg_bind' in cfg.nodes[i]:
+            # this node is already analyzed so we skip it
+            continue
+
+        # linelist: contains tuple <'line_number', 'line'> of all the lines that compose the current node
+        linelist = populate_linelist(cfg, i)
         # localreg: the dictionary that will be put into the node at the end of the binding process
         localreg = {}
 
-        line_number = cfg.nodes[i]["block"].begin
-        for line in iter(cfg.nodes[i]["block"]):
-            linelist.append((line_number, line))
-            line_number += 1
+        # bind the used registers to a symbolic value
         satisfy_contract_in(cfg, cfg.nodes[i], i, localreg)
-        if 'reg_bind' not in cfg.nodes[i]:
-            for l in linelist:
-                line = l[1]
-                if isinstance(line, Instruction) and (opcodes[line.opcode][0] != 0):
-                    if opcodes[line.opcode][0] == 2:
-                        reg_read(localreg, line.r2, l[0])
-                    if opcodes[line.opcode][0] == 3:
-                        reg_read(localreg, line.r3, l[0])
-
-                    # Check if the opcode corresponds to a write operation
-                    if opcodes[line.opcode][1]:
-                        block = ValueBlock(l[0], cfg.nodes[i]['block'].end - 1, next(counter))
-                        if line.r1 in localreg.keys():
-                            if localreg[line.r1][-1].endline == l[0]:
-                                localreg[line.r1].append(block)
-                            else:
-                                localreg[line.r1][-1].endline = (l[0] - 1)
-                                localreg[line.r1].append(block)
-                        else:
-                            localreg[line.r1] = [block]
-                    else:
-                        # the opcode correspond to a read operation
-                        reg_read(localreg, line.r1, l[0])
-            satisfy_contract_out(cfg, cfg.nodes[i], i, localreg)
-            cfg.nodes[i]['reg_bind'] = localreg
+        for ln in linelist:
+            line = ln[1]
+            if isinstance(line, Instruction) and (opcodes[line.opcode][0] != 0):
+                evaluate_instr(cfg, i, ln, localreg)
+        satisfy_contract_out(cfg, cfg.nodes[i], i, localreg)
+        cfg.nodes[i]['reg_bind'] = localreg
