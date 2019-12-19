@@ -47,7 +47,7 @@ class MemOps(Opcodes):
 
 class Promise:
     op: Opcodes
-    dr: int
+    rd: int
     rs1: int
     rs2: Optional[int]
     const: Instruction.ImmediateConstant
