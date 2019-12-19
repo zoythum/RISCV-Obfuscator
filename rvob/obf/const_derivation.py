@@ -78,7 +78,9 @@ def mem_primer(target: Instruction) -> Derivation:
 
 
 def imm_primer(target: Instruction) -> Derivation:
-    pass
+    # Substitute the given instruction with its R-format counterpart and initialize the goal with its immediate value
+    return Derivation([Promise(ALOps[target.opcode[:-1]], target.r1, target.r2, 0, None)],
+                      Goal(0, target.immediate.value))
 
 
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
