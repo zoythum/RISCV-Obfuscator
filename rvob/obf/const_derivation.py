@@ -1,7 +1,8 @@
 from enum import Enum, auto
-from typing import Tuple, List, Optional, NamedTuple
+from typing import Tuple, List, Optional, NamedTuple, Union
 
 from rep.base import Instruction
+from structures import Register
 
 
 class Opcodes(Enum):
@@ -47,14 +48,14 @@ class MemOps(Opcodes):
 
 class Promise(NamedTuple):
     op: Opcodes
-    rd: int
-    rs1: int
-    rs2: Optional[int]
-    const: Instruction.ImmediateConstant
+    rd: Union[int, Register]
+    rs1: Union[int, Register]
+    rs2: Optional[Union[int, Register]]
+    const: Optional[Instruction.ImmediateConstant]
 
 
 class Goal(NamedTuple):
-    reg: int
+    reg: Union[int, Register]
     const: Instruction.ImmediateConstant
 
 
@@ -64,7 +65,16 @@ class Derivation(NamedTuple):
 
 
 def mem_primer(target: Instruction) -> Derivation:
-    pass
+    # Generate an equivalent instruction sequence as a memory op with no offset and an already incremented base
+    # 0: new address base
+    # 1: register from where the offset is to be loaded
+    starting_sequence = [
+        Promise(MemOps[target.opcode.upper()], target.r1, 0, None, Instruction.ImmediateConstant(12, None, 0)),
+        Promise(ALOps.ADD, 0, target.r2, 1, None)
+    ]
+
+    # Prime the derivation with the starting sequence anf the correct promise
+    return Derivation(starting_sequence, Goal(1, target.immediate.value))
 
 
 def imm_primer(target: Instruction) -> Derivation:
