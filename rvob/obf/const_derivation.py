@@ -1,5 +1,6 @@
 from enum import Enum, auto
 from typing import Tuple, List, Optional, NamedTuple, Union
+from secrets import randbits
 
 from rep.base import Instruction
 from structures import Register
@@ -88,15 +89,27 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
 
 def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
-    pass
+    noise = randbits(goal.const.size)
+    # (A and !B) or (A and B) equals A
+    return (Promise(Opcodes.ORI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val & ~noise)),
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val & noise)))
 
 
 def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
-    pass
+    noise = randbits(goal.const.size)
+    # (A or !B) and (A or B) equals A
+    return (Promise(Opcodes.ANDI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val | ~noise)),
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val | noise)))
 
 
 def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
-    pass
+    noise = randbits(goal.const.size)
+    # (A xor B) xor B equals A
+    return (Promise(Opcodes.XORI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val ^ noise)),
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, noise)))
 
 
 def terminator(goal: Goal) -> Promise:
