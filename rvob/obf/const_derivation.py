@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, NamedTuple
 
 from rep.base import Instruction
 
@@ -45,7 +45,7 @@ class MemOps(Opcodes):
         self.object_size = object_size
 
 
-class Promise:
+class Promise(NamedTuple):
     op: Opcodes
     rd: int
     rs1: int
@@ -53,12 +53,12 @@ class Promise:
     const: Instruction.ImmediateConstant
 
 
-class Goal:
+class Goal(NamedTuple):
     reg: int
     const: Instruction.ImmediateConstant
 
 
-class Derivation(Tuple):
+class Derivation(NamedTuple):
     chain: List[Promise]
     remainder: Goal
 
