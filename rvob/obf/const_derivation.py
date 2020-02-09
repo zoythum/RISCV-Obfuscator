@@ -23,16 +23,18 @@ class ALOps(Opcodes):
     XORI = auto()
 
 
+class Direction(Enum):
+    FROM_MEM = auto()
+    TO_MEM = auto()
+
+
+class ObjectSize(Enum):
+    BYTE = 8
+    HALF = 16
+    WORD = 32
+
+
 class MemOps(Opcodes):
-    class Direction(Enum):
-        FROM_MEM = auto()
-        TO_MEM = auto()
-
-    class ObjectSize(Enum):
-        BYTE = 8
-        HALF = 16
-        WORD = 32
-
     LW = (Direction.FROM_MEM, ObjectSize.WORD)
     LH = (Direction.FROM_MEM, ObjectSize.HALF)
     LHU = (Direction.FROM_MEM, ObjectSize.HALF)
@@ -74,7 +76,7 @@ def mem_primer(target: Instruction) -> Derivation:
         Promise(ALOps.ADD, 0, target.r2, 1, None)
     ]
 
-    # Prime the derivation with the starting sequence anf the correct promise
+    # Prime the derivation with the starting sequence and the correct promise
     return Derivation(starting_sequence, Goal(1, target.immediate.value))
 
 
@@ -117,17 +119,17 @@ def terminator(goal: Goal) -> Promise:
 
 
 primers = {
-    Opcodes.ADD: imm_primer,
-    Opcodes.SUB: imm_primer,
-    Opcodes.AND: imm_primer,
-    Opcodes.OR: imm_primer,
-    Opcodes.XOR: imm_primer,
-    Opcodes.LW: mem_primer,
-    Opcodes.LH: mem_primer,
-    Opcodes.LHU: mem_primer,
-    Opcodes.LB: mem_primer,
-    Opcodes.LBU: mem_primer,
-    Opcodes.SW: mem_primer,
-    Opcodes.SH: mem_primer,
-    Opcodes.SB: mem_primer
+    ALOps.ADD: imm_primer,
+    ALOps.SUB: imm_primer,
+    ALOps.AND: imm_primer,
+    ALOps.OR: imm_primer,
+    ALOps.XOR: imm_primer,
+    MemOps.LW: mem_primer,
+    MemOps.LH: mem_primer,
+    MemOps.LHU: mem_primer,
+    MemOps.LB: mem_primer,
+    MemOps.LBU: mem_primer,
+    MemOps.SW: mem_primer,
+    MemOps.SH: mem_primer,
+    MemOps.SB: mem_primer
 }
