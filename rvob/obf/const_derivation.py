@@ -10,6 +10,10 @@ class Opcodes(Enum):
     pass
 
 
+class OtherOps(Opcodes):
+    LI = auto()
+
+
 class ALOps(Opcodes):
     ADD = auto()
     ADDI = auto()
@@ -52,7 +56,7 @@ class MemOps(Opcodes):
 class Promise(NamedTuple):
     op: Opcodes
     rd: Union[int, Register]
-    rs1: Union[int, Register]
+    rs1: Optional[Union[int, Register]]
     rs2: Optional[Union[int, Register]]
     const: Optional[Instruction.ImmediateConstant]
 
@@ -115,7 +119,9 @@ def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
 
 def terminator(goal: Goal) -> Promise:
-    pass
+    # Simply load the goal's value through a load immediate instruction
+    return Promise(OtherOps.LI, goal.reg, None, None,
+                   Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val))
 
 
 primers = {
