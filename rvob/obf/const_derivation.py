@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from typing import Tuple, List, Optional, NamedTuple, Union
 from secrets import randbits
+from BitVector import BitVector
 
 from rep.base import Instruction
 from structures import Register
@@ -12,6 +13,8 @@ class Opcodes(Enum):
 
 class OtherOps(Opcodes):
     LI = auto()
+    SLLI = auto()
+    SRLI = auto()
 
 
 class ALOps(Opcodes):
@@ -91,7 +94,38 @@ def imm_primer(target: Instruction) -> Derivation:
 
 
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
-    pass
+    def _count_leading_zeros(constant: BitVector):
+        leading_zeroes = 0
+        index = 0
+        while constant.rank_of_bit_set_at_index(index) == 0:
+            leading_zeroes += 1
+            index += 1
+
+        return leading_zeroes
+
+    def _count_trailing_zeroes(constant: BitVector):
+        trailing_zeroes = 0
+        while constant[-1] == 0:
+            trailing_zeroes += 1
+            constant = constant >> 1
+
+        return trailing_zeroes
+
+    lead = _count_leading_zeros(goal.const.value)
+    trail = _count_trailing_zeroes(goal.const.value)
+
+    if lead > trail:
+        shift = lead
+        new_val = goal.const.value << lead
+        instruction = OtherOps.SRLI
+    else:
+        shift = trail
+        new_val = goal.const.value >> trail
+        instruction = OtherOps.SLLI
+
+    return (Promise(instruction, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, shift)),
+            Goal(goal.reg + 1, new_val))
 
 
 def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
