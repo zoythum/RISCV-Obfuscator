@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from typing import Tuple, List, Optional, NamedTuple, Union
 from secrets import randbits
+from random import seed, choices, sample, randrange
 from BitVector import BitVector
 
 from rep.base import Instruction
@@ -159,17 +160,38 @@ def terminator(goal: Goal) -> Promise:
 
 
 primers = {
-    ALOps.ADD: imm_primer,
-    ALOps.SUB: imm_primer,
-    ALOps.AND: imm_primer,
-    ALOps.OR: imm_primer,
-    ALOps.XOR: imm_primer,
-    MemOps.LW: mem_primer,
-    MemOps.LH: mem_primer,
-    MemOps.LHU: mem_primer,
-    MemOps.LB: mem_primer,
-    MemOps.LBU: mem_primer,
-    MemOps.SW: mem_primer,
-    MemOps.SH: mem_primer,
-    MemOps.SB: mem_primer
+    "addi": imm_primer,
+    "subi": imm_primer,
+    "andi": imm_primer,
+    "ori": imm_primer,
+    "xori": imm_primer,
+    "lw": mem_primer,
+    "lh": mem_primer,
+    "lhu": mem_primer,
+    "lb": mem_primer,
+    "lbu": mem_primer,
+    "sw": mem_primer,
+    "sh": mem_primer,
+    "sb": mem_primer
 }
+
+logic_obfuscators = [logic_andi_obf, logic_ori_obf, logic_xori_obf]
+
+
+def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_logical: int, min_length: int = 0)\
+        -> List[Promise]:
+    seed()
+    # Prime the obfuscation chain
+    oc = primers[instruction.opcode](instruction)
+
+    # Build the obfuscators' pool
+    obfuscators = choices(population=logic_obfuscators, k=max_logical) + ([shifter_obf] * max_shifts)
+    obfuscators = sample(population=obfuscators, k=randrange(min_length, max_shifts + max_logical))
+
+    # Grow the chain
+    for obf in obfuscators:
+        new_derivation_step, new_goal = obf(oc.remainder)
+        oc = (oc.chain + [new_derivation_step], new_goal)
+
+    # Terminate chain and return it
+    return oc.chain + [terminator(oc.remainder)]
