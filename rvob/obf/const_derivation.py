@@ -85,22 +85,21 @@ def mem_primer(target: Instruction) -> Derivation:
     ]
 
     # Prime the derivation with the starting sequence and the correct promise
-    return Derivation(starting_sequence, Goal(1, target.immediate.value))
+    return Derivation(starting_sequence, Goal(1, target.immediate))
 
 
 def imm_primer(target: Instruction) -> Derivation:
     # Substitute the given instruction with its R-format counterpart and initialize the goal with its immediate value
-    return Derivation([Promise(ALOps[target.opcode[:-1]], target.r1, target.r2, 0, None)],
-                      Goal(0, target.immediate.value))
+    return Derivation([Promise(ALOps[target.opcode[:-1].upper()], target.r1, target.r2, 0, None)],
+                      Goal(0, target.immediate))
 
 
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
     def _count_leading_zeros(constant: BitVector):
         leading_zeroes = 0
-        index = 0
-        while constant.rank_of_bit_set_at_index(index) == 0:
+        while constant[0] == 0:
             leading_zeroes += 1
-            index += 1
+            constant <<= 1
 
         return leading_zeroes
 
@@ -108,7 +107,7 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
         trailing_zeroes = 0
         while constant[-1] == 0:
             trailing_zeroes += 1
-            constant = constant >> 1
+            constant >>= 1
 
         return trailing_zeroes
 
@@ -126,30 +125,33 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
     return (Promise(instruction, goal.reg, goal.reg + 1, None,
                     Instruction.ImmediateConstant(goal.const.size, None, shift)),
-            Goal(goal.reg + 1, new_val))
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(new_val.size, None, new_val.int_val())))
 
 
 def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
     noise = randbits(goal.const.size)
+    immediate = goal.const.int_val
     # (A and !B) or (A and B) equals A
-    return (Promise(Opcodes.ORI, goal.reg, goal.reg + 1, None,
-                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val & ~noise)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val & noise)))
+    return (Promise(ALOps.ORI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, immediate & ~noise)),
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
 
 
 def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
     noise = randbits(goal.const.size)
+    immediate = goal.const.int_val
     # (A or !B) and (A or B) equals A
-    return (Promise(Opcodes.ANDI, goal.reg, goal.reg + 1, None,
-                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val | ~noise)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val | noise)))
+    return (Promise(ALOps.ANDI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, immediate | ~noise)),
+            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
 
 
 def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
     noise = randbits(goal.const.size)
+    immediate = goal.const.int_val
     # (A xor B) xor B equals A
-    return (Promise(Opcodes.XORI, goal.reg, goal.reg + 1, None,
-                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val ^ noise)),
+    return (Promise(ALOps.XORI, goal.reg, goal.reg + 1, None,
+                    Instruction.ImmediateConstant(goal.const.size, None, immediate ^ noise)),
             Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, noise)))
 
 
@@ -191,7 +193,7 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
     # Grow the chain
     for obf in obfuscators:
         new_derivation_step, new_goal = obf(oc.remainder)
-        oc = (oc.chain + [new_derivation_step], new_goal)
+        oc = Derivation(oc.chain + [new_derivation_step], new_goal)
 
     # Terminate chain and return it
     return oc.chain + [terminator(oc.remainder)]
