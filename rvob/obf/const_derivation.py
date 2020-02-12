@@ -13,12 +13,14 @@ class Opcodes(Enum):
 
 
 class OtherOps(Opcodes):
+    """Opcodes of instructions that are neither arithmetic nor memory-related"""
+
     LI = auto()
-    SLLI = auto()
-    SRLI = auto()
 
 
 class ALOps(Opcodes):
+    """Opcodes of arithmetic/logic instructions"""
+
     ADD = auto()
     ADDI = auto()
     SUB = auto()
@@ -29,20 +31,28 @@ class ALOps(Opcodes):
     ORI = auto()
     XOR = auto()
     XORI = auto()
+    SLLI = auto()
+    SRLI = auto()
 
 
+# TODO this enumeration isn't strictly necessary, but I think it can be useful in other places.
 class Direction(Enum):
     FROM_MEM = auto()
     TO_MEM = auto()
 
 
+# TODO this enumeration isn't strictly necessary, but I think it can be useful in other places.
 class ObjectSize(Enum):
+    """The data size on which an instruction operates"""
+
     BYTE = 8
     HALF = 16
     WORD = 32
 
 
 class MemOps(Opcodes):
+    """Memory-related instructions, with information about data direction (to memory/from memory) and data size"""
+
     LW = (Direction.FROM_MEM, ObjectSize.WORD)
     LH = (Direction.FROM_MEM, ObjectSize.HALF)
     LHU = (Direction.FROM_MEM, ObjectSize.HALF)
@@ -58,25 +68,46 @@ class MemOps(Opcodes):
 
 
 class Promise(NamedTuple):
+    """
+    A placeholder for an instruction.
+
+    Obfuscation functions don't directly produce instructions objects. Instead, they output a virtual instruction (a
+    promise), that is: on object which carries the opcode of the represented instruction and a description of its
+    register and immediate operands.
+    A register operand description can be None, if that operand isn't needed by the instruction, a Register object, for
+    a concrete register, or an integer, representing an unresolved register that should be chosen at placement time.
+    An immediate operand description can only be None ore an ImmediateConstant object.
+    """
+
     op: Opcodes
-    rd: Union[int, Register]
+    rd: Optional[Union[int, Register]]
     rs1: Optional[Union[int, Register]]
     rs2: Optional[Union[int, Register]]
     const: Optional[Instruction.ImmediateConstant]
 
 
 class Goal(NamedTuple):
+    """
+    A goal represents an intention of putting a certain value in a register at some point in the execution flow.
+
+    Goals are used by the obfuscation machinery to keep track of the value that needs to be obfuscated and of the
+    register in which subsequent instructions expect to find it.
+    """
+
     reg: Union[int, Register]
     const: Instruction.ImmediateConstant
 
 
 class Derivation(NamedTuple):
+    """The current state of the obfuscated derivation chain for a constant."""
+
     chain: List[Promise]
     remainder: Goal
 
 
 def mem_primer(target: Instruction) -> Derivation:
-    # Generate an equivalent instruction sequence as a memory op with no offset and an already incremented base
+    """Generate an equivalent instruction sequence as a memory op with no offset and an already shifted base."""
+
     # 0: new address base
     # 1: register from where the offset is to be loaded
     starting_sequence = [
@@ -89,12 +120,19 @@ def mem_primer(target: Instruction) -> Derivation:
 
 
 def imm_primer(target: Instruction) -> Derivation:
-    # Substitute the given instruction with its R-format counterpart and initialize the goal with its immediate value
+    """Substitute the given instruction with its R-format counterpart; initialize the goal with its immediate value."""
+
     return Derivation([Promise(ALOps[target.opcode[:-1].upper()], target.r1, target.r2, 0, None)],
                       Goal(0, target.immediate))
 
 
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
+    """
+    Modify a constant by bit-shifting it, producing a promise for an instruction that reverses the shift.
+
+    The shifting direction that results in the highest number of shifts is used.
+    """
+
     def _count_leading_zeros(constant: BitVector):
         leading_zeroes = 0
         while constant[0] == 0:
@@ -117,11 +155,11 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
     if lead > trail:
         shift = lead
         new_val = goal.const.value << lead
-        instruction = OtherOps.SRLI
+        instruction = ALOps.SRLI
     else:
         shift = trail
         new_val = goal.const.value >> trail
-        instruction = OtherOps.SLLI
+        instruction = ALOps.SLLI
 
     return (Promise(instruction, goal.reg, goal.reg + 1, None,
                     Instruction.ImmediateConstant(goal.const.size, None, shift)),
@@ -129,38 +167,62 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
 
 def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
+    """
+    Modifies a constant by or-ing it with a random value.
+
+    The produced promise reverts the transformation based on the identity: (A and !B) or (A and B) = A
+    The value used for obfuscation is derived from high-quality entropy sources.
+    """
+
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    # (A and !B) or (A and B) equals A
     return (Promise(ALOps.ORI, goal.reg, goal.reg + 1, None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate & ~noise)),
             Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
 
 
 def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
+    """
+    Modifies a constant by and-ing it with a random value.
+
+    The produced promise reverts the transformation based on the identity: (A or !B) and (A or B) = A
+    The value used for obfuscation is derived from high-quality entropy sources.
+    """
+
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    # (A or !B) and (A or B) equals A
     return (Promise(ALOps.ANDI, goal.reg, goal.reg + 1, None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate | ~noise)),
             Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
 
 
 def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
+    """
+    Modifies a constant by xor-ing it with a random value.
+
+    The produced promise reverts the transformation based on the identity: (A xor B) xor B = A
+    The value used for obfuscation is derived from high-quality entropy sources.
+    """
+
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    # (A xor B) xor B equals A
     return (Promise(ALOps.XORI, goal.reg, goal.reg + 1, None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate ^ noise)),
             Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, noise)))
 
 
 def terminator(goal: Goal) -> Promise:
-    # Simply load the goal's value through a load immediate instruction
+    """
+    Load the goal's value through a load immediate instruction.
+
+    Used to terminate a derivation chain.
+    """
+
     return Promise(OtherOps.LI, goal.reg, None, None,
                    Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val))
 
 
+# Map opcodes to their correct primers
 primers = {
     "addi": imm_primer,
     "subi": imm_primer,
@@ -177,11 +239,24 @@ primers = {
     "sb": mem_primer
 }
 
+# Catalogue of obfuscators for programmatic access
 logic_obfuscators = [logic_andi_obf, logic_ori_obf, logic_xori_obf]
 
 
-def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_logical: int, min_length: int = 0)\
+def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_logical: int, min_length: int = 0) \
         -> List[Promise]:
+    """
+    Generate an obfuscated derivation chain for a given immediate instruction.
+
+    The generated chain is random in length, composition and ordering, but respects the imposed constraints.
+
+    :param instruction: the instruction to be obfuscated
+    :param max_shifts: the maximum number of shift operations that the derivation chain should contain
+    :param max_logical: the maximum number of boolean logic operations that the derivation chain should contain
+    :param min_length: the minimum length of the derivation chain
+    :return: a list of promises implementing the constant derivation
+    """
+
     seed()
     # Prime the obfuscation chain
     oc = primers[instruction.opcode](instruction)
