@@ -3,6 +3,8 @@ from networkx import DiGraph, neighbors, reverse, simple_cycles
 from rep.base import Instruction
 from rep.fragments import FragmentView
 from rvob.structures import opcodes
+from rvob.analysis import Transition
+from structures import Register
 
 
 def fill_contract(cfg: DiGraph, node_id: int):
@@ -60,9 +62,16 @@ def fill_contract(cfg: DiGraph, node_id: int):
     if None in provides:
         requires.remove(None)
 
+    # If the node we are dealing with is the return node of a function then it provides registers A0 and A1
+    for edge in cfg.edges:
+        data = cfg.get_edge_data(edge[0], edge[1])
+        if edge[0] == node_id and data["kind"] == Transition.RETURN:
+            provides.add(Register.A0)
+            provides.add(Register.A1)
+
     cfg.nodes[node_id]['requires'] = requires
     cfg.nodes[node_id]['provides'] = provides
-    
+
 
 def get_children(cfg: DiGraph, node_id: int):
     # Utility function, recovers the children of a specific node, if the head of the tree should appear as a child it
@@ -141,3 +150,4 @@ def setup_contracts(cfg: DiGraph):
                 remaining_nodes.append(parent)
 
     sanitize_contracts(cfg)
+    
