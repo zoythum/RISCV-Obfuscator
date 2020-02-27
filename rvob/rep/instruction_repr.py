@@ -1,5 +1,4 @@
 
-
 def u_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+str(instr.immediate)+"\n"
 
