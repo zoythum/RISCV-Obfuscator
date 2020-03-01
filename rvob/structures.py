@@ -82,6 +82,7 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'call': (0, False)
     }
 
+# This is a mapping that, for each instruction, associate the relative family name
 opcd_family: Mapping[str, str] = {
     'add': 'r', 'addw': 'r', 'and': 'r', 'or': 'r', 'sext.w': 'sext', 'sll': 'r', 'sllw': 'r', 'sub': 'r', 'subw': 'r',
     'xor': 'r', 'xori': 'i', 'jr': 'jr', 'j': 'j', 'beqz': 'bz', 'bnez': 'bz', 'nop': 'nop', 'blez': 'bz', 'beq': 'b',
