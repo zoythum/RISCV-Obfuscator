@@ -8,11 +8,17 @@ from structures import Register
 
 
 def fill_contract(cfg: DiGraph, node_id: int):
-    # Function that creates the contract for a single node, we use two different sets:
-    # 1) provides contains all the registers written in this node's code block
-    # 2) requires contains all the registers that are read in this node's code block
-    # Initially requires set contains all the registers in the requires sets of the node's children, each time that a
-    # register is written is also removed from the set, otherwise if a register is written then we add it to the set
+    """
+    This function is responsible for creating the contract of a single node and linking it to the node itself.
+    A contract is composed by two different sets
+    1) provides contains all the registers written in this node's code block
+    2) requires contains all the registers that are read in this node's code block
+    Initially requires set contains all the registers in the requires sets of the node's children, each time that a
+    register is written is also removed from the set, otherwise if a register is written then we add it to the set
+    :param cfg: The DiGraph representing the cfg
+    :param node_id: the id of the node analized
+    :return: void
+    """
     provides = set()
     requires = set()
     errors = set()
@@ -74,8 +80,13 @@ def fill_contract(cfg: DiGraph, node_id: int):
 
 
 def get_children(cfg: DiGraph, node_id: int):
-    # Utility function, recovers the children of a specific node, if the head of the tree should appear as a child it
-    # will be ignored
+    """
+    Utility function, recovers the children of a specific node, if the head of the tree should appear as a child it
+    will be ignored
+    :param cfg: The DiGraph representing the cfg
+    :param node_id: Id of the node
+    :return: list of children
+    """
     children = []
     for child in neighbors(cfg, node_id):
         children.append(child)
@@ -85,7 +96,12 @@ def get_children(cfg: DiGraph, node_id: int):
 
 
 def is_sublist(sublist: list, main_list: list):
-    # Utility functions, given two strings checks if the first one is totally contained in the second one
+    """
+    Utility functions, given two strings checks if the first one is totally contained in the second one
+    :param sublist: First list
+    :param main_list: List that could contain the other list
+    :return: Boolean value
+    """
     if len(sublist) >= len(main_list):
         return False
     else:
@@ -96,8 +112,12 @@ def is_sublist(sublist: list, main_list: list):
 
 
 def sanitize_contracts(cfg: DiGraph):
-    # This function sanitizes all the contracts, firstly it finds all the cycles in the graph, then
-    # it copies the cycle head's "requires" contract into each node of the cycle
+    """
+    This function sanitizes all the contracts, firstly it finds all the cycles in the graph, then
+    it copies the cycle head's "requires" contract into each node of the cycle
+    :param cfg: The DiGraph representing the cfg
+    :return: void
+    """
     cycles = list(simple_cycles(cfg))
 
     for elem in list(cycles):
@@ -116,20 +136,31 @@ def sanitize_contracts(cfg: DiGraph):
             cfg.nodes[node]['requires'] = req
 
 
+def get_leaf_nodes(cfg: DiGraph):
+    nodes = []
+    for node in reverse(cfg, False).neighbors(0):
+        if cfg.out_degree(node) == 1:
+            nodes.append(node)
+
+    return nodes
+
+
 def setup_contracts(cfg: DiGraph):
+    """
+    Function responsible for the creation of the contracts of all the nodes of a specific Cfg.
+    It uses the fill_contract function called upon all the nodes one by one.
+    :param cfg: The DiGraph representing the cfg
+    :return: void
+    """
     # TODO maybe we need to execute this function two times to take care of possible loops that are not
     #  satfisfied in the first iteration?
     for i in range(0, len(cfg.nodes)):
         cfg.nodes[i]['provides'] = set()
         cfg.nodes[i]['requires'] = set()
-    # Recovers the leaves of our tree
-    remaining_nodes = []
+
     visited = set()
-    # Adds all the nodes that are leaves but were previously filtered out because of a connection with the head of
-    # the tree (wich should be all the leaves because of the way in wich we create the tree in the first place)
-    for node in reverse(cfg, False).neighbors(0):
-        if cfg.out_degree(node) == 1:
-            remaining_nodes.append(node)
+    # Recovers the leaves of our tree
+    remaining_nodes = get_leaf_nodes(cfg)
 
     # Core loop of the function, its behaviour is:
     # 1) check if we still have nodes that need to be analyzed, if not end
@@ -150,8 +181,6 @@ def setup_contracts(cfg: DiGraph):
                 remaining_nodes.append(parent)
 
     sanitize_contracts(cfg)
-
-    # organize_calls(cfg)
 
 
 def get_node_from_line(cfg: DiGraph, line_value: int):
@@ -175,5 +204,74 @@ def get_free_regs(cfg: DiGraph, line_value: int):
                 for bind in node[1]['reg_bind'][reg]:
                     if bind.initline <= line_value <= bind.endline:
                         regs.remove(reg)
+    return regs
+
+
+def get_call_edges(cfg: DiGraph):
+    edges = []
+    for edge in cfg.edges:
+        if edge[2]['kind'] == Transition.CALL:
+            edges.append(edge)
+    return edges
+
+
+def get_track_return(cfg: DiGraph, starting_node: int, nodes: list):
+    """
+    Recursively creates the list of nodes contained between one specific node and a RETURN edge
+    :param cfg: The DiGraph representing the cfg
+    :param starting_node: The first node of the list
+    :param nodes: The list itself
+    :return: list of nodes in reverse order (from bottom to top of the cfg)
+    """
+    for edge in cfg.edges:
+        if edge[2]['kind'] == Transition.RETURN:
+            return nodes.reverse()
+        if edge[1] == starting_node:
+            nodes.append(edge[1])
+            return get_track_return(cfg, edge[1], nodes)
+
+
+def get_param_regs():
+    regs = set()
+    regs.add(Register.A2)
+    regs.add(Register.A3)
+    regs.add(Register.A4)
+    regs.add(Register.A5)
+    regs.add(Register.A6)
+    regs.add(Register.A7)
+    return regs
+
+
+def organize_calls(cfg: DiGraph):
+    """
+    This function fixes the requires set of the nodes that are returning points from function calls.
+    It works by first identifying all the set of nodes contained between any couple of RETURN-CALL edges then
+    it iterates through the nodes adding each of the registers from a2 to a7 that are written into a set,
+    this set is added to the requires of the node immediately after the CALL edge
+    :param cfg: The DiGraph representing the cfg
+    :return: void
+    """
+    call_edges = get_call_edges(cfg)
+    for edge in call_edges:
+        regs = set()
+        nodes = get_track_return(cfg, edge[0], [])
+        for node_id in nodes:
+            regs = get_used_a_regs(cfg, node_id)
+
+        cfg.nodes[edge[1]]['requires'].update(regs)
+
+
+def get_used_a_regs(cfg: DiGraph, node_id: int):
+    a_regs = get_param_regs()
+    regs = set()
+    block: FragmentView = cfg.nodes[node_id]["block"]
+    for i in range(block.end - 1, block.begin - 1, -1):
+        current_line = block[i]
+        if type(current_line) == Instruction:
+            opcode = current_line.opcode
+            r1 = current_line.r1
+            if r1 in a_regs and opcode in opcodes.keys():
+                if opcodes[opcode][1]:
+                    regs.add(r1)
     return regs
 
