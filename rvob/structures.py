@@ -82,6 +82,23 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'call': (0, False)
     }
 
+# This is a mapping that, for each instruction, associate the relative family name
+opcd_family: Mapping[str, str] = {
+    'add': 'r', 'addw': 'r', 'and': 'r', 'or': 'r', 'sext.w': 'sext', 'sll': 'r', 'sllw': 'r', 'sub': 'r', 'subw': 'r',
+    'xor': 'r', 'xori': 'i', 'jr': 'jr', 'j': 'j', 'beqz': 'bz', 'bnez': 'bz', 'nop': 'nop', 'blez': 'bz', 'beq': 'b',
+    'bge': 'b', 'bgeu': 'b', 'blt': 'b', 'ble': 'b', 'bltu': 'b', 'bne': 'b', 'bgt': 'b', 'bgez': 'bz', 'bltz': 'bz',
+    'bleu': 'b', 'addi': 'i', 'addiw': 'i', 'andi': 'i', 'auipc': 'u', 'jal': 'j', 'jalr': 'jr', 'ori': 'i',
+    'slli': 'i', 'slliw': 'i', 'slt': 'r', 'slti': 'i', 'sltiu': 'i', 'sltu': 'r', 'sra': 'r', 'sraw': 'r', 'srai': 'i',
+    'sraiw': 'i', 'srl': 'r', 'srlw': 'r', 'srli': 'i', 'srliw': 'i', 'mul': 'r', 'mulh': 'r', 'mulhsu': 'r',
+    'mulhu': 'r', 'div': 'r', 'divu': 'r', 'rem': 'r', 'remu': 'r', 'mulw': 'r', 'divw': 'r', 'divuw': 'r', 'remw': 'r',
+    'remuw': 'r', 'lr.w': 'al', 'lb': 'i', 'lbu': 's', 'lh': 's', 'lui': 'u', 'lw': 's', 'sb': 's', 'sh': 's',
+    'sw': 's', 'call': 'j', 'sd': 's', 'mv': '_2arg', 'ld': 's', 'li': '_2arg', 'bgtu': 'b', 'lwu': 's', 'lhu': 's',
+    'not': '_2arg', 'negw': '_2arg', 'sc.w': 'as', 'amoswap.w': 'as', 'amoadd.w': 'as', 'amoxor.w': 'as',
+    'amoor.w': 'as', 'amoand.w': 'as', 'amomin.w': 'as', 'amomax.w': 'as', 'amominu.w': 'as', 'amomaxu.w': 'as',
+    'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoand.d': 'as',
+    'amomin.d': 'as', 'amomax.d': 'as', 'amominu.d': 'as', 'amomaxu.d': 'as', 'bgtz': 'bz', 'snez': 'snez'
+}
+
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
 standard_sections: Set[str] = {".text", ".data", ".bss"}
