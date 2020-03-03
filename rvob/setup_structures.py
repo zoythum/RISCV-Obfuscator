@@ -184,9 +184,9 @@ def setup_contracts(cfg: DiGraph):
 
 
 def get_node_from_line(cfg: DiGraph, line_value: int):
-    for node in cfg.nodes:
-        if 'block' in node[1]:
-            if node[1]['block'].begin <= line_value <= node[1]['block'].end:
+    for node in cfg.nodes.values():
+        if 'block' in node:
+            if node['block'].begin <= line_value <= node['block'].end:
                 return node
     return None
 
@@ -199,9 +199,9 @@ def get_free_regs(cfg: DiGraph, line_value: int):
     if node is not None:
         for reg in Register:
             regs.append(reg)
-            if reg in node[1]['reg_bind']:
+            if reg in node['reg_bind']:
                 regs.append(reg)
-                for bind in node[1]['reg_bind'][reg]:
+                for bind in node['reg_bind'][reg]:
                     if bind.initline <= line_value <= bind.endline:
                         regs.remove(reg)
     return regs
