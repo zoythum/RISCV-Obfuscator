@@ -209,7 +209,7 @@ def get_free_regs(cfg: DiGraph, line_value: int):
 
 def get_call_edges(cfg: DiGraph):
     edges = []
-    for edge in cfg.edges:
+    for edge in cfg.edges(data=True):
         if edge[2]['kind'] == Transition.CALL:
             edges.append(edge)
     return edges
@@ -223,9 +223,14 @@ def get_track_return(cfg: DiGraph, starting_node: int, nodes: list):
     :param nodes: The list itself
     :return: list of nodes in reverse order (from bottom to top of the cfg)
     """
-    for edge in cfg.edges:
+    for edge in cfg.edges(data=True):
+        if edge[0] == 0:
+            nodes.append(edge[1])
+            nodes.reverse()
+            return nodes
         if edge[2]['kind'] == Transition.RETURN:
-            return nodes.reverse()
+            nodes.reverse()
+            return nodes
         if edge[1] == starting_node:
             nodes.append(edge[1])
             return get_track_return(cfg, edge[1], nodes)
@@ -274,4 +279,3 @@ def get_used_a_regs(cfg: DiGraph, node_id: int):
                 if opcodes[opcode][1]:
                     regs.add(r1)
     return regs
-

@@ -78,8 +78,8 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'amomax.d': (3, True), 'amominu.d': (3, True), 'amomaxu.d': (3, True), 'jr': (1, False), 'j': (0, False),
     'beq': (2, False), 'bne': (2, False), 'blt': (2, False), 'bge': (2, False), 'ble': (2, False), 'bltu': (2, False),
     'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
-    'beqz': (1, False), 'bnez': (1, False), 'bgez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False),
-    'call': (0, False)
+    'beqz': (1, False), 'bnez': (1, False), 'blez': (1, False),
+    'bgez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False), 'call': (0, False)
     }
 
 # This is a mapping that, for each instruction, associate the relative family name
