@@ -59,7 +59,7 @@ def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: R
                 return Report(node_chain, reg_pool)
             node_chain[-1].end_line += 1
         successors = list(node for node in cfg.successors(actual_node))
-        if len(successors) >= 2:
+        if (len(successors) >= 2) or ('external' in cfg.nodes[successors[0]]):
             return Report(node_chain, reg_pool)
         else:
             actual_node = successors[0]
