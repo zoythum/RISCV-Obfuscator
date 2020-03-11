@@ -64,6 +64,10 @@ def snez_family(instr):
     return "\t"+str(instr.opcode)+"\t"+instr.r1.name.lower()+","+instr.r2.name.lower()+"\n"
 
 
+def li_family(instr):
+    return "\t" + str(instr.opcode) + "\t" + instr.r1.name.lower() + "," + str(instr.immediate) + "\n"
+
+
 familystr = {"u": u_family,
              "i": i_family,
              "s": s_family,
@@ -77,4 +81,5 @@ familystr = {"u": u_family,
              "_2arg": _2arg_family,
              "bz": bz_family,
              "nop": nop_family,
-             "snez": snez_family}
+             "snez": snez_family,
+             "li": li_family}
