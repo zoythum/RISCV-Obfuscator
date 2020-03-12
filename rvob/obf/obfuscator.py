@@ -160,6 +160,7 @@ def placer(cfg: DiGraph, promises: List[Promise], report: Report):
     register_matrix = {}
     positions = generate_positions(report, len(promises))
     instr_queue = list()
+    promises.reverse()
     for prom in promises:
         rd = check_reg(prom.rd, register_matrix, report.reg_pool)
         rs1 = check_reg(prom.rs1, register_matrix, report.reg_pool)

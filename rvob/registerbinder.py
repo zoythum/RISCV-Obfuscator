@@ -32,18 +32,19 @@ def populate_linelist(cfg: DiGraph, node_num: int) -> list:
     return line_list
 
 
-def reg_read(regdict, reg, line):
+def reg_read(regdict, reg, line, block_init):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
     him is set to the current line,
     otherwise the register is added to the dictionary and a new block will be created
-    :param regdict: is the dictionary that store the register accessed in the node under analysis
-    :param reg: is the register accessed by the operation under analysis
-    :param line: is the line at which the operation occurs
+    :@param regdict: is the dictionary that store the register accessed in the node under analysis
+    :@param reg: is the register accessed by the operation under analysis
+    :@param line: is the line at which the operation occurs
+    :@param block_init: the line at which start the block under analysis
     """
 
     if reg not in regdict.keys():
-        block = ValueBlock(line, line, next(counter))
+        block = ValueBlock(block_init, line, next(counter))
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
@@ -97,9 +98,9 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     line = ln[1]
     if opcodes[line.opcode][0] == 2:
-        reg_read(localreg, line.r2, ln[0])
+        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin)
     if opcodes[line.opcode][0] == 3:
-        reg_read(localreg, line.r3, ln[0])
+        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin)
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
@@ -107,7 +108,7 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
-        reg_read(localreg, line.r1, ln[0])
+        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin)
 
 
 def bind_register_to_value(cfg: DiGraph, node: int = None):
