@@ -184,10 +184,14 @@ def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
     @param node_id: the id of the node where is collocated the instruction to obfuscate
     @param target_instr: the line of the instruction to obfuscate
     """
-    instruction = cfg.nodes[node_id]["block"].pop(target_instr)
+    instruction = cfg.nodes[node_id]["block"][target_instr]
     max_shift = randint(0, 10)
     max_logical = randint(0, 10)
     promise_chain = generate_derivation_chain(instruction, max_shift, max_logical)
     needed_reg = calc_unresolved_register(promise_chain)
-    report = calc_nodes_chain(cfg, node_id, target_instr, instruction.r1, needed_reg)
+    report = calc_nodes_chain(cfg, node_id, target_instr + 1, instruction.r1, needed_reg)
     placer(cfg, promise_chain, report)
+    if len(instruction.labels) > 0:
+        succ_instr = cfg.nodes[node_id]['block'][target_instr + 1]
+        succ_instr.labels = instruction.labels
+        del cfg.nodes[node_id]['block'][target_instr]

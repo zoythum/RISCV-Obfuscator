@@ -111,6 +111,10 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
         reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin)
 
 
+def purge_external(cfg: DiGraph, nodelist: list):
+    nodelist[:] = (x for x in nodelist if 'external' not in cfg.nodes[x])
+
+
 def bind_register_to_value(cfg: DiGraph, node: int = None):
     """
     This is the main function, it is responsible for the binding process that associate to every register used in a
@@ -121,8 +125,8 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
     """
     if node is None:
         nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
+        purge_external(cfg, nodelist)
         # remove the exterior root node
-        nodelist.remove(0)
     else:
         if node != 0:
             nodelist = [node]
@@ -131,7 +135,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
             return
 
     for i in nodelist:
-        if ('reg_bind' in cfg.nodes[i]) or ('external' in cfg.nodes[i]):
+        if 'reg_bind' in cfg.nodes[i]:
             # this node is already analyzed so we skip it
             continue
 
