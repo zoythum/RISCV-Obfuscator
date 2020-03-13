@@ -131,7 +131,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
             return
 
     for i in nodelist:
-        if 'reg_bind' in cfg.nodes[i]:
+        if ('reg_bind' in cfg.nodes[i]) or ('external' in cfg.nodes[i]):
             # this node is already analyzed so we skip it
             continue
 
