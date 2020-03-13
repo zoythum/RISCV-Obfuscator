@@ -19,7 +19,7 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None)
     while 'external' in cfg.nodes[node]:
         node = randint(1, cfg.number_of_nodes())
     line_num = randint(cfg.nodes[node]["block"].begin, cfg.nodes[node]["block"].end - 1)
-    free_regs = list(get_free_regs(cfg, line_num - 1))
+    free_regs = list(get_free_regs(cfg, line_num))
     all_regs = list(map(lambda r: r.name.lower(), Register))
 
     instr_list = choices(list(garbage_inst.keys()), k=block_size)
