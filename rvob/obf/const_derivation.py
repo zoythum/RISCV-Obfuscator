@@ -106,6 +106,10 @@ class Derivation(NamedTuple):
     remainder: Goal
 
 
+def _next_reg_placeholder(p: Union[int, Register]) -> int:
+    return p + 1 if isinstance(p, int) else 0
+
+
 def mem_primer(target: Instruction) -> Derivation:
     """Generate an equivalent instruction sequence as a memory op with no offset and an already shifted base."""
 
@@ -168,9 +172,9 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
         new_val = goal.const.value >> trail
         instruction = ALOps.SLLI
 
-    return (Promise(instruction, goal.reg, goal.reg + 1, None,
+    return (Promise(instruction, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, shift)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(new_val.size, None, new_val.int_val())))
+            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(new_val.size, None, new_val.int_val())))
 
 
 def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -183,9 +187,9 @@ def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    return (Promise(ALOps.ORI, goal.reg, goal.reg + 1, None,
+    return (Promise(ALOps.ORI, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate & ~noise)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
+            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
 
 
 def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -198,9 +202,9 @@ def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    return (Promise(ALOps.ANDI, goal.reg, goal.reg + 1, None,
+    return (Promise(ALOps.ANDI, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate | ~noise)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
+            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
 
 
 def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -213,9 +217,9 @@ def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
     noise = randbits(goal.const.size)
     immediate = goal.const.int_val
-    return (Promise(ALOps.XORI, goal.reg, goal.reg + 1, None,
+    return (Promise(ALOps.XORI, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate ^ noise)),
-            Goal(goal.reg + 1, Instruction.ImmediateConstant(goal.const.size, None, noise)))
+            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(goal.const.size, None, noise)))
 
 
 def terminator(goal: Goal) -> Promise:
