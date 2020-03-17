@@ -1,4 +1,3 @@
-from builtins import int
 from enum import Enum, auto
 from typing import Tuple, List, Optional, NamedTuple, Union
 from secrets import randbits
@@ -17,6 +16,7 @@ class OtherOps(Opcodes):
     """Opcodes of instructions that are neither arithmetic nor memory-related"""
 
     LI = auto()
+    LUI = auto()
 
 
 class ALOps(Opcodes):
@@ -131,12 +131,6 @@ def imm_primer(target: Instruction) -> Derivation:
                       Goal(0, target.immediate))
 
 
-def li_primer(target: Instruction) -> Derivation:
-    """Lift the immediate constant loading into the derivation chain as a simple Goal."""
-
-    return Derivation([], Goal(target.r1, target.immediate))
-
-
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
     """
     Modify a constant by bit-shifting it, producing a promise for an instruction that reverses the shift.
@@ -189,7 +183,8 @@ def logic_ori_obf(goal: Goal) -> Tuple[Promise, Goal]:
     immediate = goal.const.int_val
     return (Promise(ALOps.ORI, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate & ~noise)),
-            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
+            Goal(_next_reg_placeholder(goal.reg),
+                 Instruction.ImmediateConstant(goal.const.size, None, immediate & noise)))
 
 
 def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -204,7 +199,8 @@ def logic_andi_obf(goal: Goal) -> Tuple[Promise, Goal]:
     immediate = goal.const.int_val
     return (Promise(ALOps.ANDI, goal.reg, _next_reg_placeholder(goal.reg), None,
                     Instruction.ImmediateConstant(goal.const.size, None, immediate | ~noise)),
-            Goal(_next_reg_placeholder(goal.reg), Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
+            Goal(_next_reg_placeholder(goal.reg),
+                 Instruction.ImmediateConstant(goal.const.size, None, immediate | noise)))
 
 
 def logic_xori_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -247,8 +243,7 @@ primers = {
     "lbu": mem_primer,
     "sw": mem_primer,
     "sh": mem_primer,
-    "sb": mem_primer,
-    "li": li_primer
+    "sb": mem_primer
 }
 
 # Catalogue of obfuscators for programmatic access
@@ -270,8 +265,21 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
     """
 
     seed()
-    # Prime the obfuscation chain
-    oc = primers[instruction.opcode](instruction)
+
+    # Load Immediate instructions have to be treated in a special way, since they have a very long immediate value.
+    # Split the 'li' into 'lui' and 'ori', targeting the latter for obfuscation and keeping aside the 'lui' as a
+    # residual.
+    if instruction.opcode == 'li':
+        oc = Derivation([Promise(ALOps.OR, instruction.r1, instruction.r1, 0, None)],
+                        Goal(0, Instruction.ImmediateConstant(12, None, instruction.immediate.value[20:].int_val())))
+        leftover = [Promise(OtherOps.LUI,
+                            instruction.r1,
+                            None,
+                            None,
+                            Instruction.ImmediateConstant(20, None, instruction.immediate.value[0:20].int_val()))]
+    else:
+        oc = primers[instruction.opcode](instruction)
+        leftover = None
 
     # Build the obfuscators' pool
     obfuscators = choices(population=logic_obfuscators, k=max_logical) + ([shifter_obf] * max_shifts)
@@ -282,5 +290,5 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
         new_derivation_step, new_goal = obf(oc.remainder)
         oc = Derivation(oc.chain + [new_derivation_step], new_goal)
 
-    # Terminate chain and return it
-    return oc.chain + [terminator(oc.remainder)]
+    # Terminate chain and return it, adding the eventually present residual
+    return oc.chain + [terminator(oc.remainder)] + leftover
