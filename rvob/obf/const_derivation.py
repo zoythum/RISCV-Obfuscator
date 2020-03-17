@@ -1,3 +1,4 @@
+from builtins import int
 from enum import Enum, auto
 from typing import Tuple, List, Optional, NamedTuple, Union
 from secrets import randbits
@@ -126,6 +127,12 @@ def imm_primer(target: Instruction) -> Derivation:
                       Goal(0, target.immediate))
 
 
+def li_primer(target: Instruction) -> Derivation:
+    """Lift the immediate constant loading into the derivation chain as a simple Goal."""
+
+    return Derivation([], Goal(target.r1, target.immediate))
+
+
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
     """
     Modify a constant by bit-shifting it, producing a promise for an instruction that reverses the shift.
@@ -236,7 +243,8 @@ primers = {
     "lbu": mem_primer,
     "sw": mem_primer,
     "sh": mem_primer,
-    "sb": mem_primer
+    "sb": mem_primer,
+    "li": li_primer
 }
 
 # Catalogue of obfuscators for programmatic access
