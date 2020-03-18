@@ -108,6 +108,11 @@ registers = ["ra", "sp", "gp", "tp", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "
              "s5", "s6", "s7", "s8", "s9", "s10", "s11", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7",
              "zero", "reg_err", "unused"]
 
+# registers saved by the callee
+calle_saved_regs: Set[Register] = {Register.SP, Register.S0, Register.S1, Register.S2, Register.S3, Register.S4,
+                                   Register.S5, Register.S6, Register.S7, Register.S8, Register.S9, Register.S10,
+                                   Register.S11}
+
 
 # Types of jump
 class JumpType(Enum):

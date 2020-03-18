@@ -4,7 +4,68 @@ from rep.base import Instruction
 from rep.fragments import FragmentView
 from rvob.structures import opcodes
 from rvob.analysis import Transition
-from structures import Register
+from structures import Register, calle_saved_regs
+from registerbinder import bind_register_to_value
+
+
+def setup_contracts(cfg: DiGraph):
+    """
+    Function responsible for the creation of the contracts of all the nodes of a specific Cfg.
+    It uses the fill_contract function called upon all the nodes one by one.
+    :param cfg: The DiGraph representing the cfg
+    :return: void
+    """
+    for node in cfg.nodes:
+        if 'provides' not in cfg.nodes[node]:
+            cfg.nodes[node]['provides'] = set()
+        if 'requires' not in cfg.nodes[node]:
+            cfg.nodes[node]['requires'] = set()
+
+    visited = set()
+    # Recovers the leaves of our tree
+    remaining_nodes = get_leaf_nodes(cfg)
+
+    # Core loop of the function, its behaviour is:
+    # 1) check if we still have nodes that need to be analyzed, if not end
+    # 2) pop the first node of the stack, put it in the visited list, create the contract for this node.
+    # 3) recover its parent node and if it's not in the stack and it has never been visited append it to the stack
+    # 4) start from point 1
+    while len(remaining_nodes) > 0:
+        node = remaining_nodes.pop(0)
+        visited.add(node)
+        try:
+            # We need to check if the node we're dealing with has a start attribute, otherwise we ignore the node and
+            # skip to the next one (should happen only at the end when dealing with the head of the cfg)
+            fill_contract(cfg, node)
+
+        except KeyError:
+            continue
+        for parent in reverse(cfg, False).neighbors(node):
+            if parent not in remaining_nodes and parent not in visited:
+                remaining_nodes.append(parent)
+
+    sanitize_contracts(cfg)
+
+
+def set_callee_saved_regs(cfg: DiGraph):
+    callee_used = set()
+    for node in cfg.nodes().values():
+        if 'reg_bind' in node:
+            for reg in node['reg_bind']:
+                if reg in calle_saved_regs:
+                    callee_used.add(reg)
+
+    callee_unused = set()
+
+    for reg in calle_saved_regs:
+        if reg not in callee_used:
+            callee_unused.add(reg)
+
+    for node in get_leaf_nodes(cfg):
+        cfg.nodes[node]['provides'] = cfg.nodes[node]['provides'].union(callee_unused)
+
+    setup_contracts(cfg)
+    bind_register_to_value(cfg)
 
 
 def fill_contract(cfg: DiGraph, node_id: int):
@@ -75,8 +136,8 @@ def fill_contract(cfg: DiGraph, node_id: int):
             provides.add(Register.A0)
             provides.add(Register.A1)
 
-    cfg.nodes[node_id]['requires'] = requires
-    cfg.nodes[node_id]['provides'] = provides
+    cfg.nodes[node_id]['requires'] = cfg.nodes[node_id]['requires'].union(requires)
+    cfg.nodes[node_id]['provides'] = cfg.nodes[node_id]['provides'].union(provides)
 
 
 def get_children(cfg: DiGraph, node_id: int):
@@ -143,44 +204,6 @@ def get_leaf_nodes(cfg: DiGraph):
             nodes.append(node)
 
     return nodes
-
-
-def setup_contracts(cfg: DiGraph):
-    """
-    Function responsible for the creation of the contracts of all the nodes of a specific Cfg.
-    It uses the fill_contract function called upon all the nodes one by one.
-    :param cfg: The DiGraph representing the cfg
-    :return: void
-    """
-    # TODO maybe we need to execute this function two times to take care of possible loops that are not
-    #  satfisfied in the first iteration?
-    for i in range(0, len(cfg.nodes)):
-        cfg.nodes[i]['provides'] = set()
-        cfg.nodes[i]['requires'] = set()
-
-    visited = set()
-    # Recovers the leaves of our tree
-    remaining_nodes = get_leaf_nodes(cfg)
-
-    # Core loop of the function, its behaviour is:
-    # 1) check if we still have nodes that need to be analyzed, if not end
-    # 2) pop the first node of the stack, put it in the visited list, create the contract for this node.
-    # 3) recover its parent node and if it's not in the stack and it has never been visited append it to the stack
-    # 4) start from point 1
-    while len(remaining_nodes) > 0:
-        node = remaining_nodes.pop(0)
-        visited.add(node)
-        try:
-            # We need to check if the node we're dealing with has a start attribute, otherwise we ignore the node and
-            # skip to the next one (should happen only at the end when dealing with the head of the cfg)
-            fill_contract(cfg, node)
-        except KeyError:
-            continue
-        for parent in reverse(cfg, False).neighbors(node):
-            if parent not in remaining_nodes and parent not in visited:
-                remaining_nodes.append(parent)
-
-    sanitize_contracts(cfg)
 
 
 def get_node_from_line(cfg: DiGraph, line_value: int):

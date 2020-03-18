@@ -5,12 +5,18 @@ from setup_structures import setup_contracts
 from registerbinder import bind_register_to_value
 from random import randint
 from itertools import cycle
+from setup_structures import organize_calls, sanitize_contracts
+import json
+from rvob.analysis import build_cfg
+from rvob.rep.fragments import load_src_from_maps
 
 
 def substitute_reg(cfg: DiGraph):
-
+    nodes_id = list(cfg)
     try:
-        final_id = randint(1, len(cfg.nodes) - 1)
+        final_id = nodes_id[randint(1, len(nodes_id) - 1)]
+        while 'external' in cfg.nodes[final_id]:
+            final_id = randint(1, len(cfg.nodes) - 1)
     except ValueError:
         return
 
@@ -21,6 +27,8 @@ def substitute_reg(cfg: DiGraph):
     nodes = shortest_path(cfg, 0, final_id)
     try:
         initial_id = nodes[randint(1, len(nodes)-2)]
+        while 'external' in cfg.nodes[initial_id]:
+            initial_id = randint(1, len(nodes) - 2)
     except ValueError:
         return
     while nodes[0] != initial_id:
@@ -31,8 +39,13 @@ def substitute_reg(cfg: DiGraph):
     next(nextnodescycle)
 
     for _ in range(len(nodes)-1):
+
         current_node_id = next(nodescycle)
         next_node_id = next(nextnodescycle)
+
+        if 'external' in cfg.nodes[current_node_id]:
+            continue
+
         extended = False
         current_node = cfg.nodes[current_node_id]
         unmodifiable = find_unmodifiable_regs(cfg, current_node_id, nodes)
@@ -95,7 +108,7 @@ def substitute_reg(cfg: DiGraph):
 
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
-    while line_num < endline:
+    while line_num <= endline:
         if isinstance(current_node['block'][line_num], Instruction):
             if current_node['block'][line_num].r1 == used_register:
                 current_node['block'][line_num].r1 = unused_register
@@ -146,4 +159,3 @@ def find_unmodifiable_regs(cfg: DiGraph, current_node, nodes) -> set:
                     unmodifiable.add(reg)
 
     return unmodifiable
-
