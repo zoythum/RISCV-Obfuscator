@@ -157,7 +157,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         purge_external(cfg, nodelist)
         # remove the exterior root node
     else:
-        if node != 0:
+        if node != 0 and 'external' not in cfg.nodes[node]:
             nodelist = [node]
             cfg.nodes[node].pop("reg_bind")
         else:

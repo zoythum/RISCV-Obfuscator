@@ -15,11 +15,15 @@ def setup_contracts(cfg: DiGraph):
     :param cfg: The DiGraph representing the cfg
     :return: void
     """
+
     for node in cfg.nodes:
         if 'provides' not in cfg.nodes[node]:
             cfg.nodes[node]['provides'] = set()
         if 'requires' not in cfg.nodes[node]:
             cfg.nodes[node]['requires'] = set()
+            if 'external' in cfg.nodes[node]:
+                cfg.nodes[node]['requires'].add(Register.SP)
+                # cfg.nodes[node]['requires'].add(Register.FP)
 
     visited = set()
     # Recovers the leaves of our tree
@@ -83,51 +87,54 @@ def fill_contract(cfg: DiGraph, node_id: int):
     provides = set()
     requires = set()
     errors = set()
+
     children = get_children(cfg, node_id)
     for child in children:
         for elem in cfg.nodes[child]["requires"]:
             requires.add(elem)
 
-    block: FragmentView = cfg.nodes[node_id]["block"]
+    if 'external' not in cfg.nodes[node_id]:
 
-    for i in range(block.end - 1, block.begin - 1, -1):
-        current_line = block[i]
-        if type(current_line) == Instruction:
-            opcode = current_line.opcode
-            r1 = current_line.r1
-            r2 = current_line.r2
-            r3 = current_line.r3
-            # Different actions are taken depending on the type of opcode we are analizing, if we have a read only
-            # opcode provides set will not be modified, otherwise we make sure to deal with that set too
-            if opcode in opcodes.keys():
-                if opcodes[opcode][1]:
-                    provides.add(r1)
-                    if r1 in requires:
-                        requires.remove(r1)
-                    if r2 not in requires:
-                        requires.add(r2)
-                    if r3 not in requires:
-                        requires.add(r3)
+        block: FragmentView = cfg.nodes[node_id]["block"]
+
+        for i in range(block.end - 1, block.begin - 1, -1):
+            current_line = block[i]
+            if type(current_line) == Instruction:
+                opcode = current_line.opcode
+                r1 = current_line.r1
+                r2 = current_line.r2
+                r3 = current_line.r3
+                # Different actions are taken depending on the type of opcode we are analizing, if we have a read only
+                # opcode provides set will not be modified, otherwise we make sure to deal with that set too
+                if opcode in opcodes.keys():
+                    if opcodes[opcode][1]:
+                        provides.add(r1)
+                        if r1 in requires:
+                            requires.remove(r1)
+                        if r2 not in requires:
+                            requires.add(r2)
+                        if r3 not in requires:
+                            requires.add(r3)
+                    else:
+                        if r1 not in requires:
+                            requires.add(r1)
+                        if r2 not in requires:
+                            requires.add(r2)
+                        if r3 not in requires:
+                            requires.add(r3)
                 else:
-                    if r1 not in requires:
-                        requires.add(r1)
-                    if r2 not in requires:
-                        requires.add(r2)
-                    if r3 not in requires:
-                        requires.add(r3)
-            else:
-                errors.add(opcode)
+                    errors.add(opcode)
 
-    # A little bit of error management, if we have some opcodes that are not classified is better to raise an exception
-    # instead of ignoring them and having to deal with bigger problems later
-    if len(errors) > 0:
-        raise Exception("Encountered one or more unexpected opcodes, {}".format(errors))
+        # A little bit of error management, if we have some opcodes that are not classified is better to raise an exception
+        # instead of ignoring them and having to deal with bigger problems later
+        if len(errors) > 0:
+            raise Exception("Encountered one or more unexpected opcodes, {}".format(errors))
 
-    # no need to keep 'unused' in our contracts
-    if None in requires:
-        requires.remove(None)
-    if None in provides:
-        requires.remove(None)
+        # no need to keep 'unused' in our contracts
+        if None in requires:
+            requires.remove(None)
+        if None in provides:
+            requires.remove(None)
 
     # If the node we are dealing with is the return node of a function then it provides registers A0 and A1
     for edge in cfg.edges:
@@ -238,6 +245,14 @@ def get_call_edges(cfg: DiGraph):
     return edges
 
 
+def get_return_edges(cfg: DiGraph):
+    edges = []
+    for edge in cfg.edges(data=True):
+        if edge[2]['kind'] == Transition.RETURN:
+            edges.append(edge)
+    return edges
+
+
 def get_track_return(cfg: DiGraph, starting_node: int, nodes: list):
     """
     Recursively creates the list of nodes contained between one specific node and a RETURN edge
@@ -287,6 +302,12 @@ def organize_calls(cfg: DiGraph):
             regs = get_used_a_regs(cfg, node_id)
 
         cfg.nodes[edge[1]]['requires'].update(regs)
+
+    return_edges = get_return_edges(cfg)
+    return_regs = [Register.A0, Register.A1]
+    for edge in return_edges:
+        if edge[1] != 0:
+            cfg.nodes[edge[1]]['requires'].update(return_regs)
 
 
 def get_used_a_regs(cfg: DiGraph, node_id: int):

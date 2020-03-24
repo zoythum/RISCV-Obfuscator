@@ -55,6 +55,10 @@ class Register(Enum):
     T5 = 30
     T6 = 31
 
+    @staticmethod
+    def list():
+        return list(map(lambda c: c, Register))
+
 
 # This is a classification of all the possible opcodes.
 # Each opcode is paired with a tuple (<int>, <boolean>) where the int value represents the number of registers used
@@ -97,7 +101,7 @@ opcd_family: Mapping[str, str] = {
     'amoor.w': 'as', 'amoand.w': 'as', 'amomin.w': 'as', 'amomax.w': 'as', 'amominu.w': 'as', 'amomaxu.w': 'as',
     'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoand.d': 'as',
     'amomin.d': 'as', 'amomax.d': 'as', 'amominu.d': 'as', 'amomaxu.d': 'as', 'bgtz': 'bz', 'snez': 'snez'
-}
+    }
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
@@ -112,6 +116,8 @@ registers = ["ra", "sp", "gp", "tp", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "
 calle_saved_regs: Set[Register] = {Register.SP, Register.S0, Register.S1, Register.S2, Register.S3, Register.S4,
                                    Register.S5, Register.S6, Register.S7, Register.S8, Register.S9, Register.S10,
                                    Register.S11}
+
+not_modifiable_regs: Set[Register] = {Register.GP, Register.TP, Register.ZERO}
 
 
 # Types of jump
