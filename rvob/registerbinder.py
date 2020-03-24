@@ -24,6 +24,13 @@ counter = count()
 
 
 def populate_linelist(cfg: DiGraph, node_num: int) -> list:
+    """
+    Create a list of tuples which represent the line in a specific block of the graph.
+    The tuple are of the form (line number, line)
+    @param cfg: the graph of the program under analysis
+    @param node_num: the id of the node under evaluations
+    @return: the list of tuples representing the lines in the block
+    """
     line_list = []
     line_number = cfg.nodes[node_num]["block"].begin
     for line in iter(cfg.nodes[node_num]["block"]):
@@ -51,6 +58,15 @@ def reg_read(regdict, reg, line, block_init):
 
 
 def reg_write(block: ValueBlock, ln, localreg):
+    """
+    Manages an instruction that write something into its first register. If the register is already present into the
+    localreg there are two possibilities, if the endline of the last ValueBlock correspond to the current line the new
+    ValueBlock will be simply appended, otherwise the endline of the last ValueBlock will be setted to the current line
+    and then the new ValueBlock will be appended
+    @param block: a ValueBlock that starts from the current line till the end of the block in which the instruction appear
+    @param ln: a tuple representing the line at which the instruction appears
+    @param localreg: the reg_bind under constructions
+    """
     line = ln[1]
     if line.r1 in localreg.keys():
         if localreg[line.r1][-1].endline == ln[0]:
@@ -91,11 +107,19 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        if regdict[register][-1].endline != node['block'].end:
-            regdict[register][-1].endline = node['block'].end
+        if regdict[register][-1].endline != (node['block'].end - 1):
+            regdict[register][-1].endline = node['block'].end - 1
 
 
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
+    """
+    This function identify if the instruction is a only read instruction or if it's contains also write, based on this
+    separation call the correct function to manage this instruction
+    @param cfg: the graph of the program under analysis
+    @param i: the number of the node under evaluation
+    @param ln: a tuple representing a line of the program in the form (line number, line)
+    @param localreg: the reg_bind under construction
+    """
     line = ln[1]
     if opcodes[line.opcode][0] == 2:
         reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin)
@@ -112,6 +136,11 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
 
 
 def purge_external(cfg: DiGraph, nodelist: list):
+    """
+    Eliminates the external nodes, for them the reg_bind analysis isn't needed
+    @param cfg: the graph of the program under analysis
+    @param nodelist: the list of the nodes that compose the graph
+    """
     nodelist[:] = (x for x in nodelist if 'external' not in cfg.nodes[x])
 
 
