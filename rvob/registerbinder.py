@@ -57,7 +57,7 @@ def reg_read(regdict, reg, line, block_init):
         regdict[reg][-1].endline = line
 
 
-def reg_write(block: ValueBlock, ln, localreg):
+def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
     """
     Manages an instruction that write something into its first register. If the register is already present into the
     localreg there are two possibilities, if the endline of the last ValueBlock correspond to the current line the new
@@ -78,7 +78,7 @@ def reg_write(block: ValueBlock, ln, localreg):
         localreg[line.r1] = [block]
 
 
-def satisfy_contract_in(cfg: DiGraph, node, nodeid, regdict):
+def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     """
     this function create an entry in the 'reg_bind' for every register that appear in the 'requires' contract of the
     node under analysis. The validity of the value assigned to these register is from the beginning to the end of the
@@ -87,14 +87,12 @@ def satisfy_contract_in(cfg: DiGraph, node, nodeid, regdict):
     :param regdict: the dictionary of the used registers
     """
     required = node['requires']
-    for child in cfg.successors(nodeid):
-        required = required.union(cfg.nodes[child]['requires'])
     for register in required:
         block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
         regdict[register] = [block]
 
 
-def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
+def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict: dict):
     """
     this function assure that the register in the 'requires' of the successors nodes have an assigned value, and then
     can't be modified, up to the end of the node's block of code.
@@ -107,8 +105,11 @@ def satisfy_contract_out(cfg: DiGraph, node, nodeid, regdict):
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        if regdict[register][-1].endline != (node['block'].end - 1):
+        if (register in regdict) and (regdict[register][-1].endline != (node['block'].end - 1)):
             regdict[register][-1].endline = node['block'].end - 1
+        elif register not in regdict:
+            block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
+            regdict[register] = [block]
 
 
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
@@ -174,7 +175,7 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         localreg = {}
 
         # bind the used registers to a symbolic value
-        satisfy_contract_in(cfg, cfg.nodes[i], i, localreg)
+        satisfy_contract_in(cfg.nodes[i], localreg)
         for ln in linelist:
             line = ln[1]
             if isinstance(line, Instruction) and (opcodes[line.opcode][0] != 0):
