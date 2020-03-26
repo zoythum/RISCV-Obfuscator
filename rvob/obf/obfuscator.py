@@ -107,24 +107,32 @@ def generate_positions(report: Report, obj_num: int) -> List[Tuple[int, List[int
     """
     seed()
     positions = list()
+    # redistribute the promises over the selected nodes
     a = sample(range(0, obj_num), len(report.node_chain) - 1) + [0, obj_num]
     list.sort(a)
     b = [a[i+1] - a[i] for i in range(len(a) - 1)]
     for i in range(len(b)):
         node = report.node_chain[i].node_id
         pos = list()
-        try:
+        if (report.node_chain[i].end_line - report.node_chain[i].init_line + 1) >= b[i]:
             pos = sample(range(report.node_chain[i].init_line, report.node_chain[i].end_line), b[i])
             pos.sort()
-        except ValueError:
+        else:
             for _ in range(b[i]):
                 pos.append(report.node_chain[i].init_line)
-        for t in range(len(pos)):
-            if (i != 0) and (pos[0] > positions[-1][1][0]):
-                pos[t] += t + len(positions[-1][1])
-            else:
-                pos[t] += t
         positions.append((node, pos))
+
+    # fix the line number deviation caused by the addition of new instructions
+    def sorting_function(e: Tuple[int, List[int]]):
+        return e[1][0]
+    temp_positions = positions.copy()
+    temp_positions.sort(key=sorting_function)
+    payload = 0
+    for i in range(len(temp_positions)):
+        for t in range(len(temp_positions[i][1])):
+            temp_positions[i][1][t] = temp_positions[i][1][t] + t + payload
+        payload += len(temp_positions[1])
+
     return positions
 
 
@@ -194,4 +202,4 @@ def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
     if len(instruction.labels) > 0:
         succ_instr = cfg.nodes[node_id]['block'][target_instr + 1]
         succ_instr.labels = instruction.labels
-        del cfg.nodes[node_id]['block'][target_instr]
+    del cfg.nodes[node_id]['block'][target_instr]
