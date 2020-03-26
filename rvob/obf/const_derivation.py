@@ -279,7 +279,7 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
                             Instruction.ImmediateConstant(20, None, instruction.immediate.value[0:20].int_val()))]
     else:
         oc = primers[instruction.opcode](instruction)
-        leftover = None
+        leftover = []
 
     # Build the obfuscators' pool
     obfuscators = choices(population=logic_obfuscators, k=max_logical) + ([shifter_obf] * max_shifts)
