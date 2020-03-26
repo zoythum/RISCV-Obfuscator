@@ -154,8 +154,12 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
         return trailing_zeroes
 
-    lead = _count_leading_zeros(goal.const.value)
-    trail = _count_trailing_zeroes(goal.const.value)
+    if goal.const.int_val != 0:
+        lead = _count_leading_zeros(goal.const.value)
+        trail = _count_trailing_zeroes(goal.const.value)
+    else:
+        lead = goal.const.size
+        trail = goal.const.size
 
     if lead > trail:
         shift = lead
