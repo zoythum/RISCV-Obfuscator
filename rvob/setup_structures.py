@@ -4,7 +4,7 @@ from rep.base import Instruction
 from rep.fragments import FragmentView
 from rvob.structures import opcodes
 from rvob.analysis import Transition
-from structures import Register, calle_saved_regs
+from structures import Register, calle_saved_regs, not_modifiable_regs
 from registerbinder import bind_register_to_value
 
 
@@ -223,18 +223,29 @@ def get_node_from_line(cfg: DiGraph, line_value: int):
 
 def get_free_regs(cfg: DiGraph, line_value: int):
     # Utility function, given a cfg and a line value returns all the available registers at that point of the program
-    regs = []
+    used_regs = []
+    unused_regs = Register.list()
     node = get_node_from_line(cfg, line_value)
 
-    if node is not None:
-        for reg in Register:
-            regs.append(reg)
-            if reg in node['reg_bind']:
-                regs.append(reg)
-                for bind in node['reg_bind'][reg]:
-                    if bind.initline <= line_value <= bind.endline:
-                        regs.remove(reg)
-    return regs
+    if node is None:
+        return []
+
+    for reg in Register:
+        if reg in node['reg_bind']:
+            for bind in node['reg_bind'][reg]:
+                if bind.initline <= line_value <= bind.endline:
+                    used_regs.append(reg)
+                    break
+
+    for reg in used_regs:
+        if reg in unused_regs:
+            unused_regs.remove(reg)
+
+    for reg in not_modifiable_regs:
+        if reg in unused_regs:
+            unused_regs.remove(reg)
+
+    return unused_regs
 
 
 def get_call_edges(cfg: DiGraph):
