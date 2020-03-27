@@ -4,6 +4,7 @@ from obf.const_derivation import generate_derivation_chain, Promise
 from rep.base import Instruction
 from structures import Register, opcd_family
 from networkx import DiGraph
+from queue import Queue
 
 
 class NodeBlock:
@@ -114,25 +115,26 @@ def generate_positions(report: Report, obj_num: int) -> List[Tuple[int, List[int
     for i in range(len(b)):
         node = report.node_chain[i].node_id
         pos = list()
-        if (report.node_chain[i].end_line - report.node_chain[i].init_line + 1) >= b[i]:
+        available_line = (report.node_chain[i].end_line - report.node_chain[i].init_line)
+        if available_line >= b[i]:
             pos = sample(range(report.node_chain[i].init_line, report.node_chain[i].end_line), b[i])
             pos.sort()
         else:
             for _ in range(b[i]):
                 pos.append(report.node_chain[i].init_line)
         positions.append((node, pos))
-
-    # fix the line number deviation caused by the addition of new instructions
-    def sorting_function(e: Tuple[int, List[int]]):
-        return e[1][0]
-    temp_positions = positions.copy()
-    temp_positions.sort(key=sorting_function)
-    payload = 0
-    for i in range(len(temp_positions)):
-        for t in range(len(temp_positions[i][1])):
-            temp_positions[i][1][t] = temp_positions[i][1][t] + t + payload
-        payload += len(temp_positions[1])
-
+    for i2 in range(len(positions)):
+        for t2 in range(len(positions[i2][1])):
+            positions[i2][1][t2] += t2
+    shift_amount = [0 for _ in range(len(positions))]
+    for i3 in range(len(positions)):
+        if len(positions[i3][1]) > 0:
+            for t3 in range(0, i3):
+                if (len(positions[t3][1]) > 0) and (positions[t3][1][0] < positions[i3][1][0]):
+                    shift_amount[i3] += len(positions[t3][1])
+    for i4 in range(len(positions)):
+        for t4 in range(len(positions[i4][1])):
+            positions[i4][1][t4] += shift_amount[i4]
     return positions
 
 
@@ -156,8 +158,17 @@ def check_reg(register, matrix, reg_pool: set) -> str:
     else:
         return register
 
+def fix_original_instruction(line: int, new_instr: List[Tuple[int, List[int]]]):
+    offset = 0
+    for i in range(len(new_instr)):
+        for t in range(len(new_instr[i][1])):
+            if new_instr[i][1][t] <= line:
+                offset += 1
+    line += offset
+    return line
 
-def placer(cfg: DiGraph, promises: List[Promise], report: Report):
+
+def placer(cfg: DiGraph, promises: List[Promise], report: Report, target_instr: int) -> int:
     """
     the role of this function is to convert the promises into real instructions and insert these one in the previously
     identified positions
@@ -167,21 +178,22 @@ def placer(cfg: DiGraph, promises: List[Promise], report: Report):
     """
     register_matrix = {}
     positions = generate_positions(report, len(promises))
-    instr_queue = list()
+    target_instr = fix_original_instruction(target_instr, positions)
+    instr_queue = Queue()
     promises.reverse()
     for prom in promises:
         rd = check_reg(prom.rd, register_matrix, report.reg_pool)
         rs1 = check_reg(prom.rs1, register_matrix, report.reg_pool)
         rs2 = check_reg(prom.rs2, register_matrix, report.reg_pool)
         instr = Instruction(prom.op.name.lower(), opcd_family[prom.op.name.lower()], r1=rd, r2=rs1, r3=rs2, immediate=prom.const)
-        instr_queue.append(instr)
+        instr_queue.put(instr)
     for i in range(len(positions)):
         active_block = cfg.nodes[positions[i][0]]['block']
         for t in range(len(positions[i][1])):
             line = positions[i][1][t]
-            instr = instr_queue[0]
+            instr = instr_queue.get()
             active_block.insert(line, instr)
-            instr_queue.remove(instr)
+    return target_instr
 
 
 def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
@@ -198,7 +210,7 @@ def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
     promise_chain = generate_derivation_chain(instruction, max_shift, max_logical)
     needed_reg = calc_unresolved_register(promise_chain)
     report = calc_nodes_chain(cfg, node_id, target_instr + 1, instruction.r1, needed_reg)
-    placer(cfg, promise_chain, report)
+    target_instr = placer(cfg, promise_chain, report, target_instr)
     if len(instruction.labels) > 0:
         succ_instr = cfg.nodes[node_id]['block'][target_instr + 1]
         succ_instr.labels = instruction.labels
