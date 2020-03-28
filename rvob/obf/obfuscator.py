@@ -2,7 +2,7 @@ from random import seed, randint, sample
 from typing import List, NamedTuple, Tuple
 from obf.const_derivation import generate_derivation_chain, Promise
 from rep.base import Instruction
-from structures import Register, opcd_family
+from structures import Register, opcd_family, not_modifiable_regs
 from networkx import DiGraph
 from queue import Queue
 
@@ -51,6 +51,7 @@ def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: R
     actual_node = start_node
     actual_block = cfg.nodes[actual_node]["block"]
     reg_pool = set(reg.name for reg in Register)
+    reg_pool -= set(reg.name for reg in not_modifiable_regs)
     reg_pool -= set(reg.name for reg in cfg.nodes[start_node]["reg_bind"].keys())
     node_chain = [NodeBlock(start_node, start_line, start_line)]
     line = start_line
@@ -64,8 +65,9 @@ def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: R
             return Report(node_chain, reg_pool)
         else:
             actual_node = successors[0]
+            predecessors = list(node for node in cfg.predecessors(actual_node))
             new_pool = reg_pool - set(reg.name for reg in cfg.nodes[actual_node]["reg_bind"].keys())
-            if len(new_pool) < ndd_reg:
+            if (len(new_pool) < ndd_reg) or (len(predecessors) >= 2):
                 return Report(node_chain, reg_pool)
             line = cfg.nodes[actual_node]["block"].begin
             actual_block = cfg.nodes[actual_node]["block"]
