@@ -131,6 +131,25 @@ def imm_primer(target: Instruction) -> Derivation:
                       Goal(0, target.immediate))
 
 
+def lui_primer(target: Instruction) -> Derivation:
+    """Break a load upper immediate into less revealing operations (ors and shifts); obfuscate the 12 upper bits."""
+
+    # Shift the bits around to load 12 + 8 bits separately: insert 12b -> shift left 8 -> insert 8b -> shift left 12
+    loading_sequence = [
+        Promise(ALOps.SLLI, target.r1, 0, None, Instruction.ImmediateConstant(12, None, 12)),
+        Promise(ALOps.ORI,
+                0,
+                1,
+                None,
+                Instruction.ImmediateConstant(12, None, target.immediate.value[-8:].int_val())),
+        Promise(ALOps.SLLI, 1, 2, None, Instruction.ImmediateConstant(12, None, 8))
+    ]
+
+    # With the previous shifting and loading machinery in place, target the 12 most significant bits for obfuscation
+    return Derivation(loading_sequence,
+                      Goal(2, Instruction.ImmediateConstant(12, None, target.immediate.value[:-8].int_val())))
+
+
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
     """
     Modify a constant by bit-shifting it, producing a promise for an instruction that reverses the shift.
@@ -230,7 +249,7 @@ def terminator(goal: Goal) -> Promise:
     """
 
     return Promise(OtherOps.LI, goal.reg, None, None,
-                   Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val))
+                   Instruction.ImmediateConstant(32, None, goal.const.int_val))
 
 
 # Map opcodes to their correct primers
@@ -247,7 +266,8 @@ primers = {
     "lbu": mem_primer,
     "sw": mem_primer,
     "sh": mem_primer,
-    "sb": mem_primer
+    "sb": mem_primer,
+    "lui": lui_primer
 }
 
 # Catalogue of obfuscators for programmatic access
@@ -276,6 +296,7 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
     if instruction.opcode == 'li':
         oc = Derivation([Promise(ALOps.OR, instruction.r1, instruction.r1, 0, None)],
                         Goal(0, Instruction.ImmediateConstant(12, None, instruction.immediate.value[20:].int_val())))
+        # TODO lui obfuscation should happen automatically, but how can we parameterize its?
         leftover = [Promise(OtherOps.LUI,
                             instruction.r1,
                             None,
