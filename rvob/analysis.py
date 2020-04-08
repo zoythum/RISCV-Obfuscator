@@ -1,13 +1,13 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Iterator
+from typing import Iterator, Mapping, List, Tuple
 
 from networkx import DiGraph
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
-from rep.fragments import Source, FragmentView
-from rvob.structures import jump_ops, JumpType
+from rep.fragments import Source, FragmentView, CodeFragment
+from rvob.structures import jump_ops, JumpType, opcodes
 
 
 class Transition(Enum):
@@ -232,3 +232,32 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
         # Load the next block and continue iteration
         block = cfg.nodes[current_node]["block"]
         line_iterator = to_line_iterator(iter(block), block.begin)
+
+
+def block_register_heat(block: CodeFragment,
+                        max_heat: int,
+                        init: List[int]) -> Tuple[Mapping[int, List[int]], List[int]]:
+    """
+    Calculate the register file's heatmap for the current block.
+
+    :arg block: the block for which the heatmap has to be calculated
+    :arg max_heat: the maximum heat level for a register
+    :arg init: the initial register file's heat
+    :return: a tuple containing the block's heatmap and the final heat of the register file
+    """
+
+    current_heat = list(init)
+    heatmap = dict()
+    for line in to_line_iterator(iter(block), block.begin):
+        for r in range(0, len(current_heat)):
+            # Don't let heat levels fall below 0
+            if current_heat[r] > 0:
+                current_heat[r] -= 1
+
+        # Set the heat value to max_heat only if the rd register is being written
+        if opcodes[line.statement.opcode][1]:
+            current_heat[line.statement.r1.value] = max_heat
+
+        heatmap[line.number] = list(current_heat)
+
+    return heatmap, current_heat
