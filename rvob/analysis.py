@@ -261,3 +261,25 @@ def block_register_heat(block: CodeFragment,
         heatmap[line.number] = list(current_heat)
 
     return heatmap, current_heat
+
+
+def mediate_heat(heat_vector: List[List[int]]) -> List[int]:
+    """
+    Calculate the mean heat vector between the provided heat vectors.
+
+    :arg heat_vector: a list of heat vectors of the same size
+    :return: the mean heat vector
+    """
+
+    mean_vector = []
+    vectors_num = len(heat_vector)
+
+    # Assume that all heat vectors are of the same size
+    for i in range(0, len(heat_vector[0])):
+        sum_temp = 0
+        for v in heat_vector:
+            sum_temp += v[i]
+
+        mean_vector.append(int(sum_temp / vectors_num))
+
+    return mean_vector
