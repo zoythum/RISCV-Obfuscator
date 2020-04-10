@@ -3,7 +3,7 @@ from networkx import DiGraph, neighbors, reverse, simple_cycles
 from rep.base import Instruction
 from rep.fragments import FragmentView
 from rvob.structures import opcodes
-from rvob.analysis import Transition
+from rvob.analysis.cfg import Transition
 from structures import Register, calle_saved_regs, not_modifiable_regs
 from registerbinder import bind_register_to_value
 
