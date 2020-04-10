@@ -1,3 +1,14 @@
+"""
+This module provides the functionality necessary for analyzing a program's register usage.
+
+The metric used is the one called "register heat", the "hotness" of the register in terms of time passed since the last
+write on it. The hotness value can range between 0 (cold) and a user-defined maximum (hot).
+
+By calling :fun:`rvob.analysis.heatmaps.register_heatmap()` and passing it a CFG, the register heatmap for the entire
+program can be calculated, resulting in a (potentially very big) map, linking instruction lines to a vector-like
+representation of the heat levels inside the register file.
+"""
+
 from typing import List, Tuple, Mapping, MutableMapping
 
 from networkx import DiGraph, all_simple_paths
