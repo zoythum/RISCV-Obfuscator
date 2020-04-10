@@ -7,18 +7,25 @@ from rep.fragments import CodeFragment
 from structures import opcodes, Register
 
 
-# TODO modify this function so that an external code node can be handled locally
-def block_register_heat(block: CodeFragment,
-                        max_heat: int,
-                        init: List[int]) -> Tuple[Mapping[int, List[int]], List[int]]:
+def node_register_heat(node: dict,
+                       max_heat: int,
+                       init: List[int]) -> Tuple[Mapping[int, List[int]], List[int]]:
     """
-    Calculate the register file's heatmap for the current block.
+    Calculate the register file's heatmap for the provided node.
 
-    :arg block: the block for which the heatmap has to be calculated
+    The node must follow the format of nodes produced by :func:`rvob.analysis.cfg.build_cfg`.
+
+    :arg node: the CFG node for which the heatmap has to be calculated
     :arg max_heat: the maximum heat level for a register
     :arg init: the initial register file's heat
     :return: a tuple containing the block's heatmap and the final heat of the register file
     """
+
+    # If the node represents external code, pessimistically return an empty heatmap with a zeroed final heat vector.
+    if node.get('external', False):
+        return {}, [0] * len(Register)
+    else:
+        block: CodeFragment = node['block']
 
     current_heat = list(init)
     heatmap = dict()
@@ -66,6 +73,7 @@ def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
     Given the program's representation as a CFG, an heatmap laid over all the reachable nodes is drawn.
     When a node on which multiple execution paths converge is found, its portion of heatmap is calculated starting from
     the mean heat levels of all the incoming arcs.
+
     :arg cfg: the program's representation as a CFG
     :arg max_heat: the maximum heat level a register can reach
     :return: an heatmap mapping every reachable line to a heat vector
@@ -96,9 +104,9 @@ def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
                     paths.extend(waiting_paths[node])
                     del waiting_paths[node]
                     # Calculate this node's heatmap, mediating the incoming heat vectors
-                    node_heatmaps[node] = block_register_heat(cfg.nodes[node]["block"],
-                                                              max_heat,
-                                                              mediate_heat([node_heatmaps[n][1] for n in
+                    node_heatmaps[node] = node_register_heat(cfg.nodes[node],
+                                                             max_heat,
+                                                             mediate_heat([node_heatmaps[n][1] for n in
                                                                             cfg.predecessors(node)]))
                 else:
                     # Multiple paths converge on this node and we miss the initialization vector: store the path's stump
@@ -107,9 +115,9 @@ def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
                     break
             else:
                 # This node is part of a linear path: calculate its heatmap using the predecessor's final heat vector
-                node_heatmaps[node] = block_register_heat(cfg.nodes[node]["block"],
-                                                          max_heat,
-                                                          node_heatmaps[next(cfg.predecessors(node))][1])
+                node_heatmaps[node] = node_register_heat(cfg.nodes[node],
+                                                         max_heat,
+                                                         node_heatmaps[next(cfg.predecessors(node))][1])
 
     heatmap = {}
     # Remove the initialization heat vector from the scratchpad
