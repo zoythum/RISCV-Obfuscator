@@ -1,13 +1,13 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count
-from typing import Iterator, Mapping, List, Tuple
+from typing import Iterator, Mapping, List, Tuple, MutableMapping
 
-from networkx import DiGraph
+from networkx import DiGraph, all_simple_paths
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
-from rvob.structures import jump_ops, JumpType, opcodes
+from rvob.structures import jump_ops, JumpType, opcodes, Register
 
 
 class Transition(Enum):
@@ -234,6 +234,7 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
         line_iterator = to_line_iterator(iter(block), block.begin)
 
 
+# TODO modify this function so that an external code node can be handled locally
 def block_register_heat(block: CodeFragment,
                         max_heat: int,
                         init: List[int]) -> Tuple[Mapping[int, List[int]], List[int]]:
@@ -283,3 +284,65 @@ def mediate_heat(heat_vector: List[List[int]]) -> List[int]:
         mean_vector.append(int(sum_temp / vectors_num))
 
     return mean_vector
+
+
+def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
+    """
+    Calculate the register heatmap of the program.
+
+    Given the program's representation as a CFG, an heatmap laid over all the reachable nodes is drawn.
+    When a node on which multiple execution paths converge is found, its portion of heatmap is calculated starting from
+    the mean heat levels of all the incoming arcs.
+    :arg cfg: the program's representation as a CFG
+    :arg max_heat: the maximum heat level a register can reach
+    :return: an heatmap mapping every reachable line to a heat vector
+    """
+
+    # All nodes on which more than one execution flow converge
+    merge_points = {node for node in cfg.nodes.keys() if cfg.in_degree(node) > 1 and node != 0}
+    paths = list(all_simple_paths(cfg, 1, 0))
+    # A collection of paths that cannot be completed because we still miss the initialization vector, indexed by node ID
+    waiting_paths: MutableMapping[int, List[List[int]]] = {}
+    # The scratchpad in which node heatmaps and final heat vectors are stored
+    node_heatmaps: MutableMapping[int, Tuple[Mapping[int, List[int]], List[int]]] = {0: ({}, [0] * len(Register))}
+
+    while len(paths) > 0:
+        lin_path = paths.pop()
+
+        # Don't recalculate heatmaps for already-visited nodes
+        for node in filter(lambda n: n not in node_heatmaps, lin_path):
+            if node in merge_points:
+                if node not in waiting_paths:
+                    # Multiple paths converge on this node and we miss the initialization vector: initialize the waiting
+                    # paths list for this node and store the path's stump
+                    del lin_path[:lin_path.index(node)]
+                    waiting_paths[node] = [lin_path]
+                    break
+                elif frozenset(cfg.predecessors(node)).issubset(node_heatmaps):
+                    # The initialization vector can finally be calculated: requeue all incomplete paths
+                    paths.extend(waiting_paths[node])
+                    del waiting_paths[node]
+                    # Calculate this node's heatmap, mediating the incoming heat vectors
+                    node_heatmaps[node] = block_register_heat(cfg.nodes[node]["block"],
+                                                              max_heat,
+                                                              mediate_heat([node_heatmaps[n][1] for n in
+                                                                            cfg.predecessors(node)]))
+                else:
+                    # Multiple paths converge on this node and we miss the initialization vector: store the path's stump
+                    del lin_path[:lin_path.index(node)]
+                    waiting_paths[node].append(lin_path)
+                    break
+            else:
+                # This node is part of a linear path: calculate its heatmap using the predecessor's final heat vector
+                node_heatmaps[node] = block_register_heat(cfg.nodes[node]["block"],
+                                                          max_heat,
+                                                          node_heatmaps[next(cfg.predecessors(node))][1])
+
+    heatmap = {}
+    # Remove the initialization heat vector from the scratchpad
+    del node_heatmaps[0]
+    # Collapse the scratchpad into the resulting global heatmap
+    for nhm in node_heatmaps.values():
+        heatmap.update(nhm[0])
+
+    return heatmap
