@@ -1,9 +1,9 @@
 from collections import deque
 from enum import Enum, auto
-from itertools import count
-from typing import Iterator
+from itertools import count, chain
+from typing import Iterator, FrozenSet
 
-from networkx import DiGraph
+from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView
@@ -232,3 +232,34 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
         # Load the next block and continue iteration
         block = cfg.nodes[current_node]["block"]
         line_iterator = to_line_iterator(iter(block), block.begin)
+
+
+def merge_points(cfg: DiGraph) -> FrozenSet[int]:
+    """
+    Find all the merge point in the CFG.
+
+    A merge point is a node on which multiple directed edges converge.
+
+    :arg cfg: the CFG representing a program
+    :return: a frozen set containing all the merge points
+    """
+
+    # Node 0 represents the calling environment, so it must be excluded from the analysis
+    return frozenset((n for n in cfg.nodes.keys() if n != 0 and cfg.in_degree(n) > 1))
+
+
+def loop_back_nodes(cfg: DiGraph):
+    """
+    Find all the nodes of a CFG that are exclusively part of a loop.
+
+    A node is exclusively part of a loop if it belongs only to those paths that traverse the back-loop of a cycle.
+
+    :arg cfg: the CFG representation of a program
+    :return: a frozen set of all the loop-exclusive nodes
+    """
+
+    # Node 0 closes an improper loop over the CFG, so it must be ignored
+    cycle_nodes = frozenset(chain.from_iterable(simple_cycles(restricted_view(cfg, [0], []))))
+    return frozenset(cycle_nodes.difference(chain.from_iterable(
+        # For every path, its last component is node 0; therefore, we have to cut it.
+        map(lambda l: l[:-1], all_simple_paths(cfg, 1, 0)))))

@@ -8,14 +8,14 @@ By calling :fun:`rvob.analysis.heatmaps.register_heatmap()` and passing it a CFG
 program can be calculated, resulting in a (potentially very big) map, linking instruction lines to a vector-like
 representation of the heat levels inside the register file.
 """
-from itertools import chain
 from typing import List, Tuple, Mapping, MutableMapping
 
-from networkx import DiGraph, all_simple_paths, restricted_view, simple_cycles
+from networkx import DiGraph, all_simple_paths, restricted_view
 
 from rep.base import to_line_iterator
 from rep.fragments import CodeFragment
 from structures import opcodes, Register
+from analysis.cfg import merge_points, loop_back_nodes
 
 
 def node_register_heat(node: dict,
@@ -85,51 +85,38 @@ def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
     When a node on which multiple execution paths converge is found, its portion of heatmap is calculated starting from
     the mean heat levels of all the incoming arcs.
 
+    For the sake of simplicity, loops are pessimistically ignored (i.e. as if all looping conditions are false before
+    entering the first iteration).
+
     :arg cfg: the program's representation as a CFG
     :arg max_heat: the maximum heat level a register can reach
     :return: an heatmap mapping every reachable line to a heat vector
     """
 
-    # All nodes on which more than one execution flow converge
+    # Clean the CFG from all loop arcs that are not part of simple paths
+    cfg = restricted_view(cfg, loop_back_nodes(cfg), [])
+
     paths = list(all_simple_paths(cfg, 1, 0))
+    # All nodes on which more than one execution flow converge
+    merges = merge_points(cfg)
     # A collection of paths that cannot be completed because we still miss the initialization vector, indexed by node ID
     waiting_paths: MutableMapping[int, List[List[int]]] = {}
     # The scratchpad in which node heatmaps and final heat vectors are stored
     node_heatmaps: MutableMapping[int, Tuple[Mapping[int, List[int]], List[int]]] = {0: ({}, [0] * len(Register))}
-
-    def cycle_only_nodes():
-        cycle_nodes = set()
-        for cycle in simple_cycles(restricted_view(cfg, [0], [])):
-            cycle_nodes.update(cycle)
-
-        return frozenset(cycle_nodes.difference(chain.from_iterable(paths)))
-
-    excluded_nodes = cycle_only_nodes()
-
-    def merge_point_finder():
-        merge_points = set()
-        for node in filter(lambda n: n != 0, cfg.nodes.keys()):
-            ins = cfg.in_degree(node)
-            if ins > 1 != len(set(cfg.predecessors(node)) - excluded_nodes):
-                merge_points.add(node)
-
-        return frozenset(merge_points)
-
-    merge_points = merge_point_finder()
 
     while len(paths) > 0:
         lin_path = paths.pop()
 
         # Don't recalculate heatmaps for already-visited nodes
         for node in filter(lambda n: n not in node_heatmaps, lin_path):
-            if node in merge_points:
+            if node in merges:
                 if node not in waiting_paths:
                     # Multiple paths converge on this node and we miss the initialization vector: initialize the waiting
                     # paths list for this node and store the path's stump
                     del lin_path[:lin_path.index(node)]
                     waiting_paths[node] = [lin_path]
                     break
-                elif (frozenset(cfg.predecessors(node)) - excluded_nodes).issubset(node_heatmaps):
+                elif frozenset(cfg.predecessors(node)).issubset(node_heatmaps):
                     # The initialization vector can finally be calculated: requeue all incomplete paths
                     paths.extend(waiting_paths[node])
                     del waiting_paths[node]
@@ -147,8 +134,7 @@ def register_heatmap(cfg: DiGraph, max_heat: int) -> Mapping[int, List[int]]:
                 # This node is part of a linear path: calculate its heatmap using the predecessor's final heat vector
                 node_heatmaps[node] = node_register_heat(cfg.nodes[node],
                                                          max_heat,
-                                                         node_heatmaps[next(filter(lambda n: n not in excluded_nodes,
-                                                                                   cfg.predecessors(node)))][1])
+                                                         node_heatmaps[next(cfg.predecessors(node))][1])
 
     heatmap = {}
     # Remove the initialization heat vector from the scratchpad
