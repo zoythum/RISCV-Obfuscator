@@ -6,27 +6,31 @@ from registerbinder import bind_register_to_value
 from random import randint
 
 
-def substitute_reg(cfg: DiGraph):
+def substitute_reg(cfg: DiGraph, heatmap, heat):
     """
     Flow:
         1) estraggo nodo random
         2) estraggo registro usato e registro non usato
         3) estraggo blocco di validità
         4) sostituisco
-    :param cfg:
-    :return:
+    :param heatmap: generated heatmap for the current cfg
+    :param heat: max heatmap's value
+    :param cfg: cfg of the current program
+    :return: void
     """
 
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
     while 'external' in cfg.nodes[node_id]:
         node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
 
-    used_reg, unused_reg = find_valid_registers(cfg, node_id)
+    used_reg = find_used_reg(cfg, node_id)
 
     value_block = find_value_block(cfg, node_id, used_reg)
 
     if value_block is None:
         return
+
+    unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.initline, value_block.endline)
 
     line_num = value_block.initline
 
@@ -36,14 +40,15 @@ def substitute_reg(cfg: DiGraph):
 
     line_num += 1
 
-    switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg, node_id)
+    switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
 
     setup_contracts(cfg)
+
     for node in cfg.nodes:
         bind_register_to_value(cfg, node)
 
 
-def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register, node_id):
+def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
 
     while line_num <= endline - 1:
         if isinstance(current_node['block'][line_num], Instruction):
@@ -103,17 +108,53 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
             continue
 
 
-def find_valid_registers(cfg: DiGraph, current_node) -> (Register, Register):
+def find_used_reg(cfg: DiGraph, current_node) -> Register:
     """
     Retrieves two randomly selected registers, the first one such that is used in the current node while the second one
     is not used.
-    :param cfg:
-    :param current_node:
-    :return:
+    :param heatmap: generated heatmap for the current cfg
+    :param heat: max heatmap's value
+    :param cfg: cfg of the current program
+    :param current_node: current node where regs are searched
+    :return: Register
+    """
+
+    used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
+    chosen_used = used_regs[randint(0, len(used_regs) - 1)]
+    return chosen_used
+
+
+def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline) -> Register:
+    """
+    Retrieves two randomly selected registers, the first one such that is used in the current node while the second one
+    is not used.
+    :param value_block:
+    :param heatmap: generated heatmap for the current cfg
+    :param heat: max heatmap's value
+    :param cfg: cfg of the current program
+    :param current_node: current node where regs are searched
+    :return: tuple of Register, first one is the used one, while the other one is the unused
     """
 
     used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
     unused_regs = list(reg for reg in Register if reg not in used_regs and reg not in not_modifiable_regs)
-    chosen_used = used_regs[randint(0, len(used_regs) - 1)]
-    chosen_unused = unused_regs[randint(0, len(unused_regs) - 1)]
-    return chosen_used, chosen_unused
+    min_heat = heat
+
+    try:
+        heatmap[initline][0]
+    except KeyError:
+        return unused_regs[randint(0, len(unused_regs) - 1)]
+
+    chosen_unused = unused_regs[0]
+
+    for line in range(initline, endline):
+        for un_reg in unused_regs:
+            try:
+                if heatmap[line][un_reg.value] < min_heat:
+                    chosen_unused = un_reg
+                    min_heat = heatmap[line][un_reg.value]
+            except KeyError:
+                print("Current node: {}".format(current_node))
+                print("linea: {}".format(line))
+
+    return chosen_unused
