@@ -34,7 +34,8 @@ class ALOps(Opcodes):
     XORI = auto()
     SLLI = auto()
     SRLI = auto()
-
+    SLL = auto()
+    SRL = auto()
 
 # TODO this enumeration isn't strictly necessary, but I think it can be useful in other places.
 class Direction(Enum):
@@ -118,7 +119,7 @@ def mem_primer(target: Instruction) -> Derivation:
     starting_sequence = [
         Promise(MemOps[target.opcode.upper()], target.r1, 0, None, Instruction.ImmediateConstant(12, None, 0)),
         Promise(ALOps.ADD, 0, target.r2, 1, None)
-    ]
+        ]
 
     # Prime the derivation with the starting sequence and the correct promise
     return Derivation(starting_sequence, Goal(1, target.immediate))
@@ -143,7 +144,7 @@ def lui_primer(target: Instruction) -> Derivation:
                 None,
                 Instruction.ImmediateConstant(12, None, target.immediate.value[-8:].int_val())),
         Promise(ALOps.SLLI, 1, 2, None, Instruction.ImmediateConstant(12, None, 8))
-    ]
+        ]
 
     # With the previous shifting and loading machinery in place, target the 12 most significant bits for obfuscation
     return Derivation(loading_sequence,
@@ -259,6 +260,9 @@ primers = {
     "andi": imm_primer,
     "ori": imm_primer,
     "xori": imm_primer,
+    "srli": imm_primer,
+    "addiw": imm_primer,
+    "slli": imm_primer,
     "lw": mem_primer,
     "lh": mem_primer,
     "lhu": mem_primer,
@@ -268,7 +272,7 @@ primers = {
     "sh": mem_primer,
     "sb": mem_primer,
     "lui": lui_primer
-}
+    }
 
 # Catalogue of obfuscators for programmatic access
 logic_obfuscators = [logic_andi_obf, logic_ori_obf, logic_xori_obf]

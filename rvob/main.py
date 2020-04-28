@@ -30,7 +30,7 @@ def get_immediate_instructions(cfg):
                     line = iterator.__next__()
                     line_num = line.number
                     stat = line.statement
-                    if stat.family == "i":
+                    if stat.family == "i" and stat.ImmediateConstant is None:
                         result.append((node, line_num))
                 except StopIteration:
                     break
@@ -51,7 +51,8 @@ def main():
         print("Missing parameters, try -h for usage informations")
         exit(1)
     elif len(argv) == 6:
-        file = open(argv[0])
+        print(argv[1])
+        file = open(argv[1])
         src = load_src_from_maps(json.load(file))
         cfg = build_cfg(src)
         setup_contracts(cfg)
@@ -59,15 +60,20 @@ def main():
         organize_calls(cfg)
         bind_register_to_value(cfg)
 
-        for _ in range(0, argv[3]):
+        rep_value = int(argv[3])
+        heat = int(argv[4])
+
+        for _ in range(0, rep_value):
             insert_garbage_instr(cfg)
-        for _ in range(0, argv[3]):
+        for _ in range(0, rep_value):
             imm_instr = get_immediate_instructions(cfg)
-            curr_instr = imm_instr[randint(0, len(imm_instr))]
+            if len(imm_instr) == 0:
+                break
+            curr_instr = imm_instr[randint(0, len(imm_instr) - 1)]
             obfuscate(cfg, curr_instr[0], curr_instr[1])
-        for _ in range(0, argv[3]):
-            heatmap = register_heatmap(cfg, argv[4])
-            substitute_reg(cfg, heatmap, argv[4])
+        for _ in range(0, rep_value):
+            heatmap = register_heatmap(cfg, heat)
+            substitute_reg(cfg, heatmap, heat)
 
         out = open(argv[5], "w+")
         out.write(str(src))
