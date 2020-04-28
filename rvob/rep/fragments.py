@@ -173,6 +173,24 @@ class CodeFragment(ABC, MutableSequence, Hashable):
         if starting_line < self.begin or starting_line > self.end:
             raise IndexError("Starting point out of range")
 
+    def get_labels(self) -> Dict[str, int]:
+        """
+        Returns a dictionary of labels mapped to the lines they point at.
+
+        :return a dictionary of string labels mapped to the lines they tag
+        """
+
+        labd: Dict[str, int] = {}
+        lc = self.begin
+
+        for statement in self:
+            for label in statement.labels:
+                labd[label] = lc
+
+            lc += 1
+
+        return labd
+
     @abstractmethod
     def __iter__(self) -> Iterator[Statement]:
         pass
@@ -683,24 +701,6 @@ class Source(FragmentCopy):
 
         # It's just a FragmentCopy that represents the entire source
         super().__init__(statements, begin=0, end=len(statements), offset=0)
-
-    def get_labels(self) -> Dict[str, int]:
-        """
-        Returns a dictionary of labels mapped to the lines they point at.
-
-        :return a dictionary of string labels mapped to the lines they tag
-        """
-
-        labd: Dict[str, int] = {}
-        lc = 0
-
-        for statement in self:
-            for label in statement.labels:
-                labd[label] = lc
-
-            lc += 1
-
-        return labd
 
     def get_sections(self) -> List[Source.Section]:
         """
