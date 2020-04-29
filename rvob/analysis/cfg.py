@@ -1,12 +1,12 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count, chain
-from typing import Iterator, FrozenSet
+from typing import Iterator, FrozenSet, List
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
-from rep.fragments import Source, FragmentView
+from rep.fragments import Source, FragmentView, CodeFragment
 from rvob.structures import jump_ops, JumpType
 
 
@@ -23,6 +23,70 @@ class Transition(Enum):
     CALL = auto()
     # Return: return jump from a call
     RETURN = auto()
+
+
+class InvalidCodeError(Exception):
+    """An error raised when a code fragment doesn't follow some expected layout or assumption."""
+
+    pass
+
+
+def basic_blocks(code: CodeFragment) -> List[FragmentView]:
+    """
+    Extract the basic blocks from a code fragment.
+
+    The resulting basic blocks are views on the source fragment, in the same order in which they appear in the original
+    fragment.
+
+    For a correct behaviour, launch this function on a well-delimited code fragment (started by at least one label,
+    terminated by a jump) that contains basic blocks with at least some code in them (so avoid using it on something
+    that comes from the data sections).
+
+    Be aware that fancy ways of jumping around based on runtime-loaded addresses are not currently supported by this
+    package.
+
+    :param code: the code fragment whose basic blocks will be extracted
+    :return: a list of `FragmentView`s representing the basic blocks
+    :raise InvalidCodeError: when the provided code fragment has no label or no outgoing jump
+    """
+
+    # Identify the block boundaries, that is: those lines marked by a label or containing a control transfer instruction
+    block_boundaries = filter(lambda asl: isinstance(asl.statement, Instruction)
+                                          and (asl.statement.opcode in jump_ops or len(asl.statement.labels) > 0),
+                              # Use a line-oriented iterator, so that we can extract the line numbers
+                              to_line_iterator(iter(code), code.begin))
+
+    # Given the boundaries, calculate the appropriate cutoff points.
+    # A dictionary is used as a way of implementing an "ordered set" for easy duplicate removal.
+    # TODO find a more elegant way to remove duplicates online
+    cutoff_points = dict()
+    for boundary in block_boundaries:
+        if len(boundary.statement.labels) > 0 and boundary.statement.opcode in jump_ops:
+            # For a labeled line that also contains a jump, record two cut-points so that a single-line block can be
+            # created.
+            cutoff_points[boundary.number] = None
+            cutoff_points[boundary.number + 1] = None
+        elif len(boundary.statement.labels) > 0:
+            # Labeled lines mark cut-points themselves
+            cutoff_points[boundary.number] = None
+        else:
+            # A cut has to be made below any line containing a jump
+            cutoff_points[boundary.number + 1] = None
+
+    if len(cutoff_points) < 2:
+        raise InvalidCodeError("Code fragment does not start with a label or end with a jump/return.")
+
+    # Convert the "ordered set" back into a list
+    cutoff_points = list(iter(cutoff_points))
+
+    # Start slicing code into basic blocks
+    bb = []
+    head = cutoff_points[0]
+    for tail in cutoff_points[1:]:
+        bb.append(FragmentView(code, head, tail, head))
+        head = tail
+
+    return bb
 
 
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
