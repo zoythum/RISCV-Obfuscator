@@ -1,7 +1,7 @@
 from collections import deque
 from enum import Enum
 from itertools import count, chain
-from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping
+from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
@@ -81,6 +81,47 @@ jump_ops: Mapping[str, Transition] = {
 """Mapping between control flow manipulation instructions and the kind of transition that they introduce."""
 
 
+class BasicBlock:
+    """
+    A program's basic block.
+
+    Each member of this class is a code container, decorated with additional metadata that would have to be extracted
+    every time from bare assembly.
+
+    Members of this class are identified by some hashable object. Uniqueness is not enforced.
+
+    :ivar identifier: the hashable identifier for the basic block
+    :ivar labels: labels representing marking the entry point for the basic block, if any
+    :ivar code: the code fragment containing the actual code
+    :ivar outgoing_flow: the shape of the outgoing flow and its destination, in the format returned by the
+          execution_flow_at function
+    """
+
+    identifier: Hashable
+    labels: List[str]
+    code: CodeFragment
+    outgoing_flow: Tuple[Tuple[Transition, Optional[str]], Optional[Transition]]
+
+    def __init__(self, fragment: CodeFragment, block_id: Hashable):
+        starting_line = fragment[fragment.begin]
+        ending_line = fragment[fragment.end - 1]
+
+        if not isinstance(ending_line, Instruction):
+            raise InvalidCodeError("A basic block must always end with an instruction.")
+
+        self.identifier = block_id
+        self.labels = list(starting_line.labels)
+        self.code = fragment
+        self.outgoing_flow = execution_flow_at(ending_line)
+
+    def __repr__(self):
+        return "BasicBlock(" + repr(self.code) + ", " + repr(self.identifier) + ")"
+
+    def __str__(self):
+        return "---\nBB ID: " + str(self.identifier) + "\nLabels: " + str(self.labels) + "\n\n" + str(self.code) + \
+               "\nOutgoing exec arcs: " + str(self.outgoing_flow) + "\n---\n"
+
+
 def execution_flow_at(inst: Instruction) -> Tuple[Tuple[Transition, Optional[str]], Optional[Transition]]:
     """
     Determine the state of the execution flow at the given instruction.
@@ -109,13 +150,13 @@ def execution_flow_at(inst: Instruction) -> Tuple[Tuple[Transition, Optional[str
         return (Transition.SEQ, None), None
 
 
-def basic_blocks(code: CodeFragment) -> List[FragmentView]:
+def basic_blocks(code: CodeFragment) -> List[BasicBlock]:
     """
     Extract the basic blocks from a code fragment.
 
-    The resulting basic blocks are views on the source fragment, in the same order in which they appear in the original
-    fragment. Non-code statements are discarded if they reside between BB boundaries and are not interleaved with code
-    statements.
+    The resulting basic blocks contain views on the source fragment, and come in the same order in which they appear in
+    the original fragment. Non-code statements are discarded if they reside between BB boundaries and are not
+    interleaved with code statements.
 
     For a correct behaviour, launch this function on a well-delimited code fragment (started by at least one label,
     terminated by a jump).
@@ -124,7 +165,7 @@ def basic_blocks(code: CodeFragment) -> List[FragmentView]:
     package.
 
     :param code: the code fragment whose basic blocks will be extracted
-    :return: a list of `FragmentView`s representing the basic blocks
+    :return: the list of basic blocks contained in the original fragment
     :raise InvalidCodeError: when the provided code fragment has no label or no outgoing jump
     """
 
@@ -160,9 +201,10 @@ def basic_blocks(code: CodeFragment) -> List[FragmentView]:
     # Start slicing code into basic blocks
     bb = []
     head = cutoff_points[0]
+    seq = count(1)
     for tail in cutoff_points[1:]:
         if any(isinstance(line, Instruction) for line in code[head:tail]):
-            bb.append(FragmentView(code, head, tail, head))
+            bb.append(BasicBlock(FragmentView(code, head, tail, head), next(seq)))
         head = tail
 
     return bb
