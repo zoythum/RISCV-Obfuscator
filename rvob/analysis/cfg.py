@@ -36,11 +36,11 @@ def basic_blocks(code: CodeFragment) -> List[FragmentView]:
     Extract the basic blocks from a code fragment.
 
     The resulting basic blocks are views on the source fragment, in the same order in which they appear in the original
-    fragment.
+    fragment. Non-code statements are discarded if they reside between BB boundaries and are not interleaved with code
+    statements.
 
     For a correct behaviour, launch this function on a well-delimited code fragment (started by at least one label,
-    terminated by a jump) that contains basic blocks with at least some code in them (so avoid using it on something
-    that comes from the data sections).
+    terminated by a jump).
 
     Be aware that fancy ways of jumping around based on runtime-loaded addresses are not currently supported by this
     package.
@@ -83,7 +83,8 @@ def basic_blocks(code: CodeFragment) -> List[FragmentView]:
     bb = []
     head = cutoff_points[0]
     for tail in cutoff_points[1:]:
-        bb.append(FragmentView(code, head, tail, head))
+        if any(isinstance(line, Instruction) for line in code[head:tail]):
+            bb.append(FragmentView(code, head, tail, head))
         head = tail
 
     return bb
