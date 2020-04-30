@@ -1,17 +1,16 @@
 from collections import deque
 from enum import Enum, auto
 from itertools import count, chain
-from typing import Iterator, FrozenSet, List
+from typing import Iterator, FrozenSet, List, Mapping
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
-from rvob.structures import jump_ops, JumpType
 
 
 class Transition(Enum):
-    """A type of transition in a CFG."""
+    """A type of control flow progression."""
 
     # Sequential: PC advances into another labeled block
     SEQ = auto()
@@ -23,6 +22,31 @@ class Transition(Enum):
     CALL = auto()
     # Return: return jump from a call
     RETURN = auto()
+
+
+jump_ops: Mapping[str, Transition] = {
+    "call": Transition.CALL,
+    "jr": Transition.RETURN,
+    "j": Transition.U_JUMP,
+    "jal": Transition.CALL,
+    "jalr": Transition.CALL,
+    "beq": Transition.C_JUMP,
+    "beqz": Transition.C_JUMP,
+    "bne": Transition.C_JUMP,
+    "bnez": Transition.C_JUMP,
+    "blt": Transition.C_JUMP,
+    "bltz": Transition.C_JUMP,
+    "bltu": Transition.C_JUMP,
+    "ble": Transition.C_JUMP,
+    "blez": Transition.C_JUMP,
+    "bleu": Transition.C_JUMP,
+    "bgt": Transition.C_JUMP,
+    "bgtz": Transition.C_JUMP,
+    "bgtu": Transition.C_JUMP,
+    "bge": Transition.C_JUMP,
+    "bgez": Transition.C_JUMP,
+    "bgeu": Transition.C_JUMP
+}
 
 
 class InvalidCodeError(Exception):
@@ -140,13 +164,13 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                 cfg.add_node(rid, block=FragmentView(src, start_line, line.number + 1, start_line))
                 ancestors[start_line] = rid
 
-                if jump_ops[line.statement.opcode] == JumpType.U:
+                if jump_ops[line.statement.opcode] == Transition.U_JUMP:
                     # Unconditional jump: resolve destination and relay-call explorer there
                     cfg.add_edge(rid,
                                  _explorer(label_dict[line.statement.immediate.symbol], __ret_stack__),
                                  kind=Transition.U_JUMP)
                     break
-                elif jump_ops[line.statement.opcode] == JumpType.F:
+                elif jump_ops[line.statement.opcode] == Transition.CALL:
                     # Function call: start by resolving destination
                     target = line.statement.immediate.symbol
                     # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
@@ -176,7 +200,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                     # Perform the actual recursive call
                     cfg.add_edge(home, _explorer(dst, __ret_stack__), kind=tran_type)
                     break
-                elif jump_ops[line.statement.opcode] == JumpType.C:
+                elif jump_ops[line.statement.opcode] == Transition.C_JUMP:
                     # Conditional jump: launch two explorers, one at the jump's target and one at the following line
                     cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__), kind=Transition.SEQ)
                     # The second explorer needs a copy of the return stack, since it may encounter another return jump
@@ -185,7 +209,7 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
                                            __ret_stack__.copy()),
                                  kind=Transition.C_JUMP)
                     break
-                elif jump_ops[line.statement.opcode] == JumpType.R:
+                elif jump_ops[line.statement.opcode] == Transition.RETURN:
                     # Procedure return: close the edge on the return address by invoking an explorer there
                     cfg.add_edge(rid, _explorer(__ret_stack__.pop(), __ret_stack__), kind=Transition.RETURN)
                     break
