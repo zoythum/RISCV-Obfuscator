@@ -1,7 +1,7 @@
 from collections import deque
-from enum import Enum, auto
+from enum import Enum
 from itertools import count, chain
-from typing import Iterator, FrozenSet, List, Mapping
+from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
@@ -9,19 +9,50 @@ from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
 
 
-class Transition(Enum):
-    """A type of control flow progression."""
+class InvalidCodeError(Exception):
+    """An error raised when a code fragment doesn't follow some expected layout or assumption."""
 
-    # Sequential: PC advances into another labeled block
-    SEQ = auto()
-    # U-Jump: a simple local unconditional jump
-    U_JUMP = auto()
-    # C-Jump: a simple local conditional jump
-    C_JUMP = auto()
-    # Call: non-local jump to an internal or external procedure
-    CALL = auto()
-    # Return: return jump from a call
-    RETURN = auto()
+    pass
+
+
+class Transition(Enum):
+    """
+    A type of control flow progression.
+
+    Each member carries some information characterizing the type of advancement:
+
+    - resolve_symbol: whether the progression implies a symbol resolution;
+    - branching: whether progressing in this direction is conditional.
+    """
+
+    SEQ = (False, False)
+    """Sequential advancement: PC advances linearly, towards the instruction that follows."""
+
+    U_JUMP = (True, False)
+    """Unconditional jump: a simple local unconditional jump."""
+
+    C_JUMP = (True, True)
+    """ Conditional jump: a simple local conditional jump. An alternate sequential execution path exists."""
+
+    CALL = (True, False)
+    """Procedure call: non-local jump to an internal or external procedure."""
+
+    RETURN = (False, False)
+    """Return: return jump from a call."""
+
+    def __new__(cls, *args, **kwargs):
+        # Calculate a unique ID to avoid aliasing
+        id_val = len(cls.__members__) + 1
+        instance = object.__new__(cls)
+        instance._value_ = id_val
+        return instance
+
+    def __init__(self, resolve_symbol: bool, branching: bool):
+        self.resolve_symbol = resolve_symbol
+        self.branching = branching
+
+    def __repr__(self):
+        return '<%s.%s: (%s,%s)>' % (self.__class__.__name__, self.name, self.resolve_symbol, self.branching)
 
 
 jump_ops: Mapping[str, Transition] = {
@@ -47,12 +78,35 @@ jump_ops: Mapping[str, Transition] = {
     "bgez": Transition.C_JUMP,
     "bgeu": Transition.C_JUMP
 }
+"""Mapping between control flow manipulation instructions and the kind of transition that they introduce."""
 
 
-class InvalidCodeError(Exception):
-    """An error raised when a code fragment doesn't follow some expected layout or assumption."""
+def execution_flow_at(inst: Instruction) -> Tuple[Tuple[Transition, Optional[str]], Optional[Transition]]:
+    """
+    Determine the state of the execution flow at the given instruction.
 
-    pass
+    This function returns a tuple containing:
+
+    - a tuple, containing in turn a `Transition` type specifier and, in case of a jump, the symbol representing its
+      destination;
+    - an optional secondary transition, in case of a branching instruction flow (which should always be a `SEQ`).
+
+    :param inst: the instruction at which the control flow status must be checked
+    :return: the tuple containing the parting transition(s)
+    """
+
+    if inst.opcode in jump_ops:
+        trans_type = jump_ops[inst.opcode]
+        if trans_type.resolve_symbol and trans_type.branching:
+            # Branching control flow: add the branch-not-taken transition as the optional secondary result
+            return (trans_type, inst.immediate.symbol), Transition.SEQ
+        elif trans_type.resolve_symbol:
+            return (trans_type, inst.immediate.symbol), None
+        else:
+            return (trans_type, None), None
+    else:
+        # Any instruction that is not a jump instruction must maintain the sequential control flow
+        return (Transition.SEQ, None), None
 
 
 def basic_blocks(code: CodeFragment) -> List[FragmentView]:
