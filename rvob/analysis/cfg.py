@@ -100,7 +100,7 @@ class BasicBlock:
     identifier: Hashable
     labels: List[str]
     code: CodeFragment
-    outgoing_flow: Tuple[Tuple[Transition, Optional[str]], Optional[Transition]]
+    outgoing_flow: Tuple[Transition, Optional[str]]
 
     def __init__(self, fragment: CodeFragment, block_id: Hashable):
         starting_line = fragment[fragment.begin]
@@ -119,35 +119,30 @@ class BasicBlock:
 
     def __str__(self):
         return "---\nBB ID: " + str(self.identifier) + "\nLabels: " + str(self.labels) + "\n\n" + str(self.code) + \
-               "\nOutgoing exec arcs: " + str(self.outgoing_flow) + "\n---\n"
+               "\nOutgoing exec arc: " + str(self.outgoing_flow) + "\n---\n"
 
 
-def execution_flow_at(inst: Instruction) -> Tuple[Tuple[Transition, Optional[str]], Optional[Transition]]:
+def execution_flow_at(inst: Instruction) -> Tuple[Transition, Optional[str]]:
     """
     Determine the state of the execution flow at the given instruction.
 
-    This function returns a tuple containing:
-
-    - a tuple, containing in turn a `Transition` type specifier and, in case of a jump, the symbol representing its
-      destination;
-    - an optional secondary transition, in case of a branching instruction flow (which should always be a `SEQ`).
+    This function returns a tuple containing a `Transition` type specifier and, in case of a jump, the symbol
+    representing its destination. The transition type indicates in what manner the execution flow shall progress past
+    the given instruction.
 
     :param inst: the instruction at which the control flow status must be checked
-    :return: the tuple containing the parting transition(s)
+    :return: the tuple containing the parting transition
     """
 
     if inst.opcode in jump_ops:
         trans_type = jump_ops[inst.opcode]
-        if trans_type.resolve_symbol and trans_type.branching:
-            # Branching control flow: add the branch-not-taken transition as the optional secondary result
-            return (trans_type, inst.immediate.symbol), Transition.SEQ
-        elif trans_type.resolve_symbol:
-            return (trans_type, inst.immediate.symbol), None
+        if trans_type.resolve_symbol:
+            return trans_type, inst.immediate.symbol
         else:
-            return (trans_type, None), None
+            return trans_type, None
     else:
         # Any instruction that is not a jump instruction must maintain the sequential control flow
-        return (Transition.SEQ, None), None
+        return Transition.SEQ, None
 
 
 def basic_blocks(code: CodeFragment) -> List[BasicBlock]:
