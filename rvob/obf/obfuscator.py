@@ -1,8 +1,8 @@
 from enum import Enum
-from random import seed, randint, sample
+from random import seed, randint, sample, choice
 from typing import List, NamedTuple, Tuple, Mapping
-from obf.const_derivation import generate_derivation_chain, Promise
-from rep.base import Instruction
+from obf.const_derivation import generate_derivation_chain, Promise, primers
+from rep.base import Instruction, to_line_iterator
 from analysis.heatmaps import register_heatmap, mediate_heat
 from structures import Register, opcd_family, not_modifiable_regs
 from networkx import DiGraph
@@ -225,11 +225,38 @@ def placer(cfg: DiGraph, promises: List[Promise], report: Report, target_instr: 
         for t in range(len(positions[i][1])):
             line = positions[i][1][t]
             instr = instr_queue.get()
+            print("nd_bg: "+str(active_block.begin)+" nd_end: "+str(active_block.end)+" write_in: "+str(line))
             active_block.insert(line, instr)
     return target_instr
 
 
-def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
+def get_immediate_instructions(cfg) -> Tuple[int, int]:
+    """
+    The functions search for all the immediate instructions in the specified cfg and
+    returns a tuple where the first parameter represents a node and the second one is a line number.
+    :param cfg:
+    :return: (node, line_num)
+    """
+    result = []
+    for node in cfg.nodes:
+        if "external" not in cfg.nodes[node]:
+            current_node = cfg.nodes[node]
+            iterator = to_line_iterator(current_node['block'].iter(current_node['block'].begin),
+                                        current_node['block'].begin)
+            while True:
+                try:
+                    line = iterator.__next__()
+                    line_num = line.number
+                    stat = line.statement
+                    if (stat.opcode in primers or stat.opcode == "li") and stat.immediate is not None \
+                            and stat.immediate.symbol is None:
+                        result.append((node, line_num))
+                except StopIteration:
+                    break
+    return choice(result)
+
+
+def obfuscate(cfg: DiGraph, node_id: int = None, target_instr: int = None):
     """
     this is the main function that, given an instruction, generate the list of promises, convert them into instructions
     and distribute them in as many nodes as possible
@@ -237,6 +264,10 @@ def obfuscate(cfg: DiGraph, node_id: int, target_instr: int):
     @param node_id: the id of the node where is collocated the instruction to obfuscate
     @param target_instr: the line of the instruction to obfuscate
     """
+    if node_id is None or target_instr is None:
+        extracted = get_immediate_instructions(cfg)
+        node_id = extracted[0]
+        target_instr = extracted[1]
     instruction = cfg.nodes[node_id]["block"][target_instr]
     max_shift = randint(0, 10)
     max_logical = randint(0, 10)

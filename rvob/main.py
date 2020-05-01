@@ -8,33 +8,7 @@ from rvob.garbage_inserter import insert_garbage_instr
 from rvob.obf.obfuscator import obfuscate
 from rvob.scrambling import substitute_reg
 from rvob.analysis.heatmaps import register_heatmap
-from rvob.rep.base import to_line_iterator
 from random import randint
-
-
-def get_immediate_instructions(cfg):
-    """
-    returns a list of tuples where the first parameter represents a node and the second one is a line number.
-    Those tuples defines all the immediate instructions found in the specified cfg
-    :param cfg:
-    :return: list[(node, line_num)]
-    """
-    result = []
-    for node in cfg.nodes:
-        if "external" not in cfg.nodes[node]:
-            current_node = cfg.nodes[node]
-            iterator = to_line_iterator(current_node['block'].iter(current_node['block'].begin),
-                                        current_node['block'].begin)
-            while True:
-                try:
-                    line = iterator.__next__()
-                    line_num = line.number
-                    stat = line.statement
-                    if stat.family == "i" and stat.ImmediateConstant is None:
-                        result.append((node, line_num))
-                except StopIteration:
-                    break
-    return result
 
 
 def main():
@@ -66,11 +40,7 @@ def main():
         for _ in range(0, rep_value):
             insert_garbage_instr(cfg)
         for _ in range(0, rep_value):
-            imm_instr = get_immediate_instructions(cfg)
-            if len(imm_instr) == 0:
-                break
-            curr_instr = imm_instr[randint(0, len(imm_instr) - 1)]
-            obfuscate(cfg, curr_instr[0], curr_instr[1])
+            obfuscate(cfg)
         for _ in range(0, rep_value):
             heatmap = register_heatmap(cfg, heat)
             substitute_reg(cfg, heatmap, heat)
