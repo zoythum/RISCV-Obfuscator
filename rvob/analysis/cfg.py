@@ -173,7 +173,6 @@ class LocalGraph:
 
         # Set up the entry-point information
         self.entry_point_ids = list(entry_points)
-        self.entry_labels = list(chain.from_iterable(map(lambda n: graph.nodes[n]['labels'], entry_points)))
 
         # Characterize the function in terms of a graph and the nested calls it performs
         self.graph = graph
@@ -181,6 +180,11 @@ class LocalGraph:
 
         # Keep track of the terminal nodes
         self.terminal_nodes_ids = list(terminals)
+
+    @property
+    def entry_labels(self) -> List[str]:
+        labeling_lists = map(lambda n: self.graph.nodes[n]['labels'], self.entry_point_ids)
+        return list(chain.from_iterable(labeling_lists))
 
 
 def execution_flow_at(inst: Instruction) -> Tuple[Transition, Optional[str]]:
