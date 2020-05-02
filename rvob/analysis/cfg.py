@@ -1,6 +1,7 @@
 from collections import deque
 from enum import Enum
 from itertools import count, chain
+from operator import itemgetter
 from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, NamedTuple
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
@@ -139,41 +140,40 @@ class LocalGraph:
     """
     A CFG representing some part of a program, with unresolved procedure calls.
 
-    A local graph is characterized by an entry-point, a digraph, some terminal nodes and a collection of "arcs"
-    directed to some external procedures. There is only one execution flow that traverses a local graph, starting from
-    the entry-point and eventually branching until the terminal nodes are reached, unless an external call diverges.
+    A local graph is characterized by one or more entry-points, a digraph, some terminal nodes and a collection of
+    "arcs" directed to some external procedures. All entering execution flows proceed from the entry-points and reach
+    the terminal nodes, unless an external call diverges.
 
     A local graph may not be connected, with disconnected components being confluence point for flows returning from
-    external calls. The information necessary to extract a connected graph can be extracted by resolving the external
+    external calls. The information necessary to obtain a connected graph can be extracted by resolving the external
     calls.
 
     No check is performed on the consistency of the information used to instantiate these objects.
     """
 
     entry_labels: List[str]
-    entry_point_id: Hashable
+    entry_point_ids: List[Hashable]
     graph: DiGraph
     external_calls: List[ProcedureCall]
     terminal_nodes_ids: List[Hashable]
 
     def __init__(self,
-                 entry_point: Hashable,
+                 entry_points: Iterable[Hashable],
                  graph: DiGraph,
                  calls: Iterable[ProcedureCall],
                  terminals: Iterable[Hashable]):
         """
         Construct a new local graph.
 
-        :param entry_point: the entry-point's ID
+        :param entry_points: a collection of node IDs indicating the entry-points
         :param graph: the local graph, as a NetworkX DiGraph
         :param calls: a collection of purportedly external calls
-        :param terminals: a collection of node IDs indicating which are the termianl nodes
+        :param terminals: a collection of node IDs indicating which are the terminal nodes
         """
-        leading_block = graph.nodes[entry_point]
 
         # Set up the entry-point information
-        self.entry_point_id = entry_point
-        self.entry_labels = leading_block['labels']
+        self.entry_point_ids = list(entry_points)
+        self.entry_labels = list(chain.from_iterable(map(lambda n: graph.nodes[n]['labels'], entry_points)))
 
         # Characterize the function in terms of a graph and the nested calls it performs
         self.graph = graph
@@ -334,7 +334,7 @@ def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
         # Resolve the internal symbolic jumps and add the missing edges
         local_graph.add_edge(jumper, local_symbol_table[dst], kind=kind)
 
-    return LocalGraph(bbs[0].identifier, local_graph, calls, terminal_nodes)
+    return LocalGraph([bbs[0].identifier], local_graph, calls, terminal_nodes)
 
 
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
