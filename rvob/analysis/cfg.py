@@ -1,7 +1,7 @@
 from collections import deque
 from enum import Enum
 from itertools import count, chain
-from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable
+from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, NamedTuple
 
 from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
 
@@ -122,6 +122,67 @@ class BasicBlock:
                "\nOutgoing exec arc: " + str(self.outgoing_flow) + "\n---\n"
 
 
+class ProcedureCall(NamedTuple):
+    """
+    A procedure call.
+
+    Calls are represented in terms of caller, callee and point where execution is expected to return
+    (`confluence point`).
+    """
+
+    caller: Hashable
+    callee: Hashable
+    confluence_point: Hashable
+
+
+class LocalGraph:
+    """
+    A CFG representing some part of a program, with unresolved procedure calls.
+
+    A local graph is characterized by an entry-point, a digraph, some terminal nodes and a collection of "arcs"
+    directed to some external procedures. There is only one execution flow that traverses a local graph, starting from
+    the entry-point and eventually branching until the terminal nodes are reached, unless an external call diverges.
+
+    A local graph may not be connected, with disconnected components being confluence point for flows returning from
+    external calls. The information necessary to extract a connected graph can be extracted by resolving the external
+    calls.
+
+    No check is performed on the consistency of the information used to instantiate these objects.
+    """
+
+    entry_labels: List[str]
+    entry_point_id: Hashable
+    graph: DiGraph
+    external_calls: List[ProcedureCall]
+    terminal_nodes_ids: List[Hashable]
+
+    def __init__(self,
+                 entry_point: Hashable,
+                 graph: DiGraph,
+                 calls: Iterable[ProcedureCall],
+                 terminals: Iterable[Hashable]):
+        """
+        Construct a new local graph.
+
+        :param entry_point: the entry-point's ID
+        :param graph: the local graph, as a NetworkX DiGraph
+        :param calls: a collection of purportedly external calls
+        :param terminals: a collection of node IDs indicating which are the termianl nodes
+        """
+        leading_block = graph.nodes[entry_point]
+
+        # Set up the entry-point information
+        self.entry_point_id = entry_point
+        self.entry_labels = leading_block['labels']
+
+        # Characterize the function in terms of a graph and the nested calls it performs
+        self.graph = graph
+        self.external_calls = list(calls)
+
+        # Keep track of the terminal nodes
+        self.terminal_nodes_ids = list(terminals)
+
+
 def execution_flow_at(inst: Instruction) -> Tuple[Transition, Optional[str]]:
     """
     Determine the state of the execution flow at the given instruction.
@@ -203,6 +264,77 @@ def basic_blocks(code: CodeFragment) -> List[BasicBlock]:
         head = tail
 
     return bb
+
+
+def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
+    """
+    Construct a local graph from a list of basic blocks.
+
+    Nodes and edges of the resulting graph will be decorated, respectively, with assembly labels and transition types,
+    registered with the attribute names of `labels` and `kind`.
+
+    This function works based on a few assumptions:
+
+    - the basic blocks are provided in the same order they appear inside the original code fragment;
+    - the first block is the entry-point;
+    - all `call` instructions point to code not contained in the provided basic blocks;
+    - all jumps are local;
+    - all blocks with a final `RETURN` transition actually return control to whoever caused the PC to reach the EP.
+    When these conditions are satisfied, a well-formed local graph is returned.
+
+    :param bbs: the list of basic blocks of which the local graph is formed
+    :return: a LocalGraph object representing the local graph
+    """
+
+    local_graph = DiGraph()
+
+    local_symbol_table: MutableMapping[str, Hashable] = {}
+    pending_jumps: List[Tuple[Hashable, str, Transition]] = []
+
+    terminal_nodes = []
+    calls = []
+
+    parent_seq_block = None
+    pending_call = None
+
+    for bb in bbs:
+        local_graph.add_node(bb.identifier, labels=list(bb.labels), block=bb.code)
+
+        if parent_seq_block is not None:
+            # Attach the current node to the sequence-wise previous one
+            local_graph.add_edge(parent_seq_block, bb.identifier, kind=Transition.SEQ)
+            parent_seq_block = None
+        elif pending_call is not None:
+            # Set the current node as the return point of a procedure call
+            calls.append(ProcedureCall(pending_call[0], pending_call[1], bb.identifier))
+            pending_call = None
+
+        # Embed the basic block's labels into the node
+        local_symbol_table.update((lab, bb.identifier) for lab in bb.labels)
+
+        outgoing_transition = bb.outgoing_flow[0]
+        if outgoing_transition is Transition.RETURN:
+            # The outgoing transition is a return-jump: add the node to the list of terminals.
+            terminal_nodes.append(bb.identifier)
+        elif outgoing_transition is Transition.CALL:
+            # The outgoing transition is a procedure call: keep track of it so that the subsequent block will be set as
+            # its confluence point.
+            pending_call = bb.identifier, bb.outgoing_flow[1]
+        else:
+            if outgoing_transition is Transition.SEQ or outgoing_transition.branching:
+                # In case of a sequential or branching transition, the subsequent basic block is to be attached to the
+                # current one.
+                parent_seq_block = bb.identifier
+
+            if outgoing_transition.resolve_symbol:
+                # In case of a jump, store its origin and symbolic destination for the coming one-pass resolution.
+                pending_jumps.append((bb.identifier, bb.outgoing_flow[1], bb.outgoing_flow[0]))
+
+    for jumper, dst, kind in pending_jumps:
+        # Resolve the internal symbolic jumps and add the missing edges
+        local_graph.add_edge(jumper, local_symbol_table[dst], kind=kind)
+
+    return LocalGraph(bbs[0].identifier, local_graph, calls, terminal_nodes)
 
 
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
