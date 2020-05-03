@@ -261,17 +261,8 @@ def solve_graph_collision(ref: Graph, other: Graph) -> Dict[Hashable, Hashable]:
     :return: a partial mapping that solves eventual clashes once applied on the second graph
     """
 
-    seed()
     id_clashes = ref.nbunch_iter(other.nodes)
-    solution = {}
-    for idc in id_clashes:
-        new_id = idc
-        while new_id in other or new_id in solution:
-            new_id = hash((new_id, randint(0, sys.maxsize)))
-
-        solution[idc] = new_id
-
-    return solution
+    return {idc: generate_unique_node() for idc in id_clashes}
 
 
 def remap_local_graph(cfg: LocalGraph, mapping: Dict[Hashable, Hashable]) -> LocalGraph:
@@ -373,10 +364,10 @@ def basic_blocks(code: CodeFragment) -> List[BasicBlock]:
     # Start slicing code into basic blocks
     bb = []
     head = cutoff_points[0]
-    seq = count(1)
     for tail in cutoff_points[1:]:
         if any(isinstance(line, Instruction) for line in code[head:tail]):
-            bb.append(BasicBlock(FragmentView(code, head, tail, head), next(seq)))
+            # Since these blocks are probably gonna end up inside a graph, use the NetworkX's function for unique IDs
+            bb.append(BasicBlock(FragmentView(code, head, tail, head), generate_unique_node()))
         head = tail
 
     return bb
