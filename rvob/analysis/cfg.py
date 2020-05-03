@@ -186,6 +186,15 @@ class LocalGraph:
         labeling_lists = map(lambda n: self.graph.nodes[n]['labels'], self.entry_point_ids)
         return list(chain.from_iterable(labeling_lists))
 
+    def get_symbol_table(self) -> Mapping[str, Hashable]:
+        """
+        Return a mapping between entry labels and entry-points' node IDs.
+
+        :return: a mapping from public labels to their entry-point IDs
+        """
+
+        return {lab: nid for nid in self.entry_point_ids for lab in self.graph.nodes[nid]['labels']}
+
 
 def execution_flow_at(inst: Instruction) -> Tuple[Transition, Optional[str]]:
     """
