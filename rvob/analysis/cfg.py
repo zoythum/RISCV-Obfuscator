@@ -3,12 +3,15 @@ from __future__ import annotations
 import sys
 from collections import deque
 from enum import Enum
-from itertools import count, chain, tee
+from itertools import count, chain, tee, repeat
+from operator import attrgetter
 from random import seed, randint
 from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, \
-    NamedTuple, Dict
+    NamedTuple, Dict, Union
 
-from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes, Graph
+from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes, dfs_preorder_nodes, Graph
+from networkx.classes.graphviews import subgraph_view
+from networkx.utils import generate_unique_node
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
@@ -448,6 +451,97 @@ def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
         local_graph.add_edge(jumper, local_symbol_table[dst], kind=kind)
 
     return LocalGraph([bbs[0].identifier], local_graph, calls, terminal_nodes)
+
+
+def internalize_calls(cfg: LocalGraph) -> LocalGraph:
+    """
+    Transform external callees into symbolic internal nodes.
+
+    A symbolic node will bear an identifier and a single label, both equal to the callee's symbolic name. Of course,
+    these new nodes will be isolated from the rest of the graph. Therefore, this method is of practical use only when
+    the user is planning an attempt at name resolution by modifying the internal graph.
+
+    :param cfg: a local graph
+    :return: a new local graph, with all external calls converted into symbolic nodes
+    """
+
+    # Gather all the callees' names
+    external_nodes_ids = set(map(attrgetter('callee'), cfg.external_calls))
+
+    # Create a new local graph containing only the symbolic nodes
+    foreign_graph = DiGraph()
+    foreign_graph.add_nodes_from((i, {'labels': [i], 'external': True}) for i in external_nodes_ids)
+    external = LocalGraph(external_nodes_ids, foreign_graph, [], external_nodes_ids)
+
+    # Merge the new graph with the original and return the result
+    return cfg.merge(external)
+
+
+def exec_graph(cfg: LocalGraph,
+               entry_point: Union[str, Hashable],
+               ignore_calls: FrozenSet[str] = frozenset()) -> DiGraph:
+    """
+    Given a local CFG and an entry-point, return the graph of the node visits performed by the execution flow.
+
+    The procedure consists in a recursive, depth-first visit of sub-graphs, starting from the initial node and repeating
+    itself for every `CALL` arc encountered. Given their nasty nature, recursive calls are not expanded; instead, they
+    are represented by special nodes with IDs of the form `call{<call destination>, <unique ID>}`.
+
+    The user can specify additional calls that mustn't be expanded.
+
+    Different calls to the same procedure result in differently-labeled sub-graphs being attached, so the resulting
+    graph is more a substantiation of the execution paths than a sub-graph of the original CFG. As a consequence, don't
+    expect a one-to-one correspondence between the CFG's nodes and the one in the execution graph.
+
+    Terminal nodes reachability is guaranteed only if the graph is well formed and any external call reached by the
+    execution flow has been internalized, if not explicitly set as ignored.
+
+    :param cfg: a CFG description of some code
+    :param entry_point: an entry-point specification for the CFG, either as a node ID or as a symbolic label
+    :param ignore_calls: a set of calls that won't be expanded into sub-graphs
+    :return: a directed graph representing the execution starting from the specified entry-point
+    """
+
+    # Get the entry-point ID
+    source = entry_point if entry_point in cfg.entry_point_ids else cfg.get_symbol_table()[entry_point]
+    source_labels = cfg.graph.nodes[source]['labels']
+
+    # If one of the entry-point's labels is in the ignore set, return a node summarizing the call
+    if not ignore_calls.isdisjoint(source_labels):
+        res = DiGraph()
+        # The node will have a synthetic ID 'call{<call destination>, <unique ID>}', and will carry the original labels.
+        res.add_node('call{' + str(source) + ', ' + generate_unique_node() + '}', labels=source_labels, external=True)
+        return res
+
+    # Traverse the subtree rooted at the entry-point and collect the visited nodes
+    visited_nodes = frozenset(dfs_preorder_nodes(cfg.graph, source))
+    # Produce a view of the visited component
+    visited_component: Graph = subgraph_view(cfg.graph, lambda n: n in visited_nodes)
+
+    # Initialize the returned graph with the contents of the visited component
+    res = DiGraph()
+    res.update(visited_component)
+
+    # Iterate over the CALL edges inside the visited component
+    for edge in filter(lambda e: visited_component.edges[e]['kind'] == Transition.CALL, visited_component.edges):
+        # Recursively compute the component of the called procedures
+        nested_component = exec_graph(cfg,
+                                      visited_component.edges[edge]['callee'],
+                                      ignore_calls.union(source_labels))
+        # Add the nested component to the result, avoiding ID clashes
+        relabel_nodes(nested_component, solve_graph_collision(res, nested_component), False)
+        res.update(nested_component)
+
+        # Take the root of the sub-component and its terminal nodes
+        head = next(filter(lambda n: nested_component.in_degree(n) == 0, nested_component.nodes))
+        tail = filter(lambda n: nested_component.out_degree(n) == 0, nested_component.nodes)
+
+        # Substitute the original edge with call and return edges toward/from the sub-component
+        res.remove_edge(*edge)
+        res.add_edge(edge[0], head, kind=Transition.CALL)
+        res.add_edges_from(zip(tail, repeat(edge[1])), kind=Transition.RETURN)
+
+    return res
 
 
 def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
