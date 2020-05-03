@@ -1,10 +1,14 @@
+from __future__ import annotations
+
+import sys
 from collections import deque
 from enum import Enum
-from itertools import count, chain
-from operator import itemgetter
-from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, NamedTuple
+from itertools import count, chain, tee
+from random import seed, randint
+from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, \
+    NamedTuple, Dict
 
-from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths
+from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
@@ -138,7 +142,7 @@ class ProcedureCall(NamedTuple):
 
 class LocalGraph:
     """
-    A CFG representing some part of a program, with unresolved procedure calls.
+    A CFG representing some part of a program.
 
     A local graph is characterized by one or more entry-points, a digraph, some terminal nodes and a collection of
     "arcs" directed to some external procedures. All entering execution flows proceed from the entry-points and reach
@@ -147,6 +151,9 @@ class LocalGraph:
     A local graph may not be connected, with disconnected components being confluence point for flows returning from
     external calls. The information necessary to obtain a connected graph can be extracted by resolving the external
     calls.
+
+    Internal calls are represented by edges connecting caller and confluence point, labeled with the `CALL` transition
+    kind and with a `caller` attribute indicating the called procedure's symbolic name.
 
     No check is performed on the consistency of the information used to instantiate these objects.
     """
@@ -194,6 +201,85 @@ class LocalGraph:
         """
 
         return {lab: nid for nid in self.entry_point_ids for lab in self.graph.nodes[nid]['labels']}
+
+    def merge(self, other: LocalGraph) -> LocalGraph:
+        """
+        Merge this local graph with `other` into a new local graph.
+
+        The resulting local graph has the union of entry-points, graphs and terminals. A cross-lookup is performed
+        between the two objects in an attempt to resolve external calls that may become internal. Newly found internal
+        calls are converted into graph edges of kind `Transition.CALL` with attribute `callee` pointing to one of the
+        local entry-points. The remaining external calls are merged and included in the new object.
+
+        :param other: the other graph that takes part in the operation
+        :return: a local graph obtained by merging self with other
+        :raise InvalidCodeError: when there is a naming clash between entry labels of the two graphs
+        """
+
+        self_symbols = self.get_symbol_table()
+        other_symbols = other.get_symbol_table()
+
+        # Look for entry labels collisions. If the original code is rational, this shouldn't happen.
+        if not frozenset(self_symbols).isdisjoint(other_symbols):
+            raise InvalidCodeError("Labeling clash")
+
+        # Spot name collisions between node identifiers and prepare for remapping
+        id_clashes = self.graph.nbunch_iter(other.graph.nodes)
+        seed()
+        remapper = {}
+        for idc in id_clashes:
+            new_id = idc
+            while new_id in other.graph or new_id in remapper:
+                new_id = hash((new_id, randint(0, sys.maxsize)))
+
+            remapper[idc] = new_id
+
+        # Remap the other graph, entry-point IDs, callers and terminals
+        other = remap_local_graph(other, remapper)
+
+        # Start merging stuff
+        merged_eps = chain(self.entry_point_ids, other.entry_point_ids)
+        (merged_graph := self.graph.copy()).update(other.graph)
+        merged_terminals = chain(self.terminal_nodes_ids, other.terminal_nodes_ids)
+
+        # TODO re-implement with partitions
+        sec1, sec2 = tee(self.external_calls)
+        oec1, oec2 = tee(other.external_calls)
+        # Merge external calls
+        merged_calls = chain(filter(lambda c: c.callee not in other_symbols, sec1),
+                             filter(lambda c: c.callee not in self_symbols, oec1))
+        # Resolve internal calls
+        for ic in filter(lambda c: c.callee in other_symbols, sec2):
+            merged_graph.add_edge(ic.caller, ic.confluence_point, kind=Transition.CALL, callee=ic.callee)
+        for ic in filter(lambda c: c.callee in self_symbols, oec2):
+            merged_graph.add_edge(ic.caller, ic.confluence_point, kind=Transition.CALL, callee=ic.callee)
+
+        return LocalGraph(merged_eps, merged_graph, merged_calls, merged_terminals)
+
+
+def remap_local_graph(cfg: LocalGraph, mapping: Dict[Hashable, Hashable]) -> LocalGraph:
+    """
+    Given a local graph, use the provided mapping to remap node identifiers.
+
+    An invocation of this function results in the creation of a new local graph in which node identifiers have been
+    remapped according to the contents in the supplied dictionary. The original graph is left untouched.
+
+    The new mapping may be partial. In that case, only the nodes for which a corresponding key exists are remapped.
+
+    :param cfg: the local graph to be remapped
+    :param mapping: a dictionary containing the new mappings
+    :return: a new local graph where the selected nodes have been remapped
+    """
+
+    new_entry = map(lambda ep: mapping.get(ep, ep), cfg.entry_point_ids)
+    new_graph = relabel_nodes(cfg.graph, mapping)
+    new_calls = map(lambda c:
+                    ProcedureCall(mapping.get(c.caller, c.caller),
+                                  c.callee,
+                                  mapping.get(c.confluence_point, c.confluence_point)), cfg.external_calls)
+    new_terminals = map(lambda term: mapping.get(term, term), cfg.terminal_nodes_ids)
+
+    return LocalGraph(new_entry, new_graph, new_calls, new_terminals)
 
 
 def execution_flow_at(inst: Instruction) -> Tuple[Transition, Optional[str]]:
