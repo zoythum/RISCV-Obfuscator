@@ -8,7 +8,7 @@ from random import seed, randint
 from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, \
     NamedTuple, Dict
 
-from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes
+from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes, Graph
 
 from rep.base import Instruction, Directive, ASMLine, to_line_iterator
 from rep.fragments import Source, FragmentView, CodeFragment
@@ -223,19 +223,8 @@ class LocalGraph:
         if not frozenset(self_symbols).isdisjoint(other_symbols):
             raise InvalidCodeError("Labeling clash")
 
-        # Spot name collisions between node identifiers and prepare for remapping
-        id_clashes = self.graph.nbunch_iter(other.graph.nodes)
-        seed()
-        remapper = {}
-        for idc in id_clashes:
-            new_id = idc
-            while new_id in other.graph or new_id in remapper:
-                new_id = hash((new_id, randint(0, sys.maxsize)))
-
-            remapper[idc] = new_id
-
         # Remap the other graph, entry-point IDs, callers and terminals
-        other = remap_local_graph(other, remapper)
+        other = remap_local_graph(other, solve_graph_collision(self.graph, other.graph))
 
         # Start merging stuff
         merged_eps = chain(self.entry_point_ids, other.entry_point_ids)
@@ -255,6 +244,31 @@ class LocalGraph:
             merged_graph.add_edge(ic.caller, ic.confluence_point, kind=Transition.CALL, callee=ic.callee)
 
         return LocalGraph(merged_eps, merged_graph, merged_calls, merged_terminals)
+
+
+def solve_graph_collision(ref: Graph, other: Graph) -> Dict[Hashable, Hashable]:
+    """
+    Given two NetworkX graphs, find eventual name collisions between nodes and propose a solution.
+
+    The proposed solution comes in the form of a dictionary, containing remapping rules that could be applied to the
+    second graph in order to solve any clash.
+
+    :param ref: a reference graph
+    :param other: the other graph, on which renaming has to be performed
+    :return: a partial mapping that solves eventual clashes once applied on the second graph
+    """
+
+    seed()
+    id_clashes = ref.nbunch_iter(other.nodes)
+    solution = {}
+    for idc in id_clashes:
+        new_id = idc
+        while new_id in other or new_id in solution:
+            new_id = hash((new_id, randint(0, sys.maxsize)))
+
+        solution[idc] = new_id
+
+    return solution
 
 
 def remap_local_graph(cfg: LocalGraph, mapping: Dict[Hashable, Hashable]) -> LocalGraph:
