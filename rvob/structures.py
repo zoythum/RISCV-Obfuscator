@@ -11,12 +11,10 @@ Register -- an enumeration of the 32 unprivileged RISC-V integer registers
 opcodes -- a dictionary containing information about the number of arguments of each supported instruction, and whether
            or not they are read-only
 standard_sections -- a set containing the identifiers of the standard sections that can be found in an assembler source
-JumpType -- an enumeration of all the possible types of jump that are supported
-jump_ops -- a dictionary associating each jump instruction to its type
 imm_sizes -- a dictionary associating instruction formats possessing an immediate field with the bit size of such field
 """
 
-from enum import Enum, auto
+from enum import Enum
 from typing import Set, Mapping, Tuple
 
 
@@ -84,7 +82,7 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
     'beqz': (1, False), 'bnez': (1, False), 'blez': (1, False),
     'bgez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False), 'call': (0, False)
-    }
+}
 
 # This is a mapping that, for each instruction, associate the relative family name
 opcd_family: Mapping[str, str] = {
@@ -101,7 +99,7 @@ opcd_family: Mapping[str, str] = {
     'amoor.w': 'as', 'amoand.w': 'as', 'amomin.w': 'as', 'amomax.w': 'as', 'amominu.w': 'as', 'amomaxu.w': 'as',
     'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoand.d': 'as',
     'amomin.d': 'as', 'amomax.d': 'as', 'amominu.d': 'as', 'amomaxu.d': 'as', 'bgtz': 'bz', 'snez': 'snez'
-    }
+}
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
@@ -119,45 +117,6 @@ calle_saved_regs: Set[Register] = {Register.SP, Register.S0, Register.S1, Regist
 
 not_modifiable_regs: Set[Register] = {Register.GP, Register.TP, Register.ZERO}
 
-
-# Types of jump
-class JumpType(Enum):
-    # U: unconditional jump without side effects
-    U = auto()
-    # C: conditional jump/branching instruction
-    C = auto()
-    # F: unconditional jump with return-address memorization (procedure call)
-    F = auto()
-    # R: unconditional jump to memorized return-address (procedure return)
-    R = auto()
-
-
-# Dictionary of jump instructions
-# The key is a jump opcode in its string form, the value is one of the enumerated jump types.
-jump_ops: Mapping[str, JumpType] = {
-    "call": JumpType.F,
-    "jr": JumpType.R,
-    "j": JumpType.U,
-    "jal": JumpType.F,
-    "jalr": JumpType.F,
-    "beq": JumpType.C,
-    "beqz": JumpType.C,
-    "bne": JumpType.C,
-    "bnez": JumpType.C,
-    "blt": JumpType.C,
-    "bltz": JumpType.C,
-    "bltu": JumpType.C,
-    "ble": JumpType.C,
-    "blez": JumpType.C,
-    "bleu": JumpType.C,
-    "bgt": JumpType.C,
-    "bgtz": JumpType.C,
-    "bgtu": JumpType.C,
-    "bge": JumpType.C,
-    "bgez": JumpType.C,
-    "bgeu": JumpType.C
-    }
-
 # Dictionary of immediate formats with associated immediate field size
 imm_sizes: Mapping[str, int] = {
     "i": 12,
@@ -167,4 +126,4 @@ imm_sizes: Mapping[str, int] = {
     "u": 20,
     "j": 20,
     "li": 32
-    }
+}
