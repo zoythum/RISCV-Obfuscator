@@ -38,6 +38,28 @@ class Report(NamedTuple):
     reg_pool: set
 
 
+def evaluate_next_node(cfg: DiGraph, actual_node: int, reg_pool: set, ndd_reg: int, register):
+    successors = list(node for node in cfg.successors(actual_node))
+    if (len(successors) >= 2) or ('external' in cfg.nodes[successors[0]]):
+        return None
+    else:
+        actual_node = successors[0]
+        predecessors = list(node for node in cfg.predecessors(actual_node))
+        new_pool = reg_pool - set(reg.name for reg in cfg.nodes[actual_node]["reg_bind"].keys())
+        if (len(new_pool) < ndd_reg) or (len(predecessors) >= 2):
+            return None
+        actual_block = cfg.nodes[actual_node]["block"]
+        node_block = NodeBlock(actual_node, actual_block.begin, actual_block.begin)
+        first = actual_block[node_block.init_line]
+        if len(first.labels) != 0:
+            if (first.r2 == register) or (first.r3 == register):
+                return None
+            else:
+                node_block.init_line += 1
+        tup = (node_block, new_pool)
+        return tup
+
+
 def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: Register, ndd_reg: int) -> Report:
     """
     This function search for all the valid node in which an instruction ca be added. The valid node are those that
@@ -56,33 +78,32 @@ def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: R
     reg_pool -= not_modifiable_regs
     reg_pool -= set(reg for reg in cfg.nodes[start_node]["reg_bind"].keys())
     node_chain = [NodeBlock(start_node, start_line, start_line)]
-    line = start_line
+    if start_line == (cfg.nodes[start_node]['block'].end - 1):
+        node = evaluate_next_node(cfg, actual_node, reg_pool, ndd_reg, register)
+        if node is None:
+            return Report(node_chain, reg_pool)
+        else:
+            node_chain.append(node[0])
+            reg_pool = node[1]
+            actual_node = node[0].node_id
+            actual_block = cfg.nodes[node[0].node_id]['block']
+            line = node[0].init_line
+    else:
+        line = start_line
     while True:
         for instr in actual_block.iter(line):
             if (instr.r2 == register) or (instr.r3 == register):
                 return Report(node_chain, reg_pool)
             node_chain[-1].end_line += 1
-        successors = list(node for node in cfg.successors(actual_node))
-        if (len(successors) >= 2) or ('external' in cfg.nodes[successors[0]]):
+        node = evaluate_next_node(cfg, actual_node, reg_pool, ndd_reg, register)
+        if node is None:
             return Report(node_chain, reg_pool)
         else:
-            actual_node = successors[0]
-            predecessors = list(node for node in cfg.predecessors(actual_node))
-            new_pool = reg_pool - set(reg.name for reg in cfg.nodes[actual_node]["reg_bind"].keys())
-            if (len(new_pool) < ndd_reg) or (len(predecessors) >= 2):
-                return Report(node_chain, reg_pool)
-            line = cfg.nodes[actual_node]["block"].begin
-            actual_block = cfg.nodes[actual_node]["block"]
-            node_chain.append(NodeBlock(actual_node, actual_block.begin, actual_block.begin))
-            first = actual_block.pop(line)
-            if len(first.labels) != 0:
-                if (first.r2 == register) or (first.r3 == register):
-                    del node_chain[-1]
-                    return Report(node_chain, reg_pool)
-                else:
-                    node_chain[-1].init_line += 1
-            actual_block.insert(line, first)
-            reg_pool = new_pool
+            node_chain.append(node[0])
+            reg_pool = node[1]
+            line = node[0].init_line
+            actual_node = node[0].node_id
+            actual_block = cfg.nodes[node[0].node_id]['block']
 
 
 def maximize_unused_reg_usage(cfg: DiGraph, report: Report, needed_reg: int):
@@ -151,21 +172,17 @@ def generate_positions(report: Report, obj_num: int) -> List[Tuple[int, List[int
             pos = sample(range(report.node_chain[i].init_line, report.node_chain[i].end_line), b[i])
             pos.sort()
         else:
-            for _ in range(b[i]):
-                pos.append(report.node_chain[i].init_line)
+            for x in range(b[i]):
+                pos.append(report.node_chain[i].init_line + x)
         positions.append((node, pos))
-    for i2 in range(len(positions)):
-        for t2 in range(len(positions[i2][1])):
-            positions[i2][1][t2] += t2
     shift_amount = [0 for _ in range(len(positions))]
-    for i3 in range(len(positions)):
-        if len(positions[i3][1]) > 0:
-            for t3 in range(0, i3):
-                if (len(positions[t3][1]) > 0) and (positions[t3][1][0] < positions[i3][1][0]):
-                    shift_amount[i3] += len(positions[t3][1])
-    for i4 in range(len(positions)):
-        for t4 in range(len(positions[i4][1])):
-            positions[i4][1][t4] += shift_amount[i4]
+    for t in range(len(positions)):
+        for t2 in range(0, t):
+            if t != t2 and len(positions[t2][1]) > 0 and len(positions[t][1]) > 0 and positions[t2][1][0] < positions[t][1][0]:
+                shift_amount[t] += len(positions[t2][1])
+    for t in range(len(positions)):
+        for t2 in range(len(positions[t][1])):
+            positions[t][1][t2] += shift_amount[t]
     return positions
 
 
@@ -191,12 +208,10 @@ def check_reg(register, matrix, reg_pool: set) -> str:
 
 
 def fix_original_instruction(line: int, new_instr: List[Tuple[int, List[int]]]):
-    offset = 0
     for i in range(len(new_instr)):
         for t in range(len(new_instr[i][1])):
             if new_instr[i][1][t] <= line:
-                offset += 1
-    line += offset
+                line += 1
     return line
 
 
@@ -225,7 +240,6 @@ def placer(cfg: DiGraph, promises: List[Promise], report: Report, target_instr: 
         for t in range(len(positions[i][1])):
             line = positions[i][1][t]
             instr = instr_queue.get()
-            print("nd_bg: "+str(active_block.begin)+" nd_end: "+str(active_block.end)+" write_in: "+str(line))
             active_block.insert(line, instr)
     return target_instr
 
@@ -269,11 +283,11 @@ def obfuscate(cfg: DiGraph, node_id: int = None, target_instr: int = None):
         node_id = extracted[0]
         target_instr = extracted[1]
     instruction = cfg.nodes[node_id]["block"][target_instr]
-    max_shift = randint(0, 10)
-    max_logical = randint(0, 10)
+    max_shift = randint(1, 10)
+    max_logical = randint(1, 10)
     promise_chain = generate_derivation_chain(instruction, max_shift, max_logical)
     needed_reg = calc_unresolved_register(promise_chain)
-    report = calc_nodes_chain(cfg, node_id, target_instr + 1, instruction.r1, needed_reg)
+    report = calc_nodes_chain(cfg, node_id, target_instr, instruction.r1, needed_reg)
     maximize_unused_reg_usage(cfg, report, needed_reg)
     target_instr = placer(cfg, promise_chain, report, target_instr)
     if len(instruction.labels) > 0:
