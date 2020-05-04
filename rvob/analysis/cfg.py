@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import sys
-from collections import deque
 from enum import Enum
-from itertools import count, chain, tee, repeat
+from functools import reduce
+from itertools import chain, tee, repeat, zip_longest
 from operator import attrgetter
-from random import seed, randint
 from typing import Iterator, FrozenSet, List, Tuple, Optional, Mapping, Hashable, Iterable, MutableMapping, \
     NamedTuple, Dict, Union
 
-from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes, dfs_preorder_nodes, Graph
+from networkx import DiGraph, simple_cycles, restricted_view, all_simple_paths, relabel_nodes, dfs_preorder_nodes, \
+    Graph, convert_node_labels_to_integers
 from networkx.classes.graphviews import subgraph_view
 from networkx.utils import generate_unique_node
 
@@ -541,13 +540,10 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     
     The entry point consists of a valid label pointing to what will be considered by the algorithm as the first
     instruction executed by a caller.
-    The graph is built through a recursive DFS algorithm that follows the control flow.
 
     The resulting graph's nodes either contain a reference to a view, through the node attribute `block`, which
     represents the block of serial instructions associated with the node, or an `external` flag, signifying that the
     referenced code is external to the analyzed code.
-    Nodes representing internal code have an incremental ID, while the external ones are uniquely identified through
-    their symbol (aka procedure identifier).
 
     Nodes are connected through unweighted edges bearing a `kind` attribute, which describes the type of transition that
     that edge represents.
@@ -555,124 +551,28 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     :param src: the assembler source to be analyzed
     :param entry_point: the entry point from which the execution flow will be followed
     :return: a directed graph representing the CFG of the analyzed code
-    :raise ValueError: when the entry point couldn't be found
     """
 
-    def _explorer(start_line: int, __ret_stack__: deque):
-        # Detect if there's a loop and eventually return the ancestor's ID to the caller
-        if start_line in ancestors:
-            return ancestors[start_line]
+    symbol_table = src.get_labels()
+    # We assume that any label that doesn't start with a dot is a function label
+    function_labels = [fl[1] for fl in symbol_table.items() if not fl[0].startswith('.')]
+    # Extract the basic blocks of each function, storing them in different collections
+    functions_bbs = [basic_blocks(src[slice(*sl)]) for sl in
+                     zip_longest(function_labels, function_labels[1:], fillvalue=None)]
+    # Build one big shared graph among all functions
+    common_graph = reduce(lambda g1, g2: g1.merge(g2), (local_cfg(bbs) for bbs in functions_bbs))
 
-        # Instantiate an iterator that scans the source, ignoring directives
-        line_supplier = filter(lambda s: isinstance(s.statement, Instruction),
-                               to_line_iterator(src.iter(start_line), start_line))
-        # Generate node ID for the root of the local subtree
-        rid = next(id_sup)
+    # Extract the execution graph, relabeling nodes with progressive integer IDs
+    execution_graph = exec_graph(internalize_calls(common_graph), entry_point)
+    execution_graph = convert_node_labels_to_integers(execution_graph, 1)
 
-        # Variable for keeping track of the previous line, in case we need to reference it
-        previous_line = None
+    # Attach the special 0-node to the entry point, and redirect all terminal nodes to it via a RETURN transition
+    execution_graph.add_node(0, external=True)
+    execution_graph.add_edge(0, 1, kind=Transition.U_JUMP)
+    execution_graph.add_edges_from(
+        [(term, 0) for term in execution_graph.nodes if execution_graph.out_degree(term) == 0], kind=Transition.RETURN)
 
-        for line in line_supplier:
-            if len(line.statement.labels) != 0 and line.number != start_line:
-                # TODO maybe we can make this iterative?
-                # We stepped inside a new contiguous block: build the node for the previous block and relay
-                cfg.add_node(rid, block=FragmentView(src, start_line, line.number, start_line))
-                ancestors[start_line] = rid
-                cfg.add_edge(rid, _explorer(line.number, __ret_stack__), kind=Transition.SEQ)
-                break
-            elif line.statement.opcode in jump_ops:
-                # Create node
-                cfg.add_node(rid, block=FragmentView(src, start_line, line.number + 1, start_line))
-                ancestors[start_line] = rid
-
-                if jump_ops[line.statement.opcode] == Transition.U_JUMP:
-                    # Unconditional jump: resolve destination and relay-call explorer there
-                    cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.immediate.symbol], __ret_stack__),
-                                 kind=Transition.U_JUMP)
-                    break
-                elif jump_ops[line.statement.opcode] == Transition.CALL:
-                    # Function call: start by resolving destination
-                    target = line.statement.immediate.symbol
-                    # TODO find a way to modularize things so that this jump resolution can be moved out of its nest
-                    try:
-                        dst = label_dict[target]
-                        # Update the return address
-                        ret_stack.append(next(line_supplier).number)
-                        # Set the current node as ancestor for the recursive explorer
-                        home = rid
-                        # Set transition type to CALL
-                        tran_type = Transition.CALL
-                    except KeyError:
-                        # Calling an external function: add an edge to the external code node.
-                        # The external node is uniquely identified by a call ID, so that client code of the graph can
-                        # follow the execution flow among calls to the same external procedures.
-                        call_id = target + str(next(id_sup))
-                        cfg.add_node(call_id, external=True)
-                        cfg.add_edge(rid, call_id, kind=Transition.CALL)
-
-                        # Set the following line as destination
-                        dst = next(line_supplier).number
-                        # Set the external node as ancestor for the recursive explorer
-                        home = call_id
-                        # Set the the type of the transition from the external code back to us as RETURN
-                        tran_type = Transition.RETURN
-
-                    # Perform the actual recursive call
-                    cfg.add_edge(home, _explorer(dst, __ret_stack__), kind=tran_type)
-                    break
-                elif jump_ops[line.statement.opcode] == Transition.C_JUMP:
-                    # Conditional jump: launch two explorers, one at the jump's target and one at the following line
-                    cfg.add_edge(rid, _explorer(next(line_supplier).number, __ret_stack__), kind=Transition.SEQ)
-                    # The second explorer needs a copy of the return stack, since it may encounter another return jump
-                    cfg.add_edge(rid,
-                                 _explorer(label_dict[line.statement.immediate.symbol],
-                                           __ret_stack__.copy()),
-                                 kind=Transition.C_JUMP)
-                    break
-                elif jump_ops[line.statement.opcode] == Transition.RETURN:
-                    # Procedure return: close the edge on the return address by invoking an explorer there
-                    cfg.add_edge(rid, _explorer(__ret_stack__.pop(), __ret_stack__), kind=Transition.RETURN)
-                    break
-                else:
-                    raise LookupError("Unrecognized jump type")
-
-            previous_line = line.number
-        else:
-            cfg.add_node(rid, block=FragmentView(src, start_line, previous_line + 1, start_line))
-
-        return rid
-
-    # Generate the dictionary containing label mappings
-    label_dict = src.get_labels()
-
-    # Instantiate the node id supplier
-    id_sup = count()
-
-    # Instantiate an empty di-graph for hosting the CFG
-    cfg = DiGraph()
-
-    # Initialize the dictionary mapping blocks' initial lines to nodes
-    ancestors = {}
-
-    # Initialize the graph with a special root node
-    root_id = next(id_sup)
-    cfg.add_node(root_id, external=True)
-    ancestors[-1] = root_id
-
-    # Initialize the return stack
-    ret_stack = deque()
-    ret_stack.append(-1)
-
-    # Call the explorer on the entry point and append the resulting graph to the root node
-    try:
-        child_id = _explorer(label_dict[entry_point], ret_stack)
-    except KeyError:
-        raise ValueError("Entry point [" + entry_point + "] not found")
-
-    cfg.add_edge(root_id, child_id, kind=Transition.U_JUMP)
-
-    return cfg
+    return execution_graph
 
 
 def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
