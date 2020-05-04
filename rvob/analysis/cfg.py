@@ -557,8 +557,8 @@ def build_cfg(src: Source, entry_point: str = "main") -> DiGraph:
     # We assume that any label that doesn't start with a dot is a function label
     function_labels = [fl[1] for fl in symbol_table.items() if not fl[0].startswith('.')]
     # Extract the basic blocks of each function, storing them in different collections
-    functions_bbs = [basic_blocks(src[slice(*sl)]) for sl in
-                     zip_longest(function_labels, function_labels[1:], fillvalue=None)]
+    functions_bbs = [basic_blocks(FragmentView(src, sl[0], sl[1], sl[0])) for sl in
+                     zip_longest(function_labels, function_labels[1:], fillvalue=src.end)]
     # Build one big shared graph among all functions
     common_graph = reduce(lambda g1, g2: g1.merge(g2), (local_cfg(bbs) for bbs in functions_bbs))
 
