@@ -6,6 +6,14 @@ from registerbinder import bind_register_to_value
 from random import randint
 
 
+class NoUnusedRegsException(Exception):
+    pass
+
+
+class NoSubstitutionException(Exception):
+    pass
+
+
 def substitute_reg(cfg: DiGraph, heatmap, heat):
     """
     Flow:
@@ -28,9 +36,12 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
     value_block = find_value_block(cfg, node_id, used_reg)
 
     if value_block is None:
-        return
+        raise NoSubstitutionException
 
-    unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.initline, value_block.endline)
+    try:
+        unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.initline, value_block.endline)
+    except NoUnusedRegsException:
+        raise NoSubstitutionException
 
     line_num = value_block.initline
 
@@ -49,7 +60,6 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
-
     while line_num <= endline - 1:
         if isinstance(current_node['block'][line_num], Instruction):
             if current_node['block'][line_num].r1 == used_register:
@@ -139,6 +149,9 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
     used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
     unused_regs = list(reg for reg in Register if reg not in used_regs and reg not in not_modifiable_regs)
     min_heat = heat
+
+    if len(unused_regs) == 0:
+        raise NoUnusedRegsException
 
     try:
         heatmap[initline][0]

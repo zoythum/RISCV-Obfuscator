@@ -6,7 +6,7 @@ from rvob.setup_structures import setup_contracts, organize_calls, sanitize_cont
 from rvob.registerbinder import bind_register_to_value
 from rvob.garbage_inserter import insert_garbage_instr
 from rvob.obf.obfuscator import obfuscate
-from rvob.scrambling import substitute_reg
+from rvob.scrambling import substitute_reg, NoSubstitutionException
 from rvob.analysis.heatmaps import register_heatmap
 from random import randint
 
@@ -25,7 +25,6 @@ def main():
         print("Missing parameters, try -h for usage informations")
         exit(1)
     elif len(argv) == 6:
-        print(argv[1])
         file = open(argv[1])
         src = load_src_from_maps(json.load(file))
         cfg = build_cfg(src)
@@ -43,7 +42,12 @@ def main():
             obfuscate(cfg)
         for _ in range(0, rep_value):
             heatmap = register_heatmap(cfg, heat)
-            substitute_reg(cfg, heatmap, heat)
+            while True:
+                try:
+                    substitute_reg(cfg, heatmap, heat)
+                    break
+                except NoSubstitutionException:
+                    pass
 
         out = open(argv[5], "w+")
         out.write(str(src))
