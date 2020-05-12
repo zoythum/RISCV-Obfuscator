@@ -42,7 +42,7 @@ def main():
             obfuscate(cfg)
         for _ in range(0, rep_value):
             heatmap = register_heatmap(cfg, heat)
-            while True:
+            for _ in range(0, 100):
                 try:
                     substitute_reg(cfg, heatmap, heat)
                     break
