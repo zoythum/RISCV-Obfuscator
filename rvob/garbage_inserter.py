@@ -51,9 +51,9 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None,
     if block_size is None:
         block_size = randint(1, 10)
     if node is None:
-        node = randint(1, cfg.number_of_nodes())
+        node = randint(1, cfg.number_of_nodes() - 1)
     while 'external' in cfg.nodes[node]:
-        node = randint(1, cfg.number_of_nodes())
+        node = randint(1, cfg.number_of_nodes() - 1)
     if line_num is None or line_num < cfg.nodes[node]['block'].begin or line_num >= cfg.nodes[node]['block'].end:
         line_num = randint(cfg.nodes[node]["block"].begin, cfg.nodes[node]["block"].end - 1)
     global line_heat_map
