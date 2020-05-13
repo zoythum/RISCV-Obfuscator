@@ -230,7 +230,8 @@ class LocalGraph:
 
         # Start merging stuff
         merged_eps = chain(self.entry_point_ids, other.entry_point_ids)
-        (merged_graph := self.graph.copy()).update(other.graph)
+        merged_graph = self.graph.copy()
+        merged_graph.update(other.graph)
         merged_terminals = chain(self.terminal_nodes_ids, other.terminal_nodes_ids)
 
         # TODO re-implement with partitions
