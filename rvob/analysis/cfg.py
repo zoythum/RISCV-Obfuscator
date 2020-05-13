@@ -372,6 +372,7 @@ def basic_blocks(code: CodeFragment) -> List[BasicBlock]:
     return bb
 
 
+# TODO patch this also in the derived package
 def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
     """
     Construct a local graph from a list of basic blocks.
@@ -383,7 +384,6 @@ def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
 
     - the basic blocks are provided in the same order they appear inside the original code fragment;
     - the first block is the entry-point;
-    - all `call` instructions point to code not contained in the provided basic blocks;
     - all jumps are local;
     - all blocks with a final `RETURN` transition actually return control to whoever caused the PC to reach the EP.
     When these conditions are satisfied, a well-formed local graph is returned.
@@ -411,7 +411,7 @@ def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
             local_graph.add_edge(parent_seq_block, bb.identifier, kind=Transition.SEQ)
             parent_seq_block = None
         elif pending_call is not None:
-            # Set the current node as the return point of a procedure call
+            # Set the current node as the return point of an external procedure call
             calls.append(ProcedureCall(pending_call[0], pending_call[1], bb.identifier))
             pending_call = None
 
@@ -440,7 +440,16 @@ def local_cfg(bbs: List[BasicBlock]) -> LocalGraph:
         # Resolve the internal symbolic jumps and add the missing edges
         local_graph.add_edge(jumper, local_symbol_table[dst], kind=kind)
 
-    return LocalGraph([bbs[0].identifier], local_graph, calls, terminal_nodes)
+    # Transform recursive calls into internal call arcs
+    # TODO re-implement with partitions or sets
+    ci, ce = tee(calls)
+    for cll in filter(lambda c: c.callee in local_symbol_table, ci):
+        local_graph.add_edge(cll.caller, cll.confluence_point, kind=Transition.CALL, callee=cll.callee)
+
+    return LocalGraph([bbs[0].identifier],
+                      local_graph,
+                      filter(lambda c: c.callee not in local_symbol_table, ce),
+                      terminal_nodes)
 
 
 def internalize_calls(cfg: LocalGraph) -> LocalGraph:
