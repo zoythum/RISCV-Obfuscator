@@ -483,9 +483,6 @@ class FragmentView(CodeFragment):
 
             return descendants
 
-        # Directly resize the requester. Eventual descendants will be resized by the upper calls.
-        requester._end += length
-
         # Get requester's siblings
         siblings = {s for s in cls._sources_catalogue.get(origin) if s is not requester}
         views_to_resize = set()
@@ -502,6 +499,9 @@ class FragmentView(CodeFragment):
 
             if view.end > position:
                 view._end += length
+
+        # Directly resize the requester. Eventual descendants will be resized by the upper calls.
+        requester._end += length
 
     def __init__(self, src: CodeFragment, begin: int = 0, end: int = 0, offset: int = 0) -> None:
         """
