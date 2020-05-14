@@ -3,7 +3,7 @@ from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
 from registerbinder import bind_register_to_value
-from random import randint
+from random import randint, choice
 
 
 class NoUnusedRegsException(Exception):
@@ -33,7 +33,7 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
     while 'external' in cfg.nodes[node_id]:
-        node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
+        node_id = choice(list(cfg.nodes))
 
     used_reg = find_used_reg(cfg, node_id)
 
