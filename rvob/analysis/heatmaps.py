@@ -12,7 +12,7 @@ from typing import List, Tuple, Mapping, MutableMapping
 
 from networkx import DiGraph, all_simple_paths, restricted_view
 
-from rep.base import to_line_iterator
+from rep.base import to_line_iterator, Instruction
 from rep.fragments import CodeFragment
 from structures import opcodes, Register
 from analysis.cfg import merge_points, loop_back_nodes
@@ -40,7 +40,7 @@ def node_register_heat(node: dict,
 
     current_heat = list(init)
     heatmap = dict()
-    for line in to_line_iterator(iter(block), block.begin):
+    for line in filter(lambda ln: isinstance(ln.statement, Instruction), to_line_iterator(iter(block), block.begin)):
         for r in range(0, len(current_heat)):
             # Don't let heat levels fall below 0
             if current_heat[r] > 0:
