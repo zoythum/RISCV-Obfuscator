@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from _weakrefset import WeakSet
 from abc import ABC, abstractmethod
 from typing import MutableSequence, Hashable, Sequence, List, Iterator, Union, NamedTuple, ClassVar, MutableMapping, \
-    Dict, Mapping
+    Dict, Mapping, MutableSet, Set
 from weakref import WeakKeyDictionary
 
 from rep.base import Statement, Directive, Instruction
@@ -452,23 +453,55 @@ class FragmentView(CodeFragment):
     inconsistent state. To regain consistency, discard the corrupted views and recreate them.
     """
 
-    # Named tuple used for containing views' metadata (aka its reference frame)
-    class FragmentReferenceFrame(NamedTuple):
-        begin: int
-        end: int
-        offset: int
-
     # Declare and allocate the shared catalogue of source fragments
-    _sources_catalogue: ClassVar[
-        MutableMapping[
-            CodeFragment, MutableMapping[
-                FragmentView, FragmentReferenceFrame]]] = WeakKeyDictionary()
+    _sources_catalogue: ClassVar[MutableMapping[CodeFragment, MutableSet[FragmentView]]] = WeakKeyDictionary()
 
     # Instance variable containing a reference to the views ensemble a view belongs to
-    _views_catalogue: MutableMapping[FragmentView, FragmentReferenceFrame]
+    _views_catalogue: MutableSet[FragmentView]
 
     # Instance variable containing a reference to the backing fragment
     _origin: CodeFragment
+
+    _offset: int
+    _begin: int
+    _end: int
+
+    @classmethod
+    # TODO remember to patch this in the external package
+    # Utility method used for updating all the views' metadata after a structural change
+    def _grow_shrink_origin(cls, requester: FragmentView, origin: CodeFragment, position: int, length: int) -> None:
+        def descendants_and_mother(mother: FragmentView) -> Set[FragmentView]:
+            if mother not in cls._sources_catalogue:
+                # Base case, no descendants
+                return {mother}
+
+            children = cls._sources_catalogue[mother]
+            descendants = {mother}
+            for child in children:
+                # Recursive call
+                descendants.update(descendants_and_mother(child))
+
+            return descendants
+
+        # Directly resize the requester. Eventual descendants will be resized by the upper calls.
+        requester._end += length
+
+        # Get requester's siblings
+        siblings = {s for s in cls._sources_catalogue.get(origin) if s is not requester}
+        views_to_resize = set()
+        # Get all the sibling's descendants, so that we can update them appropriately
+        for s in siblings:
+            views_to_resize.update(descendants_and_mother(s))
+
+        for view in views_to_resize:
+            view: FragmentView
+            # View is after the target position, or the modification is an extension of the preceding view
+            if view.begin > position or (view.begin == position and requester.end == position):
+                view._offset += length
+                view._begin += length
+
+            if view.end > position:
+                view._end += length
 
     def __init__(self, src: CodeFragment, begin: int = 0, end: int = 0, offset: int = 0) -> None:
         """
@@ -484,61 +517,40 @@ class FragmentView(CodeFragment):
         # Delegate consistency checks
         super().__init__(src, begin, end, offset)
         self._origin = src
+        self._begin = begin
+        self._end = end
+        self._offset = offset
 
         if src not in FragmentView._sources_catalogue:
             # If this source fragment has never been seen before, add it to the shared catalogue and allocate the views
             # catalogue
-            self._views_catalogue = WeakKeyDictionary()
+            self._views_catalogue = WeakSet()
             FragmentView._sources_catalogue[src] = self._views_catalogue
         else:
             # Otherwise, set the local reference to the views catalogue associated with the provided source
             self._views_catalogue = FragmentView._sources_catalogue[src]
 
         # Add the new view's metadata to the catalogue
-        self._views_catalogue[self] = FragmentView.FragmentReferenceFrame(begin, end, offset)
-
-    # Utility method used for updating all the views' metadata after a structural change
-    def _grow(self, growth_point: int, size: int) -> None:
-        # Iterate over all the registered views for the current origin
-        for view, frame in self._views_catalogue.items():
-            mutated: bool = False
-            begin, end, offset = frame
-
-            # Check if begin/offset have to be shifted
-            if begin >= growth_point and view != self:
-                begin += size
-                offset += size
-                mutated = True
-
-            # Check if end has to be shifted
-            if end >= growth_point:
-                end += size
-                mutated = True
-
-            # If any metadata changes were needed, update the catalogue
-            if mutated:
-                self._views_catalogue[view] = FragmentView.FragmentReferenceFrame(begin, end, offset)
+        self._views_catalogue.add(self)
 
     def _line_to_index(self, line_number: int) -> int:
-        frame = self._views_catalogue[self]
-
         # Verify that the calculated index falls within this fragment's range
-        if not frame.begin <= line_number < frame.end:
+        if not self.begin <= line_number < self.end:
             raise IndexError("Index out of range")
 
         return line_number - self.begin + self.offset
 
     @property
     def begin(self) -> int:
-        return self._views_catalogue[self].begin
+        return self._begin
 
     @property
     def end(self) -> int:
-        return self._views_catalogue[self].end
+        return self._end
 
     @property
     def offset(self) -> int:
-        return self._views_catalogue[self].offset
+        return self._offset
 
     def slice(self, start: int, end: int) -> FragmentView:
         """
@@ -558,7 +570,7 @@ class FragmentView(CodeFragment):
     def append(self, statement: Statement) -> None:
         self._origin.insert(self.offset + len(self), statement)
         # Growth point is at the end of the slice
-        self._grow(self.end, 1)
+        self._grow_shrink_origin(self, self._origin, self.end, 1)
 
     def extend(self, statements: List[Statement]) -> None:
         insertion_point = self.offset + len(self)
@@ -567,11 +579,11 @@ class FragmentView(CodeFragment):
             insertion_point += 1
 
         # Growth point is at the end of the slice
-        self._grow(self.end, len(statements))
+        self._grow_shrink_origin(self, self._origin, self.end, len(statements))
 
     def insert(self, line_number: int, statement: Statement) -> None:
         self._origin.insert(self._line_to_index(line_number), statement)
-        self._grow(line_number, 1)
+        self._grow_shrink_origin(self, self._origin, line_number, 1)
 
     def pop(self, line_number: int = -1) -> Statement:
         # We emulate the signature of the standard pop() method
@@ -580,7 +592,7 @@ class FragmentView(CodeFragment):
 
         popping_point = self._line_to_index(line_number)
         popped = self._origin.pop(popping_point)
-        self._grow(line_number, -1)
+        self._grow_shrink_origin(self, self._origin, line_number, -1)
         return popped
 
     def copy(self) -> FragmentView:
@@ -591,7 +603,7 @@ class FragmentView(CodeFragment):
         length = len(self)
         del self._origin[offset:offset + length]
         # View size shrinks to zero, with growth point set to end as not to influence this view's begin
-        self._grow(self.end, -length)
+        self._grow_shrink_origin(self, self._origin, self.end, -length)
 
     def iter(self, starting_line: int) -> Iterator[Statement]:
         """Return an iterator that starts iterating from the specified line."""
@@ -668,7 +680,7 @@ class FragmentView(CodeFragment):
 
             if len(statement) != stop - start:
                 # A funky insertion/deletion just took place, so we must treat it appropriately
-                self._grow(sl.start, len(statement) - (stop - start))
+                self._grow_shrink_origin(self, self._origin, sl.start, len(statement) - (stop - start))
 
     def __delitem__(self, line_number: Union[int, slice]) -> None:
         """
@@ -691,7 +703,7 @@ class FragmentView(CodeFragment):
         if type(line_number) is int:
             deletion_point = self._line_to_index(line_number)
             del self._origin[deletion_point]
-            self._grow(line_number, -1)
+            self._grow_shrink_origin(self, self._origin, line_number, -1)
         elif type(line_number) is slice:
             sl = self._slicer(line_number)
             # Be aware of the ugly workaround used to let _line_to_index() process a slice reaching the end of the
@@ -701,7 +713,7 @@ class FragmentView(CodeFragment):
             del self._origin[start:stop]
 
             # Decrease the list's size according to the number of elements that got deleted
-            self._grow(sl.start, -(stop - start))
+            self._grow_shrink_origin(self, self._origin, sl.start, -(stop - start))
 
     def __hash__(self) -> int:
         # IDs are unique for the entire life of an object, so no collisions should take place inside the shared
