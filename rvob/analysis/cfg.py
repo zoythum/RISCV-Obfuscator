@@ -668,7 +668,7 @@ def merge_points(cfg: DiGraph) -> FrozenSet[int]:
     return frozenset((n for n in cfg.nodes.keys() if n != 0 and cfg.in_degree(n) > 1))
 
 
-def loop_back_nodes(cfg: DiGraph):
+def loop_back_nodes(cfg: DiGraph) -> FrozenSet[int]:
     """
     Find all the nodes of a CFG that are exclusively part of a loop.
 
