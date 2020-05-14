@@ -1,7 +1,7 @@
 from networkx import DiGraph, neighbors
 from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
-from setup_structures import setup_contracts
+from setup_structures import setup_contracts, organize_calls, sanitize_contracts
 from registerbinder import bind_register_to_value
 from random import randint
 
@@ -26,6 +26,10 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
     :param cfg: cfg of the current program
     :return: void
     """
+    setup_contracts(cfg)
+    sanitize_contracts(cfg)
+    organize_calls(cfg)
+    bind_register_to_value(cfg)
 
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
     while 'external' in cfg.nodes[node_id]:
