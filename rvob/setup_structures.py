@@ -195,7 +195,6 @@ def sanitize_contracts(cfg: DiGraph):
     for elem in list(cycles):
         for elem2 in list(cycles):
             if is_sublist(elem, elem2):
-                print(elem)
                 cycles.remove(elem)
 
     for cycle in cycles:
@@ -264,25 +263,35 @@ def get_return_edges(cfg: DiGraph):
     return edges
 
 
-def get_track_return(cfg: DiGraph, starting_node: int, nodes: list):
+def get_track_return(cfg: DiGraph, starting_edge) -> list:
     """
-    Recursively creates the list of nodes contained between one specific node and a RETURN edge
-    :param cfg: The DiGraph representing the cfg
-    :param starting_node: The first node of the list
-    :param nodes: The list itself
-    :return: list of nodes in reverse order (from bottom to top of the cfg)
+    Given a starting edge this function returns a list containing the track from the node where the edge generates
+    through the next RETURN edge. The list is given in reverse order
+    :param cfg:
+    :param starting_edge:
+    :return:
     """
-    for edge in cfg.edges(data=True):
-        if edge[0] == 0:
-            nodes.append(edge[1])
-            nodes.reverse()
-            return nodes
-        if edge[2]['kind'] == Transition.RETURN:
-            nodes.reverse()
-            return nodes
-        if edge[1] == starting_node:
-            nodes.append(edge[1])
-            return get_track_return(cfg, edge[1], nodes)
+    track = []
+    visited_edges = []
+    unvisited_edges = [starting_edge]
+    ending_node = starting_edge[0]
+
+    while len(unvisited_edges) > 0:
+        curr_edge = unvisited_edges.pop()
+        if curr_edge[0] not in track:
+            track.append(curr_edge[0])
+        for edge in cfg.out_edges(curr_edge[1], data=True):
+            if edge not in visited_edges and edge[2]['kind'] != Transition.RETURN:
+                unvisited_edges.append(edge)
+
+            if edge[2]['kind'] == Transition.RETURN and ending_node != edge[0]:
+                ending_node = edge[0]
+
+        visited_edges.append(curr_edge)
+
+    track.append(ending_node)
+    track.reverse()
+    return track
 
 
 def get_param_regs():
@@ -299,7 +308,7 @@ def get_param_regs():
 def organize_calls(cfg: DiGraph):
     """
     This function fixes the requires set of the nodes that are returning points from function calls.
-    It works by first identifying all the set of nodes contained between any couple of RETURN-CALL edges then
+    It works by first identifying the set of nodes contained between any couple of RETURN-CALL edges then
     it iterates through the nodes adding each of the registers from a2 to a7 that are written into a set,
     this set is added to the requires of the node immediately after the CALL edge
     :param cfg: The DiGraph representing the cfg
@@ -307,8 +316,10 @@ def organize_calls(cfg: DiGraph):
     """
     call_edges = get_call_edges(cfg)
     for edge in call_edges:
+        if 'external' in cfg.node[edge[1]]:
+            continue
         regs = set()
-        nodes = get_track_return(cfg, edge[0], [])
+        nodes = get_track_return(cfg, edge)
         for node_id in nodes:
             regs = get_used_a_regs(cfg, node_id)
 
@@ -324,7 +335,7 @@ def organize_calls(cfg: DiGraph):
 def get_used_a_regs(cfg: DiGraph, node_id: int):
     a_regs = get_param_regs()
     regs = set()
-    block: FragmentView = cfg.nodes[node_id]["block"]
+    block: FragmentView = cfg.node[node_id]["block"]
     for i in range(block.end - 1, block.begin - 1, -1):
         current_line = block[i]
         if type(current_line) == Instruction:
