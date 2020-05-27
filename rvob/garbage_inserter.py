@@ -58,7 +58,7 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None,
         line_num = randint(cfg.nodes[node]["block"].begin, cfg.nodes[node]["block"].end - 1)
     global line_heat_map
     try:
-        line_heat_map = heatmaps.register_heatmap(cfg, 200)[line_num]
+        line_heat_map = heatmaps.register_heatmap(cfg, 50)[line_num]
     except KeyError:
         line_heat_map = [0]*len(Register.list())
     free_regs = list(get_free_regs(cfg, line_num))

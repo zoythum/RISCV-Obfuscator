@@ -57,11 +57,6 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
 
-    setup_contracts(cfg)
-
-    for node in cfg.nodes:
-        bind_register_to_value(cfg, node)
-
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
     while line_num <= endline - 1:

@@ -107,7 +107,7 @@ def calc_nodes_chain(cfg: DiGraph, start_node: int, start_line: int, register: R
 
 
 def maximize_unused_reg_usage(cfg: DiGraph, report: Report, needed_reg: int):
-    heat_map = register_heatmap(cfg, 200)
+    heat_map = register_heatmap(cfg, 50)
     mean_heat_node = list()
     try:
         for node in report.node_chain:
