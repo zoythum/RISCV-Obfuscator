@@ -55,7 +55,11 @@ class Register(Enum):
 
     @staticmethod
     def list():
-        return list(map(lambda c: c, Register))
+        return list(map(lambda r: r, Register))
+
+    @staticmethod
+    def get_a_regs():
+        return [reg for reg in Register if 10 <= reg.value <= 17]
 
 
 # This is a classification of all the possible opcodes.
@@ -82,7 +86,7 @@ opcodes: Mapping[str, Tuple[int, bool]] = {
     'bgeu': (2, False), 'sb': (2, False), 'sh': (2, False), 'sw': (2, False), 'sd': (2, False), 'li': (1, True),
     'beqz': (1, False), 'bnez': (1, False), 'blez': (1, False), "bgt": (2, False), "not": (2, True), "snez": (2, True),
     'bgez': (1, False), 'bgtu': (2, False), 'bleu': (2, False), 'nop': (0, False), 'call': (0, False)
-}
+    }
 
 # This is a mapping that, for each instruction, associate the relative family name
 opcd_family: Mapping[str, str] = {
@@ -99,7 +103,7 @@ opcd_family: Mapping[str, str] = {
     'amoor.w': 'as', 'amoand.w': 'as', 'amomin.w': 'as', 'amomax.w': 'as', 'amominu.w': 'as', 'amomaxu.w': 'as',
     'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoand.d': 'as',
     'amomin.d': 'as', 'amomax.d': 'as', 'amominu.d': 'as', 'amomaxu.d': 'as', 'bgtz': 'bz', 'snez': 'snez'
-}
+    }
 
 # The standard section's names
 # Conventionally, the sections in which a binary object gets segmented are: data, BSS and text.
@@ -126,4 +130,4 @@ imm_sizes: Mapping[str, int] = {
     "u": 20,
     "j": 20,
     "li": 32
-}
+    }

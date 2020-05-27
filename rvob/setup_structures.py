@@ -125,8 +125,8 @@ def fill_contract(cfg: DiGraph, node_id: int):
                 else:
                     errors.add(opcode)
 
-        # A little bit of error management, if we have some opcodes that are not classified is better to raise an exception
-        # instead of ignoring them and having to deal with bigger problems later
+        # A little bit of error management, if we have some opcodes that are not classified is better to raise an
+        # exception instead of ignoring them and having to deal with bigger problems later
         if len(errors) > 0:
             raise Exception("Encountered one or more unexpected opcodes, {}".format(errors))
 
@@ -275,17 +275,24 @@ def get_track_return(cfg: DiGraph, starting_edge) -> list:
     visited_edges = []
     unvisited_edges = [starting_edge]
     ending_node = starting_edge[0]
+    call_nums = 0
 
     while len(unvisited_edges) > 0:
         curr_edge = unvisited_edges.pop()
         if curr_edge[0] not in track:
             track.append(curr_edge[0])
+
         for edge in cfg.out_edges(curr_edge[1], data=True):
             if edge not in visited_edges and edge[2]['kind'] != Transition.RETURN:
                 unvisited_edges.append(edge)
 
-            if edge[2]['kind'] == Transition.RETURN and ending_node != edge[0]:
+            if edge[2]['kind'] == Transition.CALL:
+                call_nums += 1
+            if edge[2]['kind'] == Transition.RETURN and not call_nums and ending_node != edge[0]:
                 ending_node = edge[0]
+            if edge[2]['kind'] == Transition.RETURN and call_nums and edge not in visited_edges:
+                call_nums -= 1
+                unvisited_edges.append(edge)
 
         visited_edges.append(curr_edge)
 
@@ -294,46 +301,76 @@ def get_track_return(cfg: DiGraph, starting_edge) -> list:
     return track
 
 
-def get_param_regs():
-    regs = set()
-    regs.add(Register.A2)
-    regs.add(Register.A3)
-    regs.add(Register.A4)
-    regs.add(Register.A5)
-    regs.add(Register.A6)
-    regs.add(Register.A7)
-    return regs
-
-
 def organize_calls(cfg: DiGraph):
     """
-    This function fixes the requires set of the nodes that are returning points from function calls.
-    It works by first identifying the set of nodes contained between any couple of RETURN-CALL edges then
-    it iterates through the nodes adding each of the registers from a2 to a7 that are written into a set,
-    this set is added to the requires of the node immediately after the CALL edge
-    :param cfg: The DiGraph representing the cfg
-    :return: void
+    This function takes all the external nodes and foreach node modifies the requires set adding all the A regs
+    that are written in the nodes found between the external one and a CALL edge.
+    :param cfg:
+    :return:
     """
-    call_edges = get_call_edges(cfg)
-    for edge in call_edges:
-        if 'external' in cfg.node[edge[1]]:
-            continue
-        regs = set()
-        nodes = get_track_return(cfg, edge)
-        for node_id in nodes:
-            regs = get_used_a_regs(cfg, node_id)
+    nodes = get_external_nodes(cfg)
+    ret_regs = {Register.A0, Register.A1}
+    for node in nodes:
+        track = get_call_track(cfg, node)
+        add_set = set()
+        for track_node in track:
+            if 'external' not in cfg.nodes[track_node]:
+                add_set = add_set.union(get_used_a_regs(cfg, track_node))
 
-        cfg.nodes[edge[1]]['requires'].update(regs)
+        cfg.nodes[node[0]]['requires'] = cfg.nodes[node[0]]['requires'].union(add_set)
+        cfg.nodes[node[0]]['provides'] = cfg.nodes[node[0]]['provides'].union(ret_regs)
 
-    return_edges = get_return_edges(cfg)
-    return_regs = [Register.A0, Register.A1]
-    for edge in return_edges:
-        if edge[1] != 0:
-            cfg.nodes[edge[1]]['requires'].update(return_regs)
+
+def get_call_track(cfg: DiGraph, node):
+    """
+    Returns a list containing all the nodes that are placed between the given one and the first CALL edge found
+    going upward
+    :param cfg:
+    :param node:
+    :return:
+    """
+    track = []
+    unvisited_edges = set()
+    visited_edges = []
+    for edge in cfg.in_edges(node[0]):
+        track.append(edge[0])
+        for edge_t in cfg.in_edges(edge[0]):
+            unvisited_edges.add(edge_t)
+
+    while len(unvisited_edges) > 0:
+        curr_edge = unvisited_edges.pop()
+        if curr_edge[0] not in track:
+            track.append(curr_edge[0])
+        if cfg.get_edge_data(curr_edge[0], curr_edge[1])['kind'] == Transition.CALL:
+            return track
+
+        for edge in cfg.in_edges(curr_edge[0]):
+            if edge not in visited_edges:
+                unvisited_edges.add(edge)
+
+        visited_edges.append(curr_edge)
+
+    if node in track:
+        track.remove(node)
+
+    return track
+
+
+def get_external_nodes(cfg: DiGraph):
+    """
+    Retrieves list of nodes marked as external
+    :param cfg:
+    :return:
+    """
+    nodes = []
+    for node in cfg.nodes(data=True):
+        if 'external' in node[1]:
+            nodes.append(node)
+    return nodes
 
 
 def get_used_a_regs(cfg: DiGraph, node_id: int):
-    a_regs = get_param_regs()
+    a_regs = Register.get_a_regs()
     regs = set()
     block: FragmentView = cfg.node[node_id]["block"]
     for i in range(block.end - 1, block.begin - 1, -1):
