@@ -630,7 +630,7 @@ def get_stepper(cfg: DiGraph, entry_pnt: int) -> Iterator[ASMLine]:
         # Identify any conditional branch
         conditional = None
         for t, s in [(cfg.edges[current_node, s]["kind"], s) for s in cfg.successors(current_node)]:
-            if t is Transition.C_JUMP:
+            if t.value == Transition.C_JUMP.value:
                 conditional = s
             else:
                 # We don't expect more than one other "default" path to follow

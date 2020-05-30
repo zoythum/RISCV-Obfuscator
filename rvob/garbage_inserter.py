@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Mapping, List
 
 from networkx import DiGraph
-from random import randint, choices
+from random import randint, choices, seed
 from setup_structures import get_free_regs
 from structures import Register, not_modifiable_regs
 from rep.instruction_generator import garbage_inst
@@ -48,6 +48,7 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None,
     @param node: the graph's node to which apply the function
     @param block_size: the number of garbage instructions that compose the block
     """
+    seed()
     if block_size is None:
         block_size = randint(1, 10)
     if node is None:
