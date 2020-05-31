@@ -10,6 +10,11 @@ from structures import Register, opcodes
 
 
 def is_cond_jump(instr: Instruction) -> bool:
+    """
+    check if the given instruction represent a conditional jump
+    @param instr: the instruction to be inspected
+    @return: true if the instruction is a conditional branch one, false otherwise
+    """
     if instr.opcode in jump_ops and jump_ops[instr.opcode] == Transition.C_JUMP:
         return True
     else:
@@ -17,6 +22,11 @@ def is_cond_jump(instr: Instruction) -> bool:
 
 
 def is_call(instr: Instruction) -> bool:
+    """
+    check if the given instruction is a CALL instruction
+    @param instr: the instruction to be inspected
+    @return: true if the instruction is a call, false otherwise
+    """
     if instr.opcode in jump_ops and jump_ops[instr.opcode] == Transition.CALL:
         return True
     else:
@@ -24,6 +34,13 @@ def is_call(instr: Instruction) -> bool:
 
 
 def line_register_heat(line: Instruction, max_heat: int, init: List[int]) -> List[int]:
+    """
+    calculate the heat of the given line. The calculation is based on the given initialization vector
+    @param line: the to of which we want to calculate the heat
+    @param max_heat: the maximum heat that can be associated to a register
+    @param init: the initialization vector
+    @return: the heat vector of the given line
+    """
     curr_heat = list(init)
     for reg in range(len(curr_heat)):
         if curr_heat[reg] > 0:
@@ -35,6 +52,13 @@ def line_register_heat(line: Instruction, max_heat: int, init: List[int]) -> Lis
 
 
 def get_new_execution(cfg: DiGraph, max_recursion: int):
+    """
+    simulate a casual execution of the program starting from it's cfg.
+    @param cfg: the program's cfg
+    @param max_recursion: the maximum accepted recursion deep
+    @return: a tuple where in the first position there is the list of the branching's decisions and the second element
+             is the heat-map associated to the execution
+    """
     seed()
     line_counter = count(0)
     path_decision = []
@@ -74,6 +98,14 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
 
 
 def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
+    """
+    simulate the execution of the program basing it's branching decision on the given decision's list
+    @param cfg: the program cfg
+    @param max_recursion: the maximum accepted recursion deep
+    @param ex_path: the list of the decision that must be took at the branching point to obtain the desired execution
+    @return: a tuple where in the first position there is the list of the branching's decisions and the second element
+             is the heat-map associated to the execution
+    """
     seed()
     line_counter = count(0)
     path_decision = list(ex_path)
@@ -104,6 +136,16 @@ def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
 
 def get_trace(cfg: DiGraph, max_recursion: int = 5, ex_path: List[bool] = None) -> \
         Tuple[List[bool], Mapping[int, List[int]]]:
+    """
+    This function simulate an execution returning the heat-map associated to the execution paired with the decision
+    taken at the conditional branching point. Or, if the list of the decision taken is passed, could replay a past
+    execution of the same program
+    @param cfg: the cfg of the program
+    @param max_recursion: the maximum recursion deep accepted, by default is set to 5
+    @param ex_path: the list of decision that must be taken at the branching point
+    @return: a tuple where in the first position there is the list of the branching's decisions and the second element
+             is the heat-map associated to the execution
+    """
     if ex_path is None:
         return get_new_execution(cfg, max_recursion)
     else:
