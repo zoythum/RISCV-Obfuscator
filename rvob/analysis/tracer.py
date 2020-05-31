@@ -5,7 +5,7 @@ from random import choice, seed
 from itertools import count
 
 from analysis.cfg import Transition, jump_ops, get_stepper
-from rep.base import Instruction
+from rep.base import Instruction, ASMLine
 from structures import Register, opcodes
 
 
@@ -45,19 +45,23 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
     iterator = get_stepper(cfg, cfg.nodes[1]["block"].begin)
     for line in iterator:
         if line.number != -1 and isinstance(line.statement, Instruction):
-            if is_cond_jump(line.statement) and last_jump_line != line.number:
-                rec_counter = 0
-                last_jump_line = line.number
-                path_decision.append(choice([True, False]))
-                iterator.send(path_decision[-1])
-            elif is_cond_jump(line.statement) and last_jump_line == line.number and rec_counter < max_recursion:
-                rec_counter += 1
-                path_decision.append(choice([True, False]))
-                iterator.send(path_decision[-1])
-            elif is_cond_jump(line.statement) and last_jump_line == line.number and rec_counter == max_recursion:
-                rec_counter = 0
-                path_decision.append(False)
-                iterator.send(False)
+            line_heat = line_register_heat(line.statement, 50, line_heat)
+            heat_map[next(line_counter)] = line_heat
+            if is_cond_jump(line.statement):
+                decision: bool = False
+                if last_jump_line != line.number:
+                    rec_counter = 0
+                    decision = choice([True, False])
+                elif last_jump_line == line.number and rec_counter < max_recursion:
+                    rec_counter += 1
+                    decision = choice([True, False])
+                elif last_jump_line == line.number and rec_counter == max_recursion:
+                    rec_counter = 0
+                    decision = False
+                path_decision.append(decision)
+                line = iterator.send(decision)
+                line_heat = line_register_heat(line.statement, 50, line_heat)
+                heat_map[next(line_counter)] = line_heat
             elif is_call(line.statement):
                 if last_jump_line != line.number:
                     rec_counter = 0
@@ -66,10 +70,6 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
                     rec_counter += 1
                 elif last_jump_line == line.number and rec_counter == max_recursion:
                     break
-
-            line_heat = line_register_heat(line.statement, 50, line_heat)
-            heat_map[next(line_counter)] = line_heat
-
     return path_decision, heat_map
 
 
@@ -84,8 +84,12 @@ def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
     iterator = get_stepper(cfg, cfg.nodes[1]["block"].begin)
     for line in iterator:
         if line.number != -1 and isinstance(line.statement, Instruction):
+            line_heat = line_register_heat(line.statement, 50, line_heat)
+            heat_map[next(line_counter)] = line_heat
             if is_cond_jump(line.statement):
-                iterator.send(path_decision.pop(0))
+                line = iterator.send(path_decision.pop(0))
+                line_heat = line_register_heat(line.statement, 50, line_heat)
+                heat_map[next(line_counter)] = line_heat
             elif is_call(line.statement):
                 if last_jump_line != line.number:
                     rec_counter = 0
@@ -94,8 +98,6 @@ def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
                     rec_counter += 1
                 elif last_jump_line == line.number and rec_counter == max_recursion:
                     break
-            line_heat = line_register_heat(line.statement, 50, line_heat)
-            heat_map[next(line_counter)] = line_heat
 
     return ex_path, heat_map
 
