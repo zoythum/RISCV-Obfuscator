@@ -1,5 +1,5 @@
 from enum import Enum
-from random import seed, randint, sample, choice
+from random import seed, randint, sample, choice, random
 from typing import List, NamedTuple, Tuple, Mapping
 from obf.const_derivation import generate_derivation_chain, Promise, primers
 from rep.base import Instruction, to_line_iterator
@@ -278,6 +278,7 @@ def obfuscate(cfg: DiGraph, node_id: int = None, target_instr: int = None):
     @param node_id: the id of the node where is collocated the instruction to obfuscate
     @param target_instr: the line of the instruction to obfuscate
     """
+    seed()
     if node_id is None or target_instr is None:
         extracted = get_immediate_instructions(cfg)
         node_id = extracted[0]
