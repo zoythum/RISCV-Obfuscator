@@ -1,12 +1,25 @@
-from typing import Mapping, List, Tuple
+from typing import Mapping, List, Tuple, Dict
 
 from networkx import DiGraph
 from random import choice, seed
 from itertools import count
 
 from analysis.cfg import Transition, jump_ops, get_stepper
-from rep.base import Instruction, ASMLine
+from rep.base import Instruction
 from structures import Register, opcodes
+
+
+class SupplementInfo:
+    """
+    an element that contains some additional info about a certain line of code, the inserted attribute is True if the
+    associated instruction is inserted by some obfuscation technic, otherwise is False. The o_reg attribute contains the
+    original writing register used by the instruction, if any, otherwise is set to None, the n_reg attribute contains
+    the actual write register, if any, None otherwise.
+    """
+    def __init__(self, inserted, o_reg, n_reg):
+        self.inserted = inserted
+        self.o_reg = o_reg
+        self.n_reg = n_reg
 
 
 def is_cond_jump(instr: Instruction) -> bool:
@@ -51,6 +64,23 @@ def line_register_heat(line: Instruction, max_heat: int, init: List[int]) -> Lis
     return curr_heat
 
 
+def compute_additional_info(line: Instruction):
+    """
+    This function extrapolate the additional information required for the obfuscation technics evaluation, it check if
+    the instruction is an original one or if it's inserted by some technic and then took the original write register and
+    the actual one, if the first register is used as a destination register
+    @param line: the instruction under analysis
+    @return: a SupplementInfo element
+    """
+    if line.original is None:
+        return SupplementInfo(line.inserted, None, None)
+    else:
+        if isinstance(line.original, Register):
+            return SupplementInfo(line.inserted, line.original.name, line.r1.name)
+        else:
+            return SupplementInfo(line.inserted, line.original.upper(), line.r1.name)
+
+
 def get_new_execution(cfg: DiGraph, max_recursion: int):
     """
     simulate a casual execution of the program starting from it's cfg.
@@ -63,14 +93,14 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
     line_counter = count(0)
     path_decision = []
     last_jump_line = 0
-    heat_map = {}
+    exec_data = {}
     line_heat = [0] * len(Register)
     rec_counter = 0
     iterator = get_stepper(cfg, cfg.nodes[1]["block"].begin)
     for line in iterator:
         if line.number != -1 and isinstance(line.statement, Instruction):
             line_heat = line_register_heat(line.statement, 50, line_heat)
-            heat_map[next(line_counter)] = line_heat
+            exec_data[next(line_counter)] = (line_heat, compute_additional_info(line.statement))
             if is_cond_jump(line.statement):
                 decision: bool = False
                 if last_jump_line != line.number:
@@ -85,7 +115,7 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
                 path_decision.append(decision)
                 line = iterator.send(decision)
                 line_heat = line_register_heat(line.statement, 50, line_heat)
-                heat_map[next(line_counter)] = line_heat
+                exec_data[next(line_counter)] = (line_heat, compute_additional_info(line.statement))
             elif is_call(line.statement):
                 if last_jump_line != line.number:
                     rec_counter = 0
@@ -94,7 +124,7 @@ def get_new_execution(cfg: DiGraph, max_recursion: int):
                     rec_counter += 1
                 elif last_jump_line == line.number and rec_counter == max_recursion:
                     break
-    return path_decision, heat_map
+    return path_decision, exec_data
 
 
 def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
@@ -111,17 +141,17 @@ def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
     path_decision = list(ex_path)
     last_jump_line = 0
     rec_counter = 0
-    heat_map = {}
+    exec_data = {}
     line_heat = [0] * len(Register)
     iterator = get_stepper(cfg, cfg.nodes[1]["block"].begin)
     for line in iterator:
         if line.number != -1 and isinstance(line.statement, Instruction):
             line_heat = line_register_heat(line.statement, 50, line_heat)
-            heat_map[next(line_counter)] = line_heat
+            exec_data[next(line_counter)] = (line_heat, compute_additional_info(line.statement))
             if is_cond_jump(line.statement):
                 line = iterator.send(path_decision.pop(0))
                 line_heat = line_register_heat(line.statement, 50, line_heat)
-                heat_map[next(line_counter)] = line_heat
+                exec_data[next(line_counter)] = (line_heat, compute_additional_info(line.statement))
             elif is_call(line.statement):
                 if last_jump_line != line.number:
                     rec_counter = 0
@@ -131,11 +161,11 @@ def replay_execution(cfg: DiGraph, max_recursion: int, ex_path: List[bool]):
                 elif last_jump_line == line.number and rec_counter == max_recursion:
                     break
 
-    return ex_path, heat_map
+    return ex_path, exec_data
 
 
 def get_trace(cfg: DiGraph, max_recursion: int = 5, ex_path: List[bool] = None) -> \
-        Tuple[List[bool], Mapping[int, List[int]]]:
+        Tuple[List[bool], Dict[int, Tuple[List[int], SupplementInfo]]]:
     """
     This function simulate an execution returning the heat-map associated to the execution paired with the decision
     taken at the conditional branching point. Or, if the list of the decision taken is passed, could replay a past

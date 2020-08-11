@@ -72,5 +72,6 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None,
     read_reg = establish_read_reg(all_regs, block_size)
     for instr in instr_list:
         statement = garbage_inst[instr](write_reg, read_reg)
+        statement.inserted = True
         cfg.nodes[node]["block"].insert(line_num, statement)
         line_num += 1

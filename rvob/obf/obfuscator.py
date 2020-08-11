@@ -233,7 +233,9 @@ def placer(cfg: DiGraph, promises: List[Promise], report: Report, target_instr: 
         rd = check_reg(prom.rd, register_matrix, report.reg_pool)
         rs1 = check_reg(prom.rs1, register_matrix, report.reg_pool)
         rs2 = check_reg(prom.rs2, register_matrix, report.reg_pool)
-        instr = Instruction(prom.op.name.lower(), opcd_family[prom.op.name.lower()], r1=rd, r2=rs1, r3=rs2, immediate=prom.const)
+        instr = Instruction(prom.op.name.lower(), opcd_family[prom.op.name.lower()], r1=rd, r2=rs1, r3=rs2,
+                            immediate=prom.const)
+        instr.inserted = True
         instr_queue.put(instr)
     for i in range(len(positions)):
         active_block = cfg.nodes[positions[i][0]]['block']
@@ -290,8 +292,15 @@ def obfuscate(cfg: DiGraph, node_id: int = None, target_instr: int = None):
     needed_reg = calc_unresolved_register(promise_chain)
     report = calc_nodes_chain(cfg, node_id, target_instr, instruction.r1, needed_reg)
     maximize_unused_reg_usage(cfg, report, needed_reg)
-    target_instr = placer(cfg, promise_chain, report, target_instr)
+    target_instr_off = placer(cfg, promise_chain, report, target_instr)
+    tel = False
     if len(instruction.labels) > 0:
-        succ_instr = cfg.nodes[node_id]['block'][target_instr + 1]
+        tel = True
+        print("FASE 1:")
+        print(str(cfg.nodes[node_id]['block']))
+        succ_instr = cfg.nodes[node_id]['block'][target_instr]
         succ_instr.labels = instruction.labels
-    del cfg.nodes[node_id]['block'][target_instr]
+    del cfg.nodes[node_id]['block'][target_instr_off]
+    if tel:
+        print("FASE 2")
+        print(str(cfg.nodes[node_id]['block']))
