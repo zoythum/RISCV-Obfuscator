@@ -16,10 +16,11 @@ class SupplementInfo:
     original writing register used by the instruction, if any, otherwise is set to None, the n_reg attribute contains
     the actual write register, if any, None otherwise.
     """
-    def __init__(self, inserted, o_reg, n_reg):
+    def __init__(self, inserted, o_reg, n_reg, op_code):
         self.inserted = inserted
         self.o_reg = o_reg
         self.n_reg = n_reg
+        self.op_code = op_code
 
 
 def is_cond_jump(instr: Instruction) -> bool:
@@ -73,12 +74,12 @@ def compute_additional_info(line: Instruction):
     @return: a SupplementInfo element
     """
     if line.original is None:
-        return SupplementInfo(line.inserted, None, None)
+        return SupplementInfo(line.inserted, None, None, line.opcode)
     else:
         if isinstance(line.original, Register):
-            return SupplementInfo(line.inserted, line.original.name, line.r1.name)
+            return SupplementInfo(line.inserted, line.original.name, line.r1.name, line.opcode)
         else:
-            return SupplementInfo(line.inserted, line.original.upper(), line.r1.name)
+            return SupplementInfo(line.inserted, line.original.upper(), line.r1.name, line.opcode)
 
 
 def get_new_execution(cfg: DiGraph, max_recursion: int):

@@ -293,14 +293,7 @@ def obfuscate(cfg: DiGraph, node_id: int = None, target_instr: int = None):
     report = calc_nodes_chain(cfg, node_id, target_instr, instruction.r1, needed_reg)
     maximize_unused_reg_usage(cfg, report, needed_reg)
     target_instr_off = placer(cfg, promise_chain, report, target_instr)
-    tel = False
     if len(instruction.labels) > 0:
-        tel = True
-        print("FASE 1:")
-        print(str(cfg.nodes[node_id]['block']))
         succ_instr = cfg.nodes[node_id]['block'][target_instr]
         succ_instr.labels = instruction.labels
     del cfg.nodes[node_id]['block'][target_instr_off]
-    if tel:
-        print("FASE 2")
-        print(str(cfg.nodes[node_id]['block']))
