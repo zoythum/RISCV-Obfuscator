@@ -200,7 +200,7 @@ def check_reg(register, matrix, reg_pool: set) -> str:
         try:
             reg = matrix[register]
         except KeyError:
-            reg = reg_pool.pop()
+            reg = sample(reg_pool, 1)[0]
             matrix[register] = reg
         return reg
     else:
