@@ -2,7 +2,7 @@
 from networkx import DiGraph, nx
 from itertools import count
 from rep.base import Instruction
-from structures import opcodes
+from structures import opcodes, Register
 
 
 class ValueBlock:
@@ -12,12 +12,15 @@ class ValueBlock:
     initline: the absolute number of the line from which the register have the value indicated in the block
     endline: the absolute number of the last line in which the register hold the value indicated by the block
     value: the value holds by the register
+    scrambled: True if the the value pointed by the block was already scrambled, and so it's actual register isn't it's
+                original one
     """
 
-    def __init__(self, initline, endline, value: int):
+    def __init__(self, initline, endline, value: int, scrambled: bool = False):
         self.initline = initline
         self.endline = endline
         self.value = value
+        self.scrambled = scrambled
 
 
 counter = count()
@@ -112,6 +115,15 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
             regdict[register] = [block]
 
 
+def is_scrambled(line: Instruction):
+    if line.original is None:
+        return False
+    elif isinstance(line.original, Register):
+        return not line.original.name == line.r1.name
+    else:
+        return not line.original.upper() == line.r1.name
+
+
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     """
     This function identify if the instruction is a only read instruction or if it's contains also write, based on this
@@ -129,7 +141,7 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
-        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter))
+        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter), is_scrambled(line))
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
