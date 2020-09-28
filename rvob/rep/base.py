@@ -3,7 +3,7 @@ from typing import NamedTuple, Union, Iterator, Sequence, Optional
 from BitVector import BitVector
 
 from rep.instruction_repr import familystr
-from structures import Register, imm_sizes
+from structures import Register, imm_sizes, opcodes
 
 
 class Statement:
@@ -111,6 +111,9 @@ class Instruction(Statement):
     r3: Optional[Register]
     immediate: Optional[ImmediateConstant]
 
+    inserted: bool
+    original: Optional[Register]
+
     def __init__(self, opcode: str, family: str, labels: Sequence[str] = None, r1: Union[str, Register] = None,
                  r2: Union[str, Register] = None, r3: Union[str, Register] = None,
                  immediate: Union[str, int, ImmediateConstant] = None):
@@ -155,6 +158,12 @@ class Instruction(Statement):
                 self.immediate = immediate
         else:
             self.immediate = None
+
+        self.inserted = False
+        if opcodes[opcode][1]:
+            self.original = r1
+        else:
+            self.original = None
 
     def __repr__(self):
         return "Instruction(" + repr(self.opcode) + ", " + repr(self.family) + ", " + repr(self.labels) + ", " + \

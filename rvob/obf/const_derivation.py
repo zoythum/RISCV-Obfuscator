@@ -34,7 +34,8 @@ class ALOps(Opcodes):
     XORI = auto()
     SLLI = auto()
     SRLI = auto()
-
+    SLL = auto()
+    SRL = auto()
 
 # TODO this enumeration isn't strictly necessary, but I think it can be useful in other places.
 class Direction(Enum):
@@ -118,7 +119,7 @@ def mem_primer(target: Instruction) -> Derivation:
     starting_sequence = [
         Promise(MemOps[target.opcode.upper()], target.r1, 0, None, Instruction.ImmediateConstant(12, None, 0)),
         Promise(ALOps.ADD, 0, target.r2, 1, None)
-    ]
+        ]
 
     # Prime the derivation with the starting sequence and the correct promise
     return Derivation(starting_sequence, Goal(1, target.immediate))
@@ -129,6 +130,25 @@ def imm_primer(target: Instruction) -> Derivation:
 
     return Derivation([Promise(ALOps[target.opcode[:-1].upper()], target.r1, target.r2, 0, None)],
                       Goal(0, target.immediate))
+
+
+def lui_primer(target: Instruction) -> Derivation:
+    """Break a load upper immediate into less revealing operations (ors and shifts); obfuscate the 12 upper bits."""
+
+    # Shift the bits around to load 12 + 8 bits separately: insert 12b -> shift left 8 -> insert 8b -> shift left 12
+    loading_sequence = [
+        Promise(ALOps.SLLI, target.r1, 0, None, Instruction.ImmediateConstant(12, None, 12)),
+        Promise(ALOps.ORI,
+                0,
+                1,
+                None,
+                Instruction.ImmediateConstant(12, None, target.immediate.value[-8:].int_val())),
+        Promise(ALOps.SLLI, 1, 2, None, Instruction.ImmediateConstant(12, None, 8))
+        ]
+
+    # With the previous shifting and loading machinery in place, target the 12 most significant bits for obfuscation
+    return Derivation(loading_sequence,
+                      Goal(2, Instruction.ImmediateConstant(12, None, target.immediate.value[:-8].int_val())))
 
 
 def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
@@ -154,8 +174,12 @@ def shifter_obf(goal: Goal) -> Tuple[Promise, Goal]:
 
         return trailing_zeroes
 
-    lead = _count_leading_zeros(goal.const.value)
-    trail = _count_trailing_zeroes(goal.const.value)
+    if goal.const.int_val != 0:
+        lead = _count_leading_zeros(goal.const.value)
+        trail = _count_trailing_zeroes(goal.const.value)
+    else:
+        lead = goal.const.size
+        trail = goal.const.size
 
     if lead > trail:
         shift = lead
@@ -226,7 +250,7 @@ def terminator(goal: Goal) -> Promise:
     """
 
     return Promise(OtherOps.LI, goal.reg, None, None,
-                   Instruction.ImmediateConstant(goal.const.size, None, goal.const.int_val))
+                   Instruction.ImmediateConstant(32, None, goal.const.int_val))
 
 
 # Map opcodes to their correct primers
@@ -236,6 +260,9 @@ primers = {
     "andi": imm_primer,
     "ori": imm_primer,
     "xori": imm_primer,
+    "srli": imm_primer,
+    "addiw": imm_primer,
+    "slli": imm_primer,
     "lw": mem_primer,
     "lh": mem_primer,
     "lhu": mem_primer,
@@ -243,8 +270,9 @@ primers = {
     "lbu": mem_primer,
     "sw": mem_primer,
     "sh": mem_primer,
-    "sb": mem_primer
-}
+    "sb": mem_primer,
+    "lui": lui_primer
+    }
 
 # Catalogue of obfuscators for programmatic access
 logic_obfuscators = [logic_andi_obf, logic_ori_obf, logic_xori_obf]
@@ -272,6 +300,7 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
     if instruction.opcode == 'li':
         oc = Derivation([Promise(ALOps.OR, instruction.r1, instruction.r1, 0, None)],
                         Goal(0, Instruction.ImmediateConstant(12, None, instruction.immediate.value[20:].int_val())))
+        # TODO lui obfuscation should happen automatically, but how can we parameterize its?
         leftover = [Promise(OtherOps.LUI,
                             instruction.r1,
                             None,
@@ -279,7 +308,7 @@ def generate_derivation_chain(instruction: Instruction, max_shifts: int, max_log
                             Instruction.ImmediateConstant(20, None, instruction.immediate.value[0:20].int_val()))]
     else:
         oc = primers[instruction.opcode](instruction)
-        leftover = None
+        leftover = []
 
     # Build the obfuscators' pool
     obfuscators = choices(population=logic_obfuscators, k=max_logical) + ([shifter_obf] * max_shifts)
