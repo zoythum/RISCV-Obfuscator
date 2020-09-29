@@ -137,7 +137,6 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
                     if used_reg not in requires_children:
                         return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
                     else:
-                        return None
         except ValueError:
             continue
 
