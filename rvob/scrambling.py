@@ -29,8 +29,7 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
 
     line_num = randrange(value_block.initline, value_block.endline)
 
-    # aggiungi inserimento della mov reg_unused, used_reg
-    cfg[node_id][line_num] = mv_instr(unused_reg, used_reg)
+    cfg[node_id].block[line_num] = mv_instr([unused_reg], [used_reg])
 
     line_num += 1
     switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
@@ -122,24 +121,28 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
     value_blocks_qty = len(cfg.nodes[node_id]['reg_bind'][used_reg])
     requires_children = get_requires_children(cfg, node_id)
 
-    while True:
+    for _ in range(100):
         try:
             value_id = randint(0, value_blocks_qty - 1)
-            if 0 < value_id < value_blocks_qty - 1 and not cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled:
+            if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled:
+                continue
+            if 0 < value_id < value_blocks_qty - 1:
                 return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
             else:
                 if value_id == 0:
                     if used_reg not in cfg.nodes[node_id]['requires']:
                         return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
                     else:
-                        return None
+                        continue
                 else:
                     if used_reg not in requires_children:
                         return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
                     else:
+                        continue
         except ValueError:
             continue
 
+    return None
 
 def find_used_reg(cfg: DiGraph, current_node) -> Register:
     """
