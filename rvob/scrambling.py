@@ -40,7 +40,7 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
     if line_num == -1:
         return
     
-    cfg[node_id].block[line_num] = mv_instr([unused_reg], [used_reg])
+    cfg.nodes[node_id]['block'][line_num] = mv_instr([unused_reg], [used_reg])
 
     line_num += 1
     switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)

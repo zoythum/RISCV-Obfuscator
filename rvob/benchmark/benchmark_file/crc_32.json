@@ -1,0 +1,3688 @@
+[
+    {
+        "role": "directive",
+        "name": ".file",
+        "args": [
+            "\"crc_32.c\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".option",
+        "args": [
+            "nopic"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "arch",
+            "\"rv64i2p0_m2p0_a2p0_f2p0_d2p0_c2p0\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "unaligned_access",
+            "0"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "stack_align",
+            "16"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".data",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "3"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "crc_32_tab",
+            "@object"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "crc_32_tab",
+            "2048"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".crc_32_tab"
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "0"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1996959894"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3993919788"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2567524794"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "124634137"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1886057615"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3915621685"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2657392035"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "249268274"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2044508324"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3772115230"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2547177864"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "162941995"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2125561021"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3887607047"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2428444049"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "498536548"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1789927666"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4089016648"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2227061214"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "450548861"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1843258603"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4107580753"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2211677639"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "325883990"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1684777152"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4251122042"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2321926636"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "335633487"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1661365465"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4195302755"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2366115317"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "997073096"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1281953886"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3579855332"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2724688242"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1006888145"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1258607687"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3524101629"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2768942443"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "901097722"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1119000684"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3686517206"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2898065728"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "853044451"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1172266101"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3705015759"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2882616665"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "651767980"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1373503546"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3369554304"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3218104598"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "565507253"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1454621731"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3485111705"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3099436303"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "671266974"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1594198024"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3322730930"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2970347812"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "795835527"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1483230225"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3244367275"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3060149565"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1994146192"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "31158534"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2563907772"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4023717930"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1907459465"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "112637215"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2680153253"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3904427059"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2013776290"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "251722036"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2517215374"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3775830040"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2137656763"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "141376813"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2439277719"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3865271297"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1802195444"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "476864866"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2238001368"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4066508878"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1812370925"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "453092731"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2181625025"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4111451223"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1706088902"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "314042704"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2344532202"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4240017532"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1658658271"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "366619977"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2362670323"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4224994405"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1303535960"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "984961486"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2747007092"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3569037538"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1256170817"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1037604311"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2765210733"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3554079995"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1131014506"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "879679996"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2909243462"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3663771856"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1141124467"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "855842277"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2852801631"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3708648649"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1342533948"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "654459306"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3188396048"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3373015174"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1466479909"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "544179635"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3110523913"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3462522015"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1591671054"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "702138776"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2966460450"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3352799412"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1504918807"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "783551873"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3082640443"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3233442989"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3988292384"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2596254646"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "62317068"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1957810842"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3939845945"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2647816111"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "81470997"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1943803523"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3814918930"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2489596804"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "225274430"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2053790376"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3826175755"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2466906013"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "167816743"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2097651377"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4027552580"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2265490386"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "503444072"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1762050814"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4150417245"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2154129355"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "426522225"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1852507879"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4275313526"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2312317920"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "282753626"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1742555852"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4189708143"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2394877945"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "397917763"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1622183637"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3604390888"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2714866558"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "953729732"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1340076626"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3518719985"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2797360999"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1068828381"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1219638859"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3624741850"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2936675148"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "906185462"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1090812512"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3747672003"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2825379669"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "829329135"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1181335161"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3412177804"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3160834842"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "628085408"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1382605366"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3423369109"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3138078467"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "570562233"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1426400815"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3317316542"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2998733608"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "733239954"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1555261956"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3268935591"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3050360625"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "752459403"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1541320221"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2607071920"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3965973030"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1969922972"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "40735498"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2617837225"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3943577151"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1913087877"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "83908371"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2512341634"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3803740692"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2075208622"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "213261112"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2463272603"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3855990285"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2094854071"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "198958881"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2262029012"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4057260610"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1759359992"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "534414190"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2176718541"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4139329115"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1873836001"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "414664567"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2282248934"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4279200368"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1711684554"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "285281116"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2405801727"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4167216745"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1634467795"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "376229701"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2685067896"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3608007406"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1308918612"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "956543938"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2808555105"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3495958263"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1231636301"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1047427035"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2932959818"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3654703836"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1088359270"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "936918000"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "2847714899"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3736837829"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1202900863"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "817233897"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3183342108"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3401237130"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1404277552"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "615818150"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3134207493"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3453421203"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1423857449"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "601450431"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3009837614"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3294710456"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1567103746"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "711928724"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3020668471"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "3272380065"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "1510334235"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "755167117"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "updateCRC32"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "updateCRC32",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".updateCRC32"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -17,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -17,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 255,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(crc_32_tab)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": "%lo(crc_32_tab)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "updateCRC32",
+            ".-updateCRC32"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".section",
+        "args": [
+            ".rodata"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "3"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".LC0"
+    },
+    {
+        "role": "directive",
+        "name": ".string",
+        "args": [
+            "\"r\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "crc32file"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "crc32file",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".crc32file"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s2",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a2",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "s1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "zero",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(.LC0)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": "%lo(.LC0)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "fopen",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "s2",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bne",
+        "r1": "s2",
+        "r2": "zero",
+        "r3": "unused",
+        "immediate": ".L6",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "perror",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L5",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L7"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "ra",
+        "r3": "unused",
+        "immediate": 255,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 255,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(crc_32_tab)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": "%lo(crc_32_tab)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "s1",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "label",
+        "name": ".L6"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "s2",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "getc",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "ra",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a4",
+        "r2": "ra",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bne",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L7",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lh",
+        "r1": "a5",
+        "r2": "s2",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "beq",
+        "r1": "a5",
+        "r2": "zero",
+        "r3": "unused",
+        "immediate": ".L8",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "perror",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L8"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "s2",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "fclose",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "not",
+        "r1": "s1",
+        "r2": "s1",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "li"
+    },
+    {
+        "role": "label",
+        "name": ".L5"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s2",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "crc32file",
+            ".-crc32file"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "crc32buf"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "crc32buf",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".crc32buf"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "s1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L10",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L11"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 255,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(crc_32_tab)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": "%lo(crc_32_tab)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "s1",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L10"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bne",
+        "r1": "a5",
+        "r2": "zero",
+        "r3": "unused",
+        "immediate": ".L11",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "not",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "crc32buf",
+            ".-crc32buf"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".section",
+        "args": [
+            ".rodata"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "3"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".LC1"
+    },
+    {
+        "role": "directive",
+        "name": ".string",
+        "args": [
+            "\"%08lX",
+            "%7ld",
+            "%s\n\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "main"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "main",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": "main"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -52,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "s1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L14",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L15"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a2",
+        "r2": "a3",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a1",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "crc32file",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "s1",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "s1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a2",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a3",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a1",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(.LC1)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": "%lo(.LC1)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "printf",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L14"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -52,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -52,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -52,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bgt",
+        "r1": "a5",
+        "r2": "zero",
+        "r3": "unused",
+        "immediate": ".L15",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "s1",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "snez",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "snez"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 255,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s1",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "main",
+            ".-main"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".ident",
+        "args": [
+            "\"GCC:",
+            "(GNU)",
+            "9.2.0\""
+        ]
+    }
+]

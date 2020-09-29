@@ -1,0 +1,6217 @@
+[
+    {
+        "role": "directive",
+        "name": ".file",
+        "args": [
+            "\"sha.c\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".option",
+        "args": [
+            "nopic"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "arch",
+            "\"rv64i2p0_m2p0_a2p0_f2p0_d2p0_c2p0\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "unaligned_access",
+            "0"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".attribute",
+        "args": [
+            "stack_align",
+            "16"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_transform",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": "sha_transform"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -736,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 736,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "zero",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L2",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L3"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 6,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L2"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 15,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L3",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L4",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L5"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -14,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L4"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 79,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L5",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "zero",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L6",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L7"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 5,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 27,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "and",
+        "r1": "a3",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "not",
+        "r1": "a2",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "and",
+        "r1": "a5",
+        "r2": "a2",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1518501888,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -1639,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 30,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L6"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 19,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L7",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 20,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L8",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L9"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 5,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 27,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a3",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1859776512,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -1119,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 30,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L8"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 39,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L9",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L10",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L11"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 5,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 27,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a3",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "and",
+        "r1": "a3",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a2",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "and",
+        "r1": "a5",
+        "r2": "a2",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 600240128,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -804,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 30,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L10"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 59,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L11",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 60,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L12",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L13"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 5,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 27,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a3",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "xor",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a3",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -696,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 848867328,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 470,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 30,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "or",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -72,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L12"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 79,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L13",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 728,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 736,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_transform",
+            ".-sha_transform"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "byte_reverse",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".byte_reverse"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a1",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -60,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -60,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -60,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "zero",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L15",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L16"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -39,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -38,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -37,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -37,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -38,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 2,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -39,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lbu",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L15"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -60,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "blt",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L16",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "byte_reverse",
+            ".-byte_reverse"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "sha_init"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_init",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".sha_init"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1732583424,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 769,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(.LC0)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": "%lo(.LC0)",
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1281191936,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": -770,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 271732736,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 1142,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1642688512,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": 496,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "zero",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "zero",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_init",
+            ".-sha_init"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "sha_update"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_update",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".sha_update"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a2",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bgeu",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L19",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L19"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "slli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 29,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L20",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L21"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a2",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "memcpy",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "byte_reverse",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_transform",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "label",
+        "name": ".L20"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 63,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bgt",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L21",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a2",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a1",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "memcpy",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_update",
+            ".-sha_update"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "sha_final"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_final",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".sha_final"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "srli",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 3,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "andi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 63,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addiw",
+        "r1": "a3",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -128,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sb",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ble",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": ".L23",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a3",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "subw",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a2",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a3",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "memset",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "byte_reverse",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_transform",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a2",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "memset",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L24",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L23"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a3",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -36,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "subw",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a2",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a3",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "memset",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L24"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "byte_reverse",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 168,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 176,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_transform",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 56,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 64,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_final",
+            ".-sha_final"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "sha_stream"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_stream",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".sha_stream"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "t1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "t1",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_init",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "j",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": ".L26",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L27"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a2",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a2",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a2",
+        "r2": "a3",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a1",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_update",
+        "family": "j"
+    },
+    {
+        "role": "label",
+        "name": ".L26"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a4",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": -8,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a3",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a4",
+        "r2": "a3",
+        "r3": "a4",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a2",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 1,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a0",
+        "r2": "a4",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "fread",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "mv",
+        "r1": "a5",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": null,
+        "family": "_2arg"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lw",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -20,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sext.w",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "sext"
+    },
+    {
+        "role": "instruction",
+        "opcode": "bgt",
+        "r1": "a5",
+        "r2": "zero",
+        "r3": "unused",
+        "immediate": ".L27",
+        "family": "b"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "a5",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": -8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a4",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -16,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "a5",
+        "r2": "a4",
+        "r3": "a5",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a0",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "sha_final",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "li",
+        "r1": "t1",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": 8192,
+        "family": "li"
+    },
+    {
+        "role": "instruction",
+        "opcode": "add",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "t1",
+        "immediate": null,
+        "family": "r"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 40,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 48,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_stream",
+            ".-sha_stream"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".section",
+        "args": [
+            ".rodata"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "3"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".LC1"
+    },
+    {
+        "role": "directive",
+        "name": ".string",
+        "args": [
+            "\"%08lx",
+            "%08lx",
+            "%08lx",
+            "%08lx",
+            "%08lx\n\""
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".text",
+        "args": []
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "1"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".globl",
+        "args": [
+            "sha_print"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".type",
+        "args": [
+            "sha_print",
+            "@function"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".sha_print"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": -32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "sd",
+        "r1": "a0",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a1",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 0,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a2",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 8,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a3",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a4",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "s0",
+        "r3": "unused",
+        "immediate": -24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "a5",
+        "r2": "a5",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "lui",
+        "r1": "a0",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "%hi(.LC1)",
+        "family": "u"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "a0",
+        "r2": "a0",
+        "r3": "unused",
+        "immediate": "%lo(.LC1)",
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "call",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": "printf",
+        "family": "j"
+    },
+    {
+        "role": "instruction",
+        "opcode": "nop",
+        "r1": "unused",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "nop"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "ra",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 24,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "ld",
+        "r1": "s0",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 16,
+        "family": "s"
+    },
+    {
+        "role": "instruction",
+        "opcode": "addi",
+        "r1": "sp",
+        "r2": "sp",
+        "r3": "unused",
+        "immediate": 32,
+        "family": "i"
+    },
+    {
+        "role": "instruction",
+        "opcode": "jr",
+        "r1": "ra",
+        "r2": "unused",
+        "r3": "unused",
+        "immediate": null,
+        "family": "jr"
+    },
+    {
+        "role": "directive",
+        "name": ".size",
+        "args": [
+            "sha_print",
+            ".-sha_print"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".section",
+        "args": [
+            ".rodata"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".align",
+        "args": [
+            "3"
+        ]
+    },
+    {
+        "role": "label",
+        "name": ".LC0"
+    },
+    {
+        "role": "directive",
+        "name": ".dword",
+        "args": [
+            "4023233417"
+        ]
+    },
+    {
+        "role": "directive",
+        "name": ".ident",
+        "args": [
+            "\"GCC:",
+            "(GNU)",
+            "9.2.0\""
+        ]
+    }
+]
