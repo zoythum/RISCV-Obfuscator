@@ -25,7 +25,10 @@ def setup(cfg: DiGraph):
 def split_value_blocks(cfg: DiGraph,  heatmap, heat):
     setup(cfg)
 
-    value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
+    try:
+        value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
+    except NoSubstitutionException:
+        return
 
     line_num = randrange(value_block.initline, value_block.endline)
 
