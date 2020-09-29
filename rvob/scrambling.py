@@ -30,8 +30,16 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
     except NoSubstitutionException:
         return
 
-    line_num = randrange(value_block.initline, value_block.endline)
+    line_num = -1
 
+    for _ in range(50):
+        try:
+            line_num = randrange(value_block.initline, value_block.endline)
+        except ValueError:
+            continue
+    if line_num == -1:
+        return
+    
     cfg[node_id].block[line_num] = mv_instr([unused_reg], [used_reg])
 
     line_num += 1
