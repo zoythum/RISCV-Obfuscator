@@ -35,12 +35,13 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
     for _ in range(50):
         try:
             line_num = randrange(value_block.initline, value_block.endline)
+            break
         except ValueError:
             continue
     if line_num == -1:
         return
     
-    cfg.nodes[node_id]['block'][line_num] = mv_instr([unused_reg], [used_reg])
+    cfg.nodes[node_id]['block'].insert(line_num, mv_instr([unused_reg], [used_reg]))
 
     line_num += 1
     switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
