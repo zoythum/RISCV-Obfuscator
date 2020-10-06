@@ -10,20 +10,31 @@ import rvob.garbage_inserter as garbage_inserter
 import rvob.analysis.heatmaps as heatmaps
 import rvob.scrambling as scrambling
 import rvob.analysis.tracer as tracer
+from rvob.structures import Register
+from rvob.obf.obfuscator import NotEnoughtRegisters, NotValidInstruction
 from os import path
 
 heat_map = None
 heat_file = None
-out = None
+trace_heat_map = None
 cfg = None
 
 
 def write_heat():
-    global out
-    for i in range(len(out[1].keys())):
-        global heat_file
-        heat_file.write(str(i) + ": " + str(out[1][i][0]) + " i:" + str(out[1][i][1].inserted) + " o_r: " + str(
-            out[1][i][1].o_reg) + " n_r: " + str(out[1][i][1].n_reg) + " opcd: " + str(out[1][i][1].op_code) + "\n")
+    global trace_heat_map
+    global heat_file
+    for i in range(len(trace_heat_map.keys())):
+        heat_file.write(str(i) + ": " + str(trace_heat_map[i][0]) + " i:" + str(trace_heat_map[i][1].inserted) + " o_r: " + str(
+            trace_heat_map[i][1].o_reg) + " n_r: " + str(trace_heat_map[i][1].n_reg) + " opcd: " + str(trace_heat_map[i][1].op_code) + "\n")
+    mean_heat = [0]*len(Register)
+    for val in trace_heat_map.values():
+        for i in range(len(mean_heat)):
+            mean_heat[i] += val[0][i]
+    trace_length = len(trace_heat_map.keys())
+    for i in range(len(mean_heat)):
+        mean_heat[i] //= trace_length
+    heat_file.write("\nMean heat: " + str(mean_heat)+"\n")
+
 
 
 def do_iter():
@@ -31,34 +42,48 @@ def do_iter():
     global heat_map
 
     for t in range(50):
+        failed = 0
         print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, 50)
-        for _ in range(50):
+        for z in range(50):
             try:
                 scrambling.split_value_blocks(cfg, heat_map, 50)
                 scrambling.substitute_reg(cfg, heat_map, 50)
                 break
             except rvob.scrambling.NoSubstitutionException:
-                pass
+                if z == 50:
+                    failed += 1
+    print("Failure rate: " + str(failed/50 * 100) + "%")
 
     for t in range(5):
+        failed = 0
         print("obfuscate iteration: " + str(t))
-        obfuscator.obfuscate(cfg)
+        for z in range(5):
+            try:
+                obfuscator.obfuscate(cfg)
+                break
+            except (NotEnoughtRegisters, NotValidInstruction):
+                if z == 5:
+                    failed += 1
+    print("Failure rate: " + str(failed/5 * 100) + "%")
 
     for t in range(5):
         print("garbage iteration: " + str(t))
         garbage_inserter.insert_garbage_instr(cfg)
 
     for t in range(50):
+        failed = 0
         print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, 50)
-        for _ in range(50):
+        for z in range(50):
             try:
                 scrambling.split_value_blocks(cfg, heat_map, 50)
                 scrambling.substitute_reg(cfg, heat_map, 50)
                 break
             except rvob.scrambling.NoSubstitutionException:
-                pass
+                if z == 50:
+                    failed += 1
+    print("Failure rate: " + str(failed / 50 * 100) + "%")
 
 
 def benchmark(name: str, entry: str):
@@ -81,12 +106,14 @@ def benchmark(name: str, entry: str):
     global heat_file
     heat_file = open(dst, "w")
     heat_file.write("Baseline:\n")
-    global out
-    out = tracer.get_trace(cfg)
+    global trace_heat_map
+    trace_out = tracer.get_trace(cfg)
+    trace_heat_map = trace_out[1]
     write_heat()
     heat_file.write("\n\n\nObuscated version:\n")
     do_iter()
-    out = tracer.get_trace(cfg, ex_path=out[0])
+    trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
+    trace_heat_map = trace_out[1]
     write_heat()
     heat_file.close()
 
