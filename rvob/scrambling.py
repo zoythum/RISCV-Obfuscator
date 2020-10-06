@@ -108,8 +108,8 @@ def switch_regs(line_num: int, endline: int, current_node, used_register, unused
             if current_node['block'][line_num].r3 == used_register:
                 current_node['block'][line_num].r3 = unused_register
         line_num += 1
-
-    fix_last_line(current_node, line_num, used_register, unused_register)
+    if current_node['block'].end != line_num:
+        fix_last_line(current_node, line_num, used_register, unused_register)
 
 
 def fix_last_line(current_node, line_num, used_register, unused_register):
