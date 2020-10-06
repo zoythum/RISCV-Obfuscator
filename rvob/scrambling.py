@@ -42,6 +42,7 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
         return
 
     mv_instruction = mv_instr([unused_reg], [used_reg])
+    mv_instruction.original = used_reg
     mv_instruction.inserted = True
 
     cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
@@ -208,7 +209,6 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
                     chosen_unused = un_reg
                     min_heat = heatmap[line][un_reg.value]
             except KeyError:
-                print("Current node: {}".format(current_node))
-                print("linea: {}".format(line))
+                pass
 
     return chosen_unused

@@ -118,10 +118,8 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
 def is_scrambled(line: Instruction):
     if line.original is None:
         return False
-    elif isinstance(line.original, Register):
+    elif line.opcode == "mv" and line.inserted:
         return not line.original.name == line.r1.name
-    else:
-        return not line.original.upper() == line.r1.name
 
 
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
