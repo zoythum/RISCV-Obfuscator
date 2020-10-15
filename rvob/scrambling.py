@@ -3,6 +3,7 @@ from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
 from registerbinder import bind_register_to_value
+from rvob.assc_instr_block import call_ids_new_instr
 from random import randint, choice, randrange
 from rep.instruction_generator import mv_instr
 
@@ -22,7 +23,7 @@ def setup(cfg: DiGraph):
     bind_register_to_value(cfg)
 
 
-def split_value_blocks(cfg: DiGraph,  heatmap, heat):
+def split_value_blocks(cfg: DiGraph, heatmap, heat):
     setup(cfg)
 
     try:
@@ -46,6 +47,7 @@ def split_value_blocks(cfg: DiGraph,  heatmap, heat):
     mv_instruction.inserted = True
 
     cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
+    call_ids_new_instr(cfg, node_id, mv_instruction, line_num)
 
     line_num += 1
     switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
@@ -159,6 +161,7 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
             continue
 
     return None
+
 
 def find_used_reg(cfg: DiGraph, current_node) -> Register:
     """

@@ -1,9 +1,10 @@
-from enum import Enum
-from random import seed, randint, sample, choice, random
-from typing import List, NamedTuple, Tuple, Mapping
+
+from random import seed, randint, sample, choice
+from typing import List, Tuple
 from obf.const_derivation import generate_derivation_chain, Promise, primers
 from rep.base import Instruction, to_line_iterator
-from analysis.heatmaps import register_heatmap, mediate_heat
+from rvob.assc_instr_block import call_ids_new_instr
+from rvob.registerbinder import bind_register_to_value
 from structures import Register, opcd_family, not_modifiable_regs
 from networkx import DiGraph
 from queue import Queue
@@ -258,6 +259,8 @@ def placer(cfg: DiGraph, promises: List[Promise], node_chain: List[NodeBlock], t
             line = positions[i][1][t]
             instr = instr_queue.get()
             active_block.insert(line, instr)
+            call_ids_new_instr(cfg, positions[i][0], instr, line)
+            bind_register_to_value(cfg, positions[i][0])
     return target_instr
 
 

@@ -1,9 +1,12 @@
 import json
+from typing import List, Tuple
+
 import rvob.rep.base
 import rvob.rep.fragments
 import rvob.analysis
 import rvob.registerbinder
 import rvob.setup_structures
+import rvob.assc_instr_block as assc_instr_block
 import rvob.obf.obfuscator as obfuscator
 import rvob.obf.const_derivation
 import rvob.garbage_inserter as garbage_inserter
@@ -11,6 +14,7 @@ import rvob.analysis.heatmaps as heatmaps
 import rvob.scrambling as scrambling
 import rvob.analysis.tracer as tracer
 from rvob.structures import Register
+from rvob.registerbinder import ValueBlock
 from rvob.obf.obfuscator import NotEnoughtRegisters, NotValidInstruction
 from os import path
 
@@ -20,7 +24,7 @@ trace_heat_map = None
 cfg = None
 
 
-def write_heat():
+def write_heat(frag: Tuple[int, int, int] = None):
     global trace_heat_map
     global heat_file
     for i in range(len(trace_heat_map.keys())):
@@ -35,9 +39,46 @@ def write_heat():
         mean_heat[i] //= trace_length
     heat_file.write("\nMean heat: " + str(mean_heat)+"\n")
 
+    if frag is not None:
+        heat_file.write("Mean fragmentation: "+str(frag[0])+"\n")
+        heat_file.write("Fragmentation percentage: "+str((frag[1]/frag[2])*100)+"%\n")
 
 
-def do_iter():
+def calc_fragmentation():
+    global cfg
+
+    mean_frag: List[int] = []
+    block_num: int = 0
+    frag_block_num: int = 0
+
+    for nd_id in cfg.nodes:
+        frag_dict = {}
+        node = cfg.nodes[nd_id]
+        if 'external' not in node:
+            for v in node['reg_bind'].values():
+                v: List[ValueBlock]
+                block_num += len(v)
+                for el in v:
+                    if not el.not_frag:
+                        try:
+                            frag_dict[el.group_id] += 1
+                        except KeyError:
+                            frag_dict[el.group_id] = 1
+        for val in frag_dict.values():
+            if val > 1:
+                frag_block_num += val
+                mean_frag.append(val)
+
+    mean_fragmentation: int = 0
+    for elm in mean_frag:
+        mean_fragmentation += elm
+    mean_fragmentation //= len(mean_frag)
+
+    return mean_fragmentation, frag_block_num, block_num
+
+
+
+def do_scrambling():
     global cfg
     global heat_map
 
@@ -55,6 +96,12 @@ def do_iter():
                     failed += 1
     print("Failure rate: " + str(failed/50 * 100) + "%")
 
+
+def do_iter():
+    global cfg
+    global heat_map
+    assc_instr_block.associate_instruction_to_ValueBlock(cfg)
+    do_scrambling()
     for t in range(5):
         failed = 0
         print("obfuscate iteration: " + str(t))
@@ -71,19 +118,7 @@ def do_iter():
         print("garbage iteration: " + str(t))
         garbage_inserter.insert_garbage_instr(cfg)
 
-    for t in range(50):
-        failed = 0
-        print("scrambling iteration: " + str(t))
-        heat_map = heatmaps.register_heatmap(cfg, 50)
-        for z in range(50):
-            try:
-                scrambling.split_value_blocks(cfg, heat_map, 50)
-                scrambling.substitute_reg(cfg, heat_map, 50)
-                break
-            except rvob.scrambling.NoSubstitutionException:
-                if z == 50:
-                    failed += 1
-    print("Failure rate: " + str(failed / 50 * 100) + "%")
+    do_scrambling()
 
 
 def benchmark(name: str, entry: str):
@@ -114,7 +149,7 @@ def benchmark(name: str, entry: str):
     do_iter()
     trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
     trace_heat_map = trace_out[1]
-    write_heat()
+    write_heat(calc_fragmentation())
     heat_file.close()
 
 
