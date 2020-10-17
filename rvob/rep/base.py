@@ -1,4 +1,4 @@
-from typing import NamedTuple, Union, Iterator, Sequence, Optional
+from typing import NamedTuple, Union, Iterator, Sequence, Optional, Tuple, List
 
 from BitVector import BitVector
 
@@ -111,6 +111,7 @@ class Instruction(Statement):
     r3: Optional[Register]
     immediate: Optional[ImmediateConstant]
 
+    group_id: List[int] = [0, 0, 0]
     inserted: bool
     original: Optional[Register]
 

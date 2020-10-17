@@ -1,7 +1,8 @@
+from typing import List, Tuple, Dict
 
 from networkx import DiGraph, nx
 from itertools import count
-from rep.base import Instruction
+from rep.base import Instruction, Statement
 from structures import opcodes, Register
 
 
@@ -22,11 +23,18 @@ class ValueBlock:
         self.value = value
         self.scrambled = scrambled
 
+    initline: int
+    endline: int
+    value: int
+    scrambled: bool
+    group_id: int
+    not_frag: bool = False
+
 
 counter = count()
 
 
-def populate_linelist(cfg: DiGraph, node_num: int) -> list:
+def populate_linelist(cfg: DiGraph, node_num: int) -> List[Tuple[int, Statement]]:
     """
     Create a list of tuples which represent the line in a specific block of the graph.
     The tuple are of the form (line number, line)
@@ -42,7 +50,7 @@ def populate_linelist(cfg: DiGraph, node_num: int) -> list:
     return line_list
 
 
-def reg_read(regdict, reg, line, block_init):
+def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int, block_init: int, gp_id: int):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
     him is set to the current line,
@@ -55,6 +63,8 @@ def reg_read(regdict, reg, line, block_init):
 
     if reg not in regdict.keys():
         block = ValueBlock(block_init, line, next(counter))
+        block.group_id = gp_id
+        block.not_frag = True
         regdict[reg] = [block]
     else:
         regdict[reg][-1].endline = line
@@ -92,6 +102,8 @@ def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     required = node['requires']
     for register in required:
         block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
+        block.group_id = node['block'].begin
+        block.not_frag = True
         regdict[register] = [block]
 
 
@@ -112,16 +124,19 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
             regdict[register][-1].endline = node['block'].end - 1
         elif register not in regdict:
             block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
+            block.group_id = node['block'].begin
+            block.not_frag = True
             regdict[register] = [block]
 
 
 def is_scrambled(line: Instruction):
     if line.original is None:
         return False
-    elif isinstance(line.original, Register):
-        return not line.original.name == line.r1.name
     else:
-        return not line.original.upper() == line.r1.name
+        if isinstance(line.original, Register):
+            return not line.original.name == line.r1.name
+        else:
+            return not line.original.upper() == line.r1.name
 
 
 def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
@@ -133,19 +148,22 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     @param ln: a tuple representing a line of the program in the form (line number, line)
     @param localreg: the reg_bind under construction
     """
-    line = ln[1]
+    line: Instruction = ln[1]
     if opcodes[line.opcode][0] == 2:
-        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin)
+        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin, line.group_id[1])
     if opcodes[line.opcode][0] == 3:
-        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin)
+        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin, line.group_id[2])
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
         block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter), is_scrambled(line))
+        block.group_id = line.group_id[0]
+        if isinstance(block.group_id, Instruction):
+            print()
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
-        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin)
+        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin, line.group_id[0])
 
 
 def purge_external(cfg: DiGraph, nodelist: list):

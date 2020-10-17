@@ -3,7 +3,9 @@ from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
 from registerbinder import bind_register_to_value
-from random import randint, choice
+from rvob.assc_instr_block import call_ids_new_instr
+from random import randint, choice, randrange
+from rep.instruction_generator import mv_instr
 
 
 class NoUnusedRegsException(Exception):
@@ -14,23 +16,44 @@ class NoSubstitutionException(Exception):
     pass
 
 
-def substitute_reg(cfg: DiGraph, heatmap, heat):
-    """
-    Flow:
-        1) estraggo nodo random
-        2) estraggo registro usato e registro non usato
-        3) estraggo blocco di validità
-        4) sostituisco
-    :param heatmap: generated heatmap for the current cfg
-    :param heat: max heatmap's value
-    :param cfg: cfg of the current program
-    :return: void
-    """
+def setup(cfg: DiGraph):
     setup_contracts(cfg)
     sanitize_contracts(cfg)
     organize_calls(cfg)
     bind_register_to_value(cfg)
 
+
+def split_value_blocks(cfg: DiGraph, heatmap, heat):
+    setup(cfg)
+
+    try:
+        value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
+    except NoSubstitutionException:
+        return
+
+    line_num = -1
+
+    for _ in range(50):
+        try:
+            line_num = randrange(value_block.initline, value_block.endline)
+            break
+        except ValueError:
+            continue
+    if line_num == -1:
+        return
+
+    mv_instruction = mv_instr([unused_reg], [used_reg])
+    mv_instruction.original = used_reg
+    mv_instruction.inserted = True
+
+    cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
+    call_ids_new_instr(cfg, node_id, mv_instruction, line_num)
+
+    line_num += 1
+    switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
+
+
+def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
     while 'external' in cfg.nodes[node_id]:
         node_id = choice(list(cfg.nodes))
@@ -46,6 +69,25 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
         unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.initline, value_block.endline)
     except NoUnusedRegsException:
         raise NoSubstitutionException
+
+    return value_block, node_id, used_reg, unused_reg
+
+
+def substitute_reg(cfg: DiGraph, heatmap, heat):
+    """
+    Flow:
+        1) estraggo nodo random
+        2) estraggo registro usato e registro non usato
+        3) estraggo blocco di validità
+        4) sostituisco
+    :param heatmap: generated heatmap for the current cfg
+    :param heat: max heatmap's value
+    :param cfg: cfg of the current program
+    :return: void
+    """
+    setup(cfg)
+
+    value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
 
     line_num = value_block.initline
 
@@ -68,8 +110,8 @@ def switch_regs(line_num: int, endline: int, current_node, used_register, unused
             if current_node['block'][line_num].r3 == used_register:
                 current_node['block'][line_num].r3 = unused_register
         line_num += 1
-
-    fix_last_line(current_node, line_num, used_register, unused_register)
+    if current_node['block'].end != line_num:
+        fix_last_line(current_node, line_num, used_register, unused_register)
 
 
 def fix_last_line(current_node, line_num, used_register, unused_register):
@@ -97,9 +139,11 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
     value_blocks_qty = len(cfg.nodes[node_id]['reg_bind'][used_reg])
     requires_children = get_requires_children(cfg, node_id)
 
-    while True:
+    for _ in range(100):
         try:
             value_id = randint(0, value_blocks_qty - 1)
+            if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled:
+                continue
             if 0 < value_id < value_blocks_qty - 1:
                 return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
             else:
@@ -107,14 +151,16 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
                     if used_reg not in cfg.nodes[node_id]['requires']:
                         return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
                     else:
-                        return None
+                        continue
                 else:
                     if used_reg not in requires_children:
                         return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
                     else:
-                        return None
+                        continue
         except ValueError:
             continue
+
+    return None
 
 
 def find_used_reg(cfg: DiGraph, current_node) -> Register:
@@ -166,7 +212,6 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
                     chosen_unused = un_reg
                     min_heat = heatmap[line][un_reg.value]
             except KeyError:
-                print("Current node: {}".format(current_node))
-                print("linea: {}".format(line))
+                pass
 
     return chosen_unused
