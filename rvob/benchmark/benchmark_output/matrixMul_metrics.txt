@@ -1,0 +1,8 @@
+
+Mean heat before: [0, 20, 39, 0, 0, 0, 0, 0, 39, 19, 30, 28, 0, 0, 30, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Mean heat after: [0, 15, 22, 0, 0, 38, 25, 35, 15, 32, 15, 11, 23, 19, 6, 21, 15, 22, 31, 25, 32, 26, 16, 21, 18, 28, 24, 27, 12, 28, 18, 27]
+Mean fragmentation: 12
+Fragmentation percentage: 37.83209351753454%
+Mean variable life (frag accumulated): 14
+Mean variable life (frag separated): 9

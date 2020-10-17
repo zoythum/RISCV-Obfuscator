@@ -20,13 +20,16 @@ from os import path
 
 heat_map = None
 heat_file = None
+metrics_file = None
 trace_heat_map = None
 cfg = None
 
 
-def write_heat(frag: Tuple[int, int, int] = None):
+def write_heat( first: bool, frag: Tuple[int, int, int, int, int] = None):
     global trace_heat_map
     global heat_file
+    global metrics_file
+
     for i in range(len(trace_heat_map.keys())):
         heat_file.write(str(i) + ": " + str(trace_heat_map[i][0]) + " i:" + str(trace_heat_map[i][1].inserted) + " o_r: " + str(
             trace_heat_map[i][1].o_reg) + " n_r: " + str(trace_heat_map[i][1].n_reg) + " opcd: " + str(trace_heat_map[i][1].op_code) + "\n")
@@ -37,44 +40,70 @@ def write_heat(frag: Tuple[int, int, int] = None):
     trace_length = len(trace_heat_map.keys())
     for i in range(len(mean_heat)):
         mean_heat[i] //= trace_length
-    heat_file.write("\nMean heat: " + str(mean_heat)+"\n")
+    if first:
+        metrics_file.write("\nMean heat before: " + str(mean_heat)+"\n")
+    else:
+        metrics_file.write("\nMean heat after: " + str(mean_heat) + "\n")
 
     if frag is not None:
-        heat_file.write("Mean fragmentation: "+str(frag[0])+"\n")
-        heat_file.write("Fragmentation percentage: "+str((frag[1]/frag[2])*100)+"%\n")
+        metrics_file.write("Mean fragmentation: "+str(frag[0])+"\n")
+        metrics_file.write("Fragmentation percentage: "+str((frag[1]/frag[2])*100)+"%\n")
+        metrics_file.write("Mean variable life (frag accumulated): "+str(frag[3])+"\n")
+        metrics_file.write("Mean variable life (frag separated): " + str(frag[4]) + "\n")
 
 
 def calc_fragmentation():
     global cfg
 
-    mean_frag: List[int] = []
+    mean_frag_list: List[int] = []
+    mean_life_scramb_list: List[int] = []
+    mean_life_list: List[int] = []
     block_num: int = 0
     frag_block_num: int = 0
 
     for nd_id in cfg.nodes:
         frag_dict = {}
+        life_dict = {}
         node = cfg.nodes[nd_id]
         if 'external' not in node:
             for v in node['reg_bind'].values():
                 v: List[ValueBlock]
                 block_num += len(v)
                 for el in v:
+                    mean_life_scramb_list.append(el.endline - el.initline + 1)
                     if not el.not_frag:
                         try:
                             frag_dict[el.group_id] += 1
+                            life_dict[el.group_id] += (el.endline - el.initline + 1)
                         except KeyError:
                             frag_dict[el.group_id] = 1
+                            life_dict[el.group_id] = (el.endline - el.initline + 1)
+                    else:
+                        mean_life_list.append((el.endline - el.initline + 1))
         for val in frag_dict.values():
             if val > 1:
                 frag_block_num += val
-                mean_frag.append(val)
+                mean_frag_list.append(val)
+        for val in life_dict.values():
+            mean_life_list.append(val)
 
     mean_fragmentation: int = 0
-    for elm in mean_frag:
-        mean_fragmentation += elm
-    mean_fragmentation //= len(mean_frag)
+    mean_life: int = 0
+    mean_life_scramb: int = 0
 
-    return mean_fragmentation, frag_block_num, block_num
+    for elm in mean_frag_list:
+        mean_fragmentation += elm
+    mean_fragmentation //= len(mean_frag_list)
+
+    for elm in mean_life_list:
+        mean_life += elm
+    mean_life //= len(mean_life_list)
+
+    for elm in mean_life_scramb_list:
+        mean_life_scramb += elm
+    mean_life_scramb //= len(mean_life_scramb_list)
+
+    return mean_fragmentation, frag_block_num, block_num, mean_life, mean_life_scramb
 
 
 
@@ -122,6 +151,11 @@ def do_iter():
 
 
 def benchmark(name: str, entry: str):
+    global heat_map
+    global heat_file
+    global metrics_file
+    global trace_heat_map
+
     rel = path.dirname(__file__)
     src = rel + '/benchmark/benchmark_file/' + name + '.json'
     file = open(src)
@@ -135,21 +169,20 @@ def benchmark(name: str, entry: str):
     rvob.setup_structures.sanitize_contracts(cfg)
     rvob.setup_structures.organize_calls(cfg)
     rvob.registerbinder.bind_register_to_value(cfg)
-    global heat_map
     heat_map = heatmaps.register_heatmap(cfg, 50)
     dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
-    global heat_file
+    metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
     heat_file = open(dst, "w")
+    metrics_file = open(metric_dst, "w")
     heat_file.write("Baseline:\n")
-    global trace_heat_map
     trace_out = tracer.get_trace(cfg)
     trace_heat_map = trace_out[1]
-    write_heat()
+    write_heat(first=True)
     heat_file.write("\n\n\nObuscated version:\n")
     do_iter()
     trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
     trace_heat_map = trace_out[1]
-    write_heat(calc_fragmentation())
+    write_heat(False, calc_fragmentation())
     heat_file.close()
 
 
