@@ -1,8 +1,8 @@
-
 Mean heat before: [0, 0, 43, 0, 0, 0, 0, 0, 39, 0, 10, 0, 0, 0, 29, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-Mean heat after: [0, 0, 1, 0, 0, 27, 19, 19, 4, 19, 4, 0, 19, 22, 13, 5, 19, 19, 24, 28, 19, 32, 28, 16, 31, 28, 17, 25, 25, 20, 31, 31]
-Mean fragmentation: 62
-Fragmentation percentage: 84.93150684931507%
-Mean variable life (frag accumulated): 131
-Mean variable life (frag separated): 21
+Mean heat after: [0, 0, 1, 0, 0, 20, 19, 23, 2, 23, 5, 0, 22, 22, 0, 0, 15, 14, 28, 23, 23, 28, 15, 18, 23, 26, 26, 20, 26, 31, 37, 21]
+Mean fragmentation: 1
+Mean variable life (unprotected case): 6
+Mean variable life (frag accumulated): 49
+Mean variable life (frag separated): 27
+Number of original ValueBlock: 14
+List of fragmented ValueBlock: [12]-> 1

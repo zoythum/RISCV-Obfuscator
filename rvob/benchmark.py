@@ -1,5 +1,7 @@
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Set
+
+from networkx import DiGraph
 
 import rvob.rep.base
 import rvob.rep.fragments
@@ -22,13 +24,15 @@ heat_map = None
 heat_file = None
 metrics_file = None
 trace_heat_map = None
-cfg = None
+cfg: DiGraph = None
+mean_unp_life: int = 0
 
 
-def write_heat( first: bool, frag: Tuple[int, int, int, int, int] = None):
+def write_heat( first: bool, frag: Tuple[int, List[int], int, int, int] = None):
     global trace_heat_map
     global heat_file
     global metrics_file
+    global mean_unp_life
 
     for i in range(len(trace_heat_map.keys())):
         heat_file.write(str(i) + ": " + str(trace_heat_map[i][0]) + " i:" + str(trace_heat_map[i][1].inserted) + " o_r: " + str(
@@ -41,15 +45,24 @@ def write_heat( first: bool, frag: Tuple[int, int, int, int, int] = None):
     for i in range(len(mean_heat)):
         mean_heat[i] //= trace_length
     if first:
-        metrics_file.write("\nMean heat before: " + str(mean_heat)+"\n")
+        metrics_file.write("Mean heat before: " + str(mean_heat)+"\n")
     else:
-        metrics_file.write("\nMean heat after: " + str(mean_heat) + "\n")
+        metrics_file.write("Mean heat after: " + str(mean_heat) + "\n")
 
     if frag is not None:
+        # The frag tuple contains the following value:
+        # [0] mean fragmentation
+        # [1] list of the fragmented ValueBlock with fragment number for each ValueBlock
+        # [2] number of original ValueBlock
+        # [3] mean life (aggregated fragments)
+        # [4] mean life scrambled (single fragment)
         metrics_file.write("Mean fragmentation: "+str(frag[0])+"\n")
-        metrics_file.write("Fragmentation percentage: "+str((frag[1]/frag[2])*100)+"%\n")
+        metrics_file.write("Mean variable life (unprotected case): " + str(mean_unp_life) + "\n")
         metrics_file.write("Mean variable life (frag accumulated): "+str(frag[3])+"\n")
         metrics_file.write("Mean variable life (frag separated): " + str(frag[4]) + "\n")
+        metrics_file.write("Number of original ValueBlock: " + str(frag[2]) + "\n")
+        metrics_file.write("List of fragmented ValueBlock: " + str(frag[1]) + "-> " + str(len(frag[1])) + "\n")
+
 
 
 def calc_fragmentation():
@@ -59,31 +72,34 @@ def calc_fragmentation():
     mean_life_scramb_list: List[int] = []
     mean_life_list: List[int] = []
     block_num: int = 0
-    frag_block_num: int = 0
 
     for nd_id in cfg.nodes:
-        frag_dict = {}
+        frag_dict: Dict[int, Set[Register]] = {}
         life_dict = {}
         node = cfg.nodes[nd_id]
         if 'external' not in node:
-            for v in node['reg_bind'].values():
-                v: List[ValueBlock]
-                block_num += len(v)
+            for it in node['reg_bind'].items():
+                k: Register = it[0]
+                v: List[ValueBlock] = it[1]
+                v = [blk for blk in v if not blk.inserted]
                 for el in v:
                     mean_life_scramb_list.append(el.endline - el.initline + 1)
+                    # this check exclude the block that have the same group_id only because all of them start from the
+                    # first line of the node, but they aren't part of the same original ValueBlock
                     if not el.not_frag:
                         try:
-                            frag_dict[el.group_id] += 1
+                            frag_dict[el.group_id].add(k)
                             life_dict[el.group_id] += (el.endline - el.initline + 1)
                         except KeyError:
-                            frag_dict[el.group_id] = 1
+                            frag_dict[el.group_id] = {k}
                             life_dict[el.group_id] = (el.endline - el.initline + 1)
+                            block_num += 1
                     else:
+                        block_num += 1
+                        mean_frag_list.append(1)
                         mean_life_list.append((el.endline - el.initline + 1))
         for val in frag_dict.values():
-            if val > 1:
-                frag_block_num += val
-                mean_frag_list.append(val)
+            mean_frag_list.append(len(val))
         for val in life_dict.values():
             mean_life_list.append(val)
 
@@ -91,8 +107,11 @@ def calc_fragmentation():
     mean_life: int = 0
     mean_life_scramb: int = 0
 
+    src_list = []
     for elm in mean_frag_list:
         mean_fragmentation += elm
+        if elm > 1:
+            src_list.append(elm)
     mean_fragmentation //= len(mean_frag_list)
 
     for elm in mean_life_list:
@@ -103,15 +122,33 @@ def calc_fragmentation():
         mean_life_scramb += elm
     mean_life_scramb //= len(mean_life_scramb_list)
 
-    return mean_fragmentation, frag_block_num, block_num, mean_life, mean_life_scramb
+    return mean_fragmentation, src_list, block_num, mean_life, mean_life_scramb
 
+
+def calc_var_life():
+    global cfg
+    global mean_unp_life
+
+    life_list: List[int] = []
+    for n in cfg.nodes:
+        if 'external' not in cfg.nodes[n]:
+            reg_bind: Dict[Register, List[ValueBlock]] = cfg.nodes[n]['reg_bind']
+            for val in reg_bind.values():
+                for elm in val:
+                    life_list.append(elm.endline - elm.initline + 1)
+
+    mean_life: int = 0
+    for elm in life_list:
+        mean_life += elm
+
+    mean_unp_life = mean_life // len(life_list)
 
 
 def do_scrambling():
     global cfg
     global heat_map
 
-    for t in range(50):
+    for t in range(400):
         failed = 0
         print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, 50)
@@ -170,6 +207,7 @@ def benchmark(name: str, entry: str):
     rvob.setup_structures.organize_calls(cfg)
     rvob.registerbinder.bind_register_to_value(cfg)
     heat_map = heatmaps.register_heatmap(cfg, 50)
+    calc_var_life()
     dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
     metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
     heat_file = open(dst, "w")
@@ -189,7 +227,8 @@ def benchmark(name: str, entry: str):
 def main():
     benchmarks = [('bubblesort', None), ('crc_32', None), ('dijkstra_small', None), ('fibonacci', None),
                   ('matrixMul', None), ('patricia', 'bit'), ('quickSort', None), ('sha', 'sha_transform')]
-    for elem in benchmarks:
+    sub_test = [('bubblesort', None)]
+    for elem in sub_test:
         print('\n\033[1mTesting ' + elem[0] + ':\033[0m')
         benchmark(elem[0], elem[1])
 

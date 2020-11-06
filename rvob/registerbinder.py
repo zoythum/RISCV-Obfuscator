@@ -27,6 +27,7 @@ class ValueBlock:
     endline: int
     value: int
     scrambled: bool
+    inserted: bool = False
     group_id: int
     not_frag: bool = False
 
@@ -158,8 +159,8 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     if opcodes[line.opcode][1]:
         block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter), is_scrambled(line))
         block.group_id = line.group_id[0]
-        if isinstance(block.group_id, Instruction):
-            print()
+        if line.inserted:
+            block.inserted = True
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
