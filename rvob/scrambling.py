@@ -54,7 +54,7 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
 
 def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
-    while 'external' in cfg.nodes[node_id]:
+    while 'external' in cfg.nodes[node_id] or 'not_modify' in cfg.nodes[node_id]:
         node_id = choice(list(cfg.nodes))
 
     used_reg = find_used_reg(cfg, node_id)
