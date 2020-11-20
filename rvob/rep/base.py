@@ -111,7 +111,7 @@ class Instruction(Statement):
     r3: Optional[Register]
     immediate: Optional[ImmediateConstant]
 
-    group_id: List[int] = [0, 0, 0]
+    swap_instr: bool = False
     inserted: bool
     original: Optional[Register]
 

@@ -232,7 +232,7 @@ def get_free_regs(cfg: DiGraph, line_value: int):
     for reg in Register:
         if reg in node['reg_bind']:
             for bind in node['reg_bind'][reg]:
-                if bind.initline <= line_value <= bind.endline:
+                if bind.init_line <= line_value <= bind.end_line:
                     used_regs.append(reg)
                     break
 

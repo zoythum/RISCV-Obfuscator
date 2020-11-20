@@ -8,7 +8,6 @@ import rvob.rep.fragments
 import rvob.analysis
 import rvob.registerbinder
 import rvob.setup_structures
-import rvob.assc_instr_block as assc_instr_block
 import rvob.obf.obfuscator as obfuscator
 import rvob.obf.const_derivation
 import rvob.garbage_inserter as garbage_inserter
@@ -81,23 +80,23 @@ def calc_fragmentation():
             for it in node['reg_bind'].items():
                 k: Register = it[0]
                 v: List[ValueBlock] = it[1]
-                v = [blk for blk in v if not blk.inserted]
+                v = [blk for blk in v if not blk.inserted]  # eliminate block added by some garbage instruction
                 for el in v:
-                    mean_life_scramb_list.append(el.endline - el.initline + 1)
+                    mean_life_scramb_list.append(el.end_line - el.init_line + 1)
                     # this check exclude the block that have the same group_id only because all of them start from the
                     # first line of the node, but they aren't part of the same original ValueBlock
-                    if not el.not_frag:
+                    if el.group_id is not None:
                         try:
                             frag_dict[el.group_id].add(k)
-                            life_dict[el.group_id] += (el.endline - el.initline + 1)
+                            life_dict[el.group_id] += (el.end_line - el.init_line + 1)
                         except KeyError:
                             frag_dict[el.group_id] = {k}
-                            life_dict[el.group_id] = (el.endline - el.initline + 1)
+                            life_dict[el.group_id] = (el.end_line - el.init_line + 1)
                             block_num += 1
                     else:
                         block_num += 1
                         mean_frag_list.append(1)
-                        mean_life_list.append((el.endline - el.initline + 1))
+                        mean_life_list.append((el.end_line - el.init_line + 1))
         for val in frag_dict.values():
             mean_frag_list.append(len(val))
         for val in life_dict.values():
@@ -135,7 +134,7 @@ def calc_var_life():
             reg_bind: Dict[Register, List[ValueBlock]] = cfg.nodes[n]['reg_bind']
             for val in reg_bind.values():
                 for elm in val:
-                    life_list.append(elm.endline - elm.initline + 1)
+                    life_list.append(elm.end_line - elm.init_line + 1)
 
     mean_life: int = 0
     for elm in life_list:
@@ -148,7 +147,7 @@ def do_scrambling():
     global cfg
     global heat_map
 
-    for t in range(400):
+    for t in range(100):
         failed = 0
         print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, 50)
@@ -166,7 +165,6 @@ def do_scrambling():
 def do_iter():
     global cfg
     global heat_map
-    assc_instr_block.associate_instruction_to_ValueBlock(cfg)
     do_scrambling()
     for t in range(5):
         failed = 0

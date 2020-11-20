@@ -18,18 +18,18 @@ class ValueBlock:
     """
 
     def __init__(self, initline, endline, value: int, scrambled: bool = False):
-        self.initline = initline
-        self.endline = endline
+        self.init_line = initline
+        self.end_line = endline
         self.value = value
         self.scrambled = scrambled
 
-    initline: int
-    endline: int
+    init_line: int
+    end_line: int
     value: int
-    scrambled: bool
+    scrambled: bool = False
     inserted: bool = False
-    group_id: int
-    not_frag: bool = False
+    group_id: int = None
+    not_modify: bool = False
 
 
 counter = count()
@@ -51,7 +51,7 @@ def populate_linelist(cfg: DiGraph, node_num: int) -> List[Tuple[int, Statement]
     return line_list
 
 
-def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int, block_init: int, gp_id: int):
+def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int, block_init: int):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
     him is set to the current line,
@@ -64,11 +64,9 @@ def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int
 
     if reg not in regdict.keys():
         block = ValueBlock(block_init, line, next(counter))
-        block.group_id = gp_id
-        block.not_frag = True
         regdict[reg] = [block]
     else:
-        regdict[reg][-1].endline = line
+        regdict[reg][-1].end_line = line
 
 
 def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
@@ -83,10 +81,10 @@ def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
     """
     line = ln[1]
     if line.r1 in localreg.keys():
-        if localreg[line.r1][-1].endline == ln[0]:
+        if localreg[line.r1][-1].end_line == ln[0]:
             localreg[line.r1].append(block)
         else:
-            localreg[line.r1][-1].endline = (ln[0] - 1)
+            localreg[line.r1][-1].end_line = (ln[0] - 1)
             localreg[line.r1].append(block)
     else:
         localreg[line.r1] = [block]
@@ -103,8 +101,6 @@ def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     required = node['requires']
     for register in required:
         block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
-        block.group_id = node['block'].begin
-        block.not_frag = True
         regdict[register] = [block]
 
 
@@ -121,16 +117,23 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        if (register in regdict) and (regdict[register][-1].endline != (node['block'].end - 1)):
-            regdict[register][-1].endline = node['block'].end - 1
+        if (register in regdict) and (regdict[register][-1].end_line != (node['block'].end - 1)):
+            block: ValueBlock = regdict[register][-1]
+            block.end_line = node['block'].end - 1
+            block.not_modify = True
         elif register not in regdict:
             block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
-            block.group_id = node['block'].begin
-            block.not_frag = True
+            block.not_modify = True
             regdict[register] = [block]
 
 
 def is_scrambled(line: Instruction):
+    """
+    The function verify if the passed instruction changed it's first register from the original when, this is a signal
+    that a scrambling is done
+    @param line: the instruction to be inspected
+    @return: true if the instruction's first register doesn't match with the instruction's original register
+    """
     if line.original is None:
         return False
     else:
@@ -151,20 +154,71 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     """
     line: Instruction = ln[1]
     if opcodes[line.opcode][0] == 2:
-        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin, line.group_id[1])
+        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin)
     if opcodes[line.opcode][0] == 3:
-        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin, line.group_id[2])
+        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin)
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
         block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter), is_scrambled(line))
-        block.group_id = line.group_id[0]
-        if line.inserted:
+        if line.inserted and not line.swap_instr:
             block.inserted = True
         reg_write(block, ln, localreg)
     else:
         # the opcode correspond to a read operation
-        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin, line.group_id[0])
+        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin)
+
+
+def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict[Register, List[ValueBlock]]) \
+        -> ValueBlock:
+    """
+    the function find the block, for a given register, that has a specific ending line
+    @param instruction: the instruction from which extrapolate the register to be used as search-key
+    @param line: the line number to be matched by the block
+    @param reg_bind: the dictionary containing the ValueBlock
+    @return: the block that match the register and the end_line
+    """
+    for block in reg_bind[instruction.r2]:
+        if block.end_line == line:
+            return block
+    print()
+
+
+def catch_the_actual_block(instruction: Instruction, line: int, reg_bind: Dict[Register, List[ValueBlock]]) \
+        -> ValueBlock:
+    """
+    the function find the block, for a given register, that has a specific initial line
+    @param instruction: the instruction from which extrapolate the register to be used as search-key
+    @param line: the line number to be matched by the block
+    @param reg_bind: the dictionary containing the ValueBlock
+    @return: the block that match the register and the init_line
+    """
+    for block in reg_bind[instruction.r1]:
+        if block.init_line == line:
+            return block
+
+
+def evaluate_fragmentation(line_list: List[Tuple[int, Statement]], reg_bind: Dict[Register, List[ValueBlock]]):
+    """
+    this function re-explore the lines of the node to see if there are some fragments, they can be individuated by the
+    presence of a move instruction, with the swap_instr attribute set to True, that separate a ValueBlock into two
+    fragment, if this instruction is find, then find the ValueBlock associated to the previous fragment, it's correspond
+    to that ValueBlock that use the register read by the move instruction and that has as end_line the line of the move
+    instruction, then find the block associated to the second fragment, has as register the register written by the move
+    and as init_line the line of the move. At this point if the previous block doesn't have a group_id means this is the
+    first fragmentation for the ValueBlock, assign to both the fragment the value associated to the previous ValueBlock,
+    if the previous block has a group_id copy it to the actual block.
+    @param line_list: the list of the couple line number, associated instruction
+    @param reg_bind: the dictionary containing the ValueBlock sorted by register
+    """
+    for elm in line_list:
+        if isinstance(elm[1], Instruction) and elm[1].swap_instr:
+            actual_block: ValueBlock = catch_the_actual_block(elm[1], elm[0], reg_bind)
+            prev_block: ValueBlock = catch_the_previous_block(elm[1], elm[0], reg_bind)
+            if prev_block.group_id is None:
+                prev_block.group_id = prev_block.value
+            actual_block.group_id = prev_block.value
+            actual_block.inserted = prev_block.inserted
 
 
 def purge_external(cfg: DiGraph, nodelist: list):
@@ -211,4 +265,5 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
             if isinstance(line, Instruction) and (opcodes[line.opcode][0] != 0):
                 evaluate_instr(cfg, i, ln, localreg)
         satisfy_contract_out(cfg, cfg.nodes[i], i, localreg)
+        evaluate_fragmentation(linelist, localreg)
         cfg.nodes[i]['reg_bind'] = localreg

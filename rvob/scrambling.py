@@ -3,7 +3,6 @@ from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
 from registerbinder import bind_register_to_value
-from rvob.assc_instr_block import call_ids_new_instr
 from random import randint, choice, randrange
 from rep.instruction_generator import mv_instr
 
@@ -35,7 +34,7 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
 
     for _ in range(50):
         try:
-            line_num = randrange(value_block.initline, value_block.endline)
+            line_num = randrange(value_block.init_line, value_block.end_line)
             break
         except ValueError:
             continue
@@ -45,12 +44,12 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
     mv_instruction = mv_instr([unused_reg], [used_reg])
     mv_instruction.original = used_reg
     mv_instruction.inserted = True
+    mv_instruction.swap_instr = True
 
     cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
-    call_ids_new_instr(cfg, node_id, mv_instruction, line_num)
 
     line_num += 1
-    switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
+    switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
 
 
 def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
@@ -66,7 +65,7 @@ def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
         raise NoSubstitutionException
 
     try:
-        unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.initline, value_block.endline)
+        unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.init_line, value_block.end_line)
     except NoUnusedRegsException:
         raise NoSubstitutionException
 
@@ -89,7 +88,7 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
 
-    line_num = value_block.initline
+    line_num = value_block.init_line
 
     if isinstance(cfg.nodes[node_id]['block'][line_num], Instruction) and \
             cfg.nodes[node_id]['block'][line_num].r1 == used_reg:
@@ -97,7 +96,7 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     line_num += 1
 
-    switch_regs(line_num, value_block.endline, cfg.nodes[node_id], used_reg, unused_reg)
+    switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
 
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
