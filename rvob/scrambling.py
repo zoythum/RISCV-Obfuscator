@@ -46,6 +46,8 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
     mv_instruction.inserted = True
     mv_instruction.swap_instr = True
 
+    # print(str(value_block)+"\n"+str(mv_instruction))
+
     cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
 
     line_num += 1
@@ -54,7 +56,7 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
 
 def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
-    while 'external' in cfg.nodes[node_id] or 'not_modify' in cfg.nodes[node_id]:
+    while 'external' in cfg.nodes[node_id]:
         node_id = choice(list(cfg.nodes))
 
     used_reg = find_used_reg(cfg, node_id)
@@ -87,7 +89,6 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
     setup(cfg)
 
     value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
-
     line_num = value_block.init_line
 
     if isinstance(cfg.nodes[node_id]['block'][line_num], Instruction) and \
@@ -100,14 +101,15 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
-    while line_num <= endline - 1:
+    while line_num <= endline:
         if isinstance(current_node['block'][line_num], Instruction):
-            if current_node['block'][line_num].r1 == used_register:
-                current_node['block'][line_num].r1 = unused_register
-            if current_node['block'][line_num].r2 == used_register:
-                current_node['block'][line_num].r2 = unused_register
-            if current_node['block'][line_num].r3 == used_register:
-                current_node['block'][line_num].r3 = unused_register
+            instruction: Instruction = current_node['block'][line_num]
+            if not opcodes[instruction.opcode][1] and instruction.r1 == used_register:
+                instruction.r1 = unused_register
+            if instruction.r2 == used_register:
+                instruction.r2 = unused_register
+            if instruction.r3 == used_register:
+                instruction.r3 = unused_register
         line_num += 1
     if current_node['block'].end != line_num:
         fix_last_line(current_node, line_num, used_register, unused_register)
@@ -141,7 +143,8 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
     for _ in range(100):
         try:
             value_id = randint(0, value_blocks_qty - 1)
-            if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled:
+            if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled or \
+                    cfg.nodes[node_id]['reg_bind'][used_reg][value_id].not_modify:
                 continue
             if 0 < value_id < value_blocks_qty - 1:
                 return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
@@ -191,7 +194,7 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
     """
 
     used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
-    unused_regs = list(reg for reg in Register if reg not in used_regs and reg not in not_modifiable_regs)
+    unused_regs = list(reg for reg in Register if (reg not in used_regs and reg not in not_modifiable_regs))
     min_heat = heat
 
     if len(unused_regs) == 0:

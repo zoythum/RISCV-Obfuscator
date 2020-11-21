@@ -31,6 +31,9 @@ class ValueBlock:
     group_id: int = None
     not_modify: bool = False
 
+    def __str__(self):
+        return "init_line:"+str(self.init_line)+"\n"+"init_line:"+str(self.end_line)+"\n"+"init_line:"+str(self.not_modify)+"\n"
+
 
 counter = count()
 
@@ -81,11 +84,7 @@ def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
     """
     line = ln[1]
     if line.r1 in localreg.keys():
-        if localreg[line.r1][-1].end_line == ln[0]:
-            localreg[line.r1].append(block)
-        else:
-            localreg[line.r1][-1].end_line = (ln[0] - 1)
-            localreg[line.r1].append(block)
+        localreg[line.r1].append(block)
     else:
         localreg[line.r1] = [block]
 
@@ -120,10 +119,10 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
         if (register in regdict) and (regdict[register][-1].end_line != (node['block'].end - 1)):
             block: ValueBlock = regdict[register][-1]
             block.end_line = node['block'].end - 1
-            block.not_modify = True
+            # block.not_modify = True
         elif register not in regdict:
             block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
-            block.not_modify = True
+            # block.not_modify = True
             regdict[register] = [block]
 
 
@@ -149,7 +148,7 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
     separation call the correct function to manage this instruction
     @param cfg: the graph of the program under analysis
     @param i: the number of the node under evaluation
-    @param ln: a tuple representing a line of the program in the form (line number, line)
+    @param ln: a tuple representing a line of the program in the form (line number, instruction)
     @param localreg: the reg_bind under construction
     """
     line: Instruction = ln[1]
@@ -181,6 +180,8 @@ def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict
     for block in reg_bind[instruction.r2]:
         if block.end_line == line:
             return block
+        elif block.init_line == line:
+            return None
     print()
 
 
@@ -215,10 +216,13 @@ def evaluate_fragmentation(line_list: List[Tuple[int, Statement]], reg_bind: Dic
         if isinstance(elm[1], Instruction) and elm[1].swap_instr:
             actual_block: ValueBlock = catch_the_actual_block(elm[1], elm[0], reg_bind)
             prev_block: ValueBlock = catch_the_previous_block(elm[1], elm[0], reg_bind)
-            if prev_block.group_id is None:
-                prev_block.group_id = prev_block.value
-            actual_block.group_id = prev_block.value
-            actual_block.inserted = prev_block.inserted
+            if prev_block is not None:
+                if prev_block.group_id is None:
+                    prev_block.group_id = prev_block.value
+                actual_block.group_id = prev_block.value
+                actual_block.inserted = prev_block.inserted
+            else:
+                actual_block.group_id = actual_block.value
 
 
 def purge_external(cfg: DiGraph, nodelist: list):
