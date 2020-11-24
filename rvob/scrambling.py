@@ -1,8 +1,10 @@
+from typing import Dict, List
+
 from networkx import DiGraph, neighbors
 from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
-from registerbinder import bind_register_to_value
+from registerbinder import bind_register_to_value, ValueBlock
 from random import randint, choice, randrange
 from rep.instruction_generator import mv_instr
 
@@ -28,40 +30,38 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
     try:
         value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
     except NoSubstitutionException:
-        return
+        raise NoSubstitutionException
 
-    line_num = -1
-
-    for _ in range(50):
-        try:
-            line_num = randrange(value_block.init_line, value_block.end_line)
-            break
-        except ValueError:
-            continue
-    if line_num == -1:
-        return
+    try:
+        line_num = randrange(value_block.init_line + 1, value_block.end_line)
+    except ValueError:
+        raise NoSubstitutionException
 
     mv_instruction = mv_instr([unused_reg], [used_reg])
     mv_instruction.original = used_reg
     mv_instruction.inserted = True
     mv_instruction.swap_instr = True
 
-    # print(str(value_block)+"\n"+str(mv_instruction))
-
     cfg.nodes[node_id]['block'].insert(line_num, mv_instruction)
-
     line_num += 1
     switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
+
+    # ----------------Debugging Stuff Init------------------------ #
+    print("###Done for splitting###")
+    # ----------------Debugging Stuff End------------------------ #
 
 
 def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
     node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
-    while 'external' in cfg.nodes[node_id]:
-        node_id = choice(list(cfg.nodes))
+    count = 0
+    value_block = None
+    while value_block is None and count < int(len(list(cfg.nodes))*0.5):
+        while 'external' in cfg.nodes[node_id]:
+            node_id = choice(list(cfg.nodes))
 
-    used_reg = find_used_reg(cfg, node_id)
-
-    value_block = find_value_block(cfg, node_id, used_reg)
+        used_reg = find_used_reg(cfg, node_id)
+        value_block = find_value_block(cfg, node_id, used_reg)
+        count += 1
 
     if value_block is None:
         raise NoSubstitutionException
@@ -99,6 +99,10 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
 
+    # ----------------Debugging Stuff Init------------------------ #
+    print("###Done for substitute###")
+    # ----------------Debugging Stuff End------------------------ #
+
 
 def switch_regs(line_num: int, endline: int, current_node, used_register, unused_register):
     while line_num <= endline:
@@ -127,18 +131,17 @@ def fix_last_line(current_node, line_num, used_register, unused_register):
             current_node['block'][line_num].r1 = unused_register
 
 
-def get_requires_children(cfg: DiGraph, node_id: int):
-    requires = set()
-    for neigh in neighbors(cfg, node_id):
-        for reg in cfg.nodes[neigh]['requires']:
-            requires.add(reg)
-
-    return requires
+# def get_requires_children(cfg: DiGraph, node_id: int):
+#     requires = set()
+#     for neigh in neighbors(cfg, node_id):
+#         for reg in cfg.nodes[neigh]['requires']:
+#             requires.add(reg)
+#
+#     return requires
 
 
 def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
     value_blocks_qty = len(cfg.nodes[node_id]['reg_bind'][used_reg])
-    requires_children = get_requires_children(cfg, node_id)
 
     for _ in range(100):
         try:
@@ -146,19 +149,8 @@ def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
             if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled or \
                     cfg.nodes[node_id]['reg_bind'][used_reg][value_id].not_modify:
                 continue
-            if 0 < value_id < value_blocks_qty - 1:
-                return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
             else:
-                if value_id == 0:
-                    if used_reg not in cfg.nodes[node_id]['requires']:
-                        return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
-                    else:
-                        continue
-                else:
-                    if used_reg not in requires_children:
-                        return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
-                    else:
-                        continue
+                return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
         except ValueError:
             continue
 
@@ -192,9 +184,16 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
     :param current_node: current node where regs are searched
     :return: tuple of Register, first one is the used one, while the other one is the unused
     """
-
+    reg_binder: Dict[Register, List[ValueBlock]] = cfg.nodes[current_node]['reg_bind']
     used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
-    unused_regs = list(reg for reg in Register if (reg not in used_regs and reg not in not_modifiable_regs))
+    unused_regs = list(reg for reg in Register if reg not in not_modifiable_regs)
+
+    for reg in used_regs:
+        for elem in reg_binder[reg]:
+            if initline <= elem.init_line <= endline or initline <= elem.end_line <= endline:
+                unused_regs.remove(reg)
+                break
+
     min_heat = heat
 
     if len(unused_regs) == 0:

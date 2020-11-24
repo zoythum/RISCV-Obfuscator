@@ -100,6 +100,7 @@ def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     required = node['requires']
     for register in required:
         block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
+        block.not_modify = True
         regdict[register] = [block]
 
 
@@ -116,13 +117,13 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
     for child in cfg.successors(nodeid):
         required = required.union(cfg.nodes[child]['requires'])
     for register in required:
-        if (register in regdict) and (regdict[register][-1].end_line != (node['block'].end - 1)):
+        try:
             block: ValueBlock = regdict[register][-1]
             block.end_line = node['block'].end - 1
-            # block.not_modify = True
-        elif register not in regdict:
+            block.not_modify = True
+        except KeyError:
             block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
-            # block.not_modify = True
+            block.not_modify = True
             regdict[register] = [block]
 
 
@@ -159,7 +160,7 @@ def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
 
     # Check if the opcode corresponds to a write operation
     if opcodes[line.opcode][1]:
-        block = ValueBlock(ln[0], cfg.nodes[i]['block'].end - 1, next(counter), is_scrambled(line))
+        block = ValueBlock(ln[0], ln[0], next(counter), is_scrambled(line))
         if line.inserted and not line.swap_instr:
             block.inserted = True
         reg_write(block, ln, localreg)
@@ -178,7 +179,7 @@ def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict
     @return: the block that match the register and the end_line
     """
     for block in reg_bind[instruction.r2]:
-        if block.end_line == line:
+        if block.init_line < line <= block.end_line:
             return block
         elif block.init_line == line:
             return None

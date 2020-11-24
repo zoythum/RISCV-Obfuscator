@@ -143,29 +143,42 @@ def calc_var_life():
     mean_unp_life = mean_life // len(life_list)
 
 
-def do_scrambling():
+def do_scrambling(iter_num: int):
     global cfg
     global heat_map
+    failed_splitting = 0
+    failed_substitute = 0
 
-    for t in range(100):
-        failed = 0
+    for t in range(iter_num):
         print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, 50)
+
+        # try to do a register substitution
         for z in range(50):
             try:
                 scrambling.split_value_blocks(cfg, heat_map, 50)
+                break
+            except rvob.scrambling.NoSubstitutionException:
+                if z == 49:
+                    failed_splitting += 1
+
+        # try to substitute the usage of a register
+        for z in range(50):
+            try:
                 scrambling.substitute_reg(cfg, heat_map, 50)
                 break
             except rvob.scrambling.NoSubstitutionException:
-                if z == 50:
-                    failed += 1
-    print("Failure rate: " + str(failed/50 * 100) + "%")
+                if z == 49:
+                    failed_substitute += 1
+
+    print("Splitting failure rate: " + str(failed_splitting/iter_num * 100) + "%")
+    print("Substitution failure rate: " + str(failed_substitute / iter_num * 100) + "%")
 
 
 def do_iter():
     global cfg
     global heat_map
-    do_scrambling()
+    do_scrambling(100)
     for t in range(5):
         failed = 0
         print("obfuscate iteration: " + str(t))
@@ -182,7 +195,7 @@ def do_iter():
         print("garbage iteration: " + str(t))
         garbage_inserter.insert_garbage_instr(cfg)
 
-    do_scrambling()
+    do_scrambling(100)
 
 
 def benchmark(name: str, entry: str):
