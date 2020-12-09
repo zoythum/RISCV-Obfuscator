@@ -1,10 +1,10 @@
 from typing import Dict, List
 
-from networkx import DiGraph, neighbors
+from networkx import DiGraph
 from structures import Register, not_modifiable_regs, opcodes
 from rep.base import Instruction
 from setup_structures import setup_contracts, organize_calls, sanitize_contracts
-from registerbinder import bind_register_to_value, ValueBlock
+from registerbinder import bind_register_to_value, ValueBlock, SuperBlock, first_choice_blocks, second_choice_blocks, last_choice_blocks
 from random import randint, choice, randrange
 from rep.instruction_generator import mv_instr
 
@@ -24,18 +24,51 @@ def setup(cfg: DiGraph):
     bind_register_to_value(cfg)
 
 
+def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
+
+    sup_block: SuperBlock
+    taken_from: int  # indicates from which list is taken the block, 1 for first, 2 for second, 3 for last
+    if len(first_choice_blocks) > 0:
+        sup_block = choice(first_choice_blocks)
+        taken_from = 1
+    elif len(second_choice_blocks) > 0:
+        sup_block = choice(second_choice_blocks)
+        taken_from = 2
+    elif len(last_choice_blocks) > 0:
+        sup_block = choice(last_choice_blocks)
+        taken_from = 3
+    else:
+        raise NoSubstitutionException
+
+    node_id = sup_block.node_id
+    used_reg = sup_block.register
+    value_block = sup_block.value_block
+    try:
+        unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.init_line, value_block.end_line)
+    except NoUnusedRegsException:
+        if taken_from == 1:
+            first_choice_blocks.remove(sup_block)
+        elif taken_from == 2:
+            second_choice_blocks.remove(sup_block)
+        else:
+            last_choice_blocks.remove(sup_block)
+        raise NoSubstitutionException
+
+    return value_block, node_id, used_reg, unused_reg
+
+
 def split_value_blocks(cfg: DiGraph, heatmap, heat):
     setup(cfg)
 
-    try:
-        value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
-    except NoSubstitutionException:
-        raise NoSubstitutionException
-
-    try:
-        line_num = randrange(value_block.init_line + 1, value_block.end_line)
-    except ValueError:
-        raise NoSubstitutionException
+    iter_limit = len(first_choice_blocks) + len(second_choice_blocks) + len(last_choice_blocks)
+    for k in range(iter_limit):
+        try:
+            value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
+            line_num = randrange(value_block.init_line + 1, value_block.end_line)
+            break
+        except (NoSubstitutionException, ValueError):
+            if k == iter_limit - 1:
+                return -1
 
     mv_instruction = mv_instr([unused_reg], [used_reg])
     mv_instruction.original = used_reg
@@ -48,30 +81,8 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
 
     # ----------------Debugging Stuff Init------------------------ #
     print("###Done for splitting###")
+    return 0
     # ----------------Debugging Stuff End------------------------ #
-
-
-def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
-    node_id = list(cfg.nodes)[randint(1, len(cfg.nodes) - 1)]
-    count = 0
-    value_block = None
-    while value_block is None and count < int(len(list(cfg.nodes))*0.5):
-        while 'external' in cfg.nodes[node_id]:
-            node_id = choice(list(cfg.nodes))
-
-        used_reg = find_used_reg(cfg, node_id)
-        value_block = find_value_block(cfg, node_id, used_reg)
-        count += 1
-
-    if value_block is None:
-        raise NoSubstitutionException
-
-    try:
-        unused_reg = find_unused_reg(cfg, node_id, heatmap, heat, value_block.init_line, value_block.end_line)
-    except NoUnusedRegsException:
-        raise NoSubstitutionException
-
-    return value_block, node_id, used_reg, unused_reg
 
 
 def substitute_reg(cfg: DiGraph, heatmap, heat):
@@ -87,9 +98,15 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
     :return: void
     """
     setup(cfg)
-
-    value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
-    line_num = value_block.init_line
+    iter_limit = len(first_choice_blocks)+len(second_choice_blocks)+len(last_choice_blocks)
+    for k in range(iter_limit):
+        try:
+            value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
+            line_num = value_block.init_line
+            break
+        except (NoSubstitutionException, ValueError):
+            if k == iter_limit - 1:
+                return -1
 
     if isinstance(cfg.nodes[node_id]['block'][line_num], Instruction) and \
             cfg.nodes[node_id]['block'][line_num].r1 == used_reg:
@@ -101,6 +118,7 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
 
     # ----------------Debugging Stuff Init------------------------ #
     print("###Done for substitute###")
+    return 0
     # ----------------Debugging Stuff End------------------------ #
 
 

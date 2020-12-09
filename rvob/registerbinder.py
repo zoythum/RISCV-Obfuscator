@@ -32,10 +32,25 @@ class ValueBlock:
     not_modify: bool = False
 
     def __str__(self):
-        return "init_line:"+str(self.init_line)+"\n"+"init_line:"+str(self.end_line)+"\n"+"init_line:"+str(self.not_modify)+"\n"
+        return "init_line:" + str(self.init_line) + "\n" + "end_line:" + str(
+            self.end_line) + "\n" + "not_modify:" + str(self.not_modify) + "\n"
+
+
+class SuperBlock:
+    node_id: int
+    register: Register
+    value_block: ValueBlock
+
+    def __init__(self, node: int, register: Register, block: ValueBlock):
+        self.node_id = node
+        self.register = register
+        self.value_block = block
 
 
 counter = count()
+first_choice_blocks: List[SuperBlock] = []
+second_choice_blocks: List[SuperBlock] = []
+last_choice_blocks: List[SuperBlock] = []
 
 
 def populate_linelist(cfg: DiGraph, node_num: int) -> List[Tuple[int, Statement]]:
@@ -74,11 +89,8 @@ def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int
 
 def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
     """
-    Manages an instruction that write something into its first register. If the register is already present into the
-    localreg there are two possibilities, if the endline of the last ValueBlock correspond to the current line the new
-    ValueBlock will be simply appended, otherwise the endline of the last ValueBlock will be setted to the current line
-    and then the new ValueBlock will be appended
-    @param block: a ValueBlock that starts from the current line till the end of the block in which the instruction appear
+    Manages an instruction that write something into its first register.
+    @param block: a ValueBlock that starts from the current line till the end of the block in which the instruction appears
     @param ln: a tuple representing the line at which the instruction appears
     @param localreg: the reg_bind under constructions
     """
@@ -100,7 +112,6 @@ def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     required = node['requires']
     for register in required:
         block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
-        block.not_modify = True
         regdict[register] = [block]
 
 
@@ -226,6 +237,22 @@ def evaluate_fragmentation(line_list: List[Tuple[int, Statement]], reg_bind: Dic
                 actual_block.group_id = actual_block.value
 
 
+def assign_blocks_to_list(node_id: int, reg_bind: Dict[Register, List[ValueBlock]]):
+    global first_choice_blocks
+    global second_choice_blocks
+    global last_choice_blocks
+
+    for reg in reg_bind.keys():
+        for block in reg_bind[reg]:
+            if not block.not_modify and (block.end_line - block.init_line) > 1:
+                if not block.scrambled and block.group_id is None:
+                    first_choice_blocks.append(SuperBlock(node_id, reg, block))
+                elif not block.scrambled and block.group_id is not None:
+                    second_choice_blocks.append(SuperBlock(node_id, reg, block))
+                else:
+                    last_choice_blocks.append(SuperBlock(node_id, reg, block))
+
+
 def purge_external(cfg: DiGraph, nodelist: list):
     """
     Eliminates the external nodes, for them the reg_bind analysis isn't needed
@@ -243,6 +270,14 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
     :param node: [Optional] to run the algorithm only on a specific node
     :param cfg: the DiGraph that represent the program to be analyzed
     """
+    global first_choice_blocks
+    global second_choice_blocks
+    global last_choice_blocks
+
+    first_choice_blocks.clear()
+    second_choice_blocks.clear()
+    last_choice_blocks.clear()
+
     if node is None:
         nodelist = list(nx.dfs_preorder_nodes(cfg, 0))
         purge_external(cfg, nodelist)
@@ -271,4 +306,5 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
                 evaluate_instr(cfg, i, ln, localreg)
         satisfy_contract_out(cfg, cfg.nodes[i], i, localreg)
         evaluate_fragmentation(linelist, localreg)
+        assign_blocks_to_list(i, localreg)
         cfg.nodes[i]['reg_bind'] = localreg

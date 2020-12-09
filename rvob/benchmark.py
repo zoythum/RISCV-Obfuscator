@@ -154,22 +154,14 @@ def do_scrambling(iter_num: int):
         heat_map = heatmaps.register_heatmap(cfg, 50)
 
         # try to do a register substitution
-        for z in range(50):
-            try:
-                scrambling.split_value_blocks(cfg, heat_map, 50)
-                break
-            except rvob.scrambling.NoSubstitutionException:
-                if z == 49:
-                    failed_splitting += 1
+        ret = scrambling.split_value_blocks(cfg, heat_map, 50)
+        if ret == -1:
+            failed_splitting += 1
 
         # try to substitute the usage of a register
-        for z in range(50):
-            try:
-                scrambling.substitute_reg(cfg, heat_map, 50)
-                break
-            except rvob.scrambling.NoSubstitutionException:
-                if z == 49:
-                    failed_substitute += 1
+        ret = scrambling.substitute_reg(cfg, heat_map, 50)
+        if ret == -1:
+            failed_substitute += 1
 
     print("Splitting failure rate: " + str(failed_splitting/iter_num * 100) + "%")
     print("Substitution failure rate: " + str(failed_substitute / iter_num * 100) + "%")
@@ -178,7 +170,7 @@ def do_scrambling(iter_num: int):
 def do_iter():
     global cfg
     global heat_map
-    do_scrambling(100)
+    do_scrambling(1000)
     for t in range(5):
         failed = 0
         print("obfuscate iteration: " + str(t))
@@ -195,7 +187,7 @@ def do_iter():
         print("garbage iteration: " + str(t))
         garbage_inserter.insert_garbage_instr(cfg)
 
-    do_scrambling(100)
+    do_scrambling(1000)
 
 
 def benchmark(name: str, entry: str):
