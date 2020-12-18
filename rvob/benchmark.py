@@ -73,10 +73,10 @@ def calc_fragmentation():
     block_num: int = 0
 
     for nd_id in cfg.nodes:
-        frag_dict: Dict[int, Set[Register]] = {}
-        life_dict = {}
         node = cfg.nodes[nd_id]
         if 'external' not in node:
+            frag_dict: Dict[int, Set[Register]] = {}
+            life_dict = {}
             for it in node['reg_bind'].items():
                 k: Register = it[0]
                 v: List[ValueBlock] = it[1]

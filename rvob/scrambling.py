@@ -64,7 +64,7 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
     for k in range(iter_limit):
         try:
             value_block, node_id, used_reg, unused_reg = get_scrambling_elements(cfg, heatmap, heat)
-            line_num = randrange(value_block.init_line + 1, value_block.end_line)
+            line_num = randint(value_block.init_line + 1, value_block.end_line - 1)
             break
         except (NoSubstitutionException, ValueError):
             if k == iter_limit - 1:
@@ -108,9 +108,10 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
             if k == iter_limit - 1:
                 return -1
 
-    if isinstance(cfg.nodes[node_id]['block'][line_num], Instruction) and \
-            cfg.nodes[node_id]['block'][line_num].r1 == used_reg:
-        cfg.nodes[node_id]['block'][line_num].r1 = unused_reg
+    if isinstance(cfg.nodes[node_id]['block'][line_num], Instruction):
+        instruction: Instruction = cfg.nodes[node_id]['block'][line_num]
+        if opcodes[instruction.opcode][1] and instruction.r1 == used_reg:
+            instruction.r1 = unused_reg
 
     line_num += 1
 
@@ -158,21 +159,21 @@ def fix_last_line(current_node, line_num, used_register, unused_register):
 #     return requires
 
 
-def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
-    value_blocks_qty = len(cfg.nodes[node_id]['reg_bind'][used_reg])
-
-    for _ in range(100):
-        try:
-            value_id = randint(0, value_blocks_qty - 1)
-            if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled or \
-                    cfg.nodes[node_id]['reg_bind'][used_reg][value_id].not_modify:
-                continue
-            else:
-                return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
-        except ValueError:
-            continue
-
-    return None
+# def find_value_block(cfg: DiGraph, node_id: int, used_reg: Register):
+#     value_blocks_qty = len(cfg.nodes[node_id]['reg_bind'][used_reg])
+#
+#     for _ in range(100):
+#         try:
+#             value_id = randint(0, value_blocks_qty - 1)
+#             if cfg.nodes[node_id]['reg_bind'][used_reg][value_id].scrambled or \
+#                     cfg.nodes[node_id]['reg_bind'][used_reg][value_id].not_modify:
+#                 continue
+#             else:
+#                 return cfg.nodes[node_id]['reg_bind'][used_reg][value_id]
+#         except ValueError:
+#             continue
+#
+#     return None
 
 
 def find_used_reg(cfg: DiGraph, current_node) -> Register:
@@ -187,8 +188,7 @@ def find_used_reg(cfg: DiGraph, current_node) -> Register:
     """
 
     used_regs = list(reg for reg in cfg.nodes[current_node]['reg_bind'].keys() if reg not in not_modifiable_regs)
-    chosen_used = used_regs[randint(0, len(used_regs) - 1)]
-    return chosen_used
+    return choice(used_regs)
 
 
 def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline) -> Register:
@@ -208,7 +208,7 @@ def find_unused_reg(cfg: DiGraph, current_node, heatmap, heat, initline, endline
 
     for reg in used_regs:
         for elem in reg_binder[reg]:
-            if initline <= elem.init_line <= endline or initline <= elem.end_line <= endline:
+            if (initline <= elem.init_line <= endline) or (initline <= elem.end_line <= endline):
                 unused_regs.remove(reg)
                 break
 

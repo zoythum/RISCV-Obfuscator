@@ -69,7 +69,23 @@ def populate_linelist(cfg: DiGraph, node_num: int) -> List[Tuple[int, Statement]
     return line_list
 
 
-def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int, block_init: int):
+def is_scrambled(line: Instruction):
+    """
+    The function verify if the passed instruction changed it's first register from the original when, this is a signal
+    that a scrambling is done
+    @param line: the instruction to be inspected
+    @return: true if the instruction's first register doesn't match with the instruction's original register
+    """
+    if line.original is None:
+        return False
+    else:
+        if isinstance(line.original, Register):
+            return not line.original.name == line.r1.name
+        else:
+            return not line.original.upper() == line.r1.name
+
+
+def reg_read(reg_bind: Dict[Register, List[ValueBlock]], reg: Register, line: int, block_init: int):
     """
     manage the read of a register, if the register is already in the dict the endline of the last block associated to
     him is set to the current line,
@@ -80,25 +96,29 @@ def reg_read(regdict: Dict[Register, List[ValueBlock]], reg: Register, line: int
     :@param block_init: the line at which start the block under analysis
     """
 
-    if reg not in regdict.keys():
+    if reg not in reg_bind.keys():
         block = ValueBlock(block_init, line, next(counter))
-        regdict[reg] = [block]
+        reg_bind[reg] = [block]
     else:
-        regdict[reg][-1].end_line = line
+        reg_bind[reg][-1].end_line = line
 
 
-def reg_write(block: ValueBlock, ln: tuple, localreg: dict):
+def reg_write(ln: tuple, reg_bind: dict):
     """
     Manages an instruction that write something into its first register.
     @param block: a ValueBlock that starts from the current line till the end of the block in which the instruction appears
     @param ln: a tuple representing the line at which the instruction appears
-    @param localreg: the reg_bind under constructions
+    @param reg_bind: the reg_bind under constructions
     """
-    line = ln[1]
-    if line.r1 in localreg.keys():
-        localreg[line.r1].append(block)
+    instruction = ln[1]
+    block = ValueBlock(ln[0], ln[0], next(counter), is_scrambled(instruction))
+    if instruction.inserted and not instruction.swap_instr:
+        block.inserted = True
+
+    if instruction.r1 in reg_bind.keys():
+        reg_bind[instruction.r1].append(block)
     else:
-        localreg[line.r1] = [block]
+        reg_bind[instruction.r1] = [block]
 
 
 def satisfy_contract_in(node: DiGraph.node, regdict: dict):
@@ -111,7 +131,7 @@ def satisfy_contract_in(node: DiGraph.node, regdict: dict):
     """
     required = node['requires']
     for register in required:
-        block = ValueBlock(node["block"].begin, node["block"].end - 1, next(counter))
+        block = ValueBlock(node["block"].begin, node["block"].begin, next(counter))
         regdict[register] = [block]
 
 
@@ -138,46 +158,31 @@ def satisfy_contract_out(cfg: DiGraph, node: DiGraph.node, nodeid: int, regdict:
             regdict[register] = [block]
 
 
-def is_scrambled(line: Instruction):
-    """
-    The function verify if the passed instruction changed it's first register from the original when, this is a signal
-    that a scrambling is done
-    @param line: the instruction to be inspected
-    @return: true if the instruction's first register doesn't match with the instruction's original register
-    """
-    if line.original is None:
-        return False
-    else:
-        if isinstance(line.original, Register):
-            return not line.original.name == line.r1.name
-        else:
-            return not line.original.upper() == line.r1.name
-
-
-def evaluate_instr(cfg: DiGraph, i: int, ln, localreg):
+def evaluate_instr(cfg: DiGraph, i: int, ln, reg_bind):
     """
     This function identify if the instruction is a only read instruction or if it's contains also write, based on this
     separation call the correct function to manage this instruction
     @param cfg: the graph of the program under analysis
     @param i: the number of the node under evaluation
     @param ln: a tuple representing a line of the program in the form (line number, instruction)
-    @param localreg: the reg_bind under construction
+    @param reg_bind: the reg_bind under construction
     """
-    line: Instruction = ln[1]
-    if opcodes[line.opcode][0] == 2:
-        reg_read(localreg, line.r2, ln[0], cfg.nodes[i]['block'].begin)
-    if opcodes[line.opcode][0] == 3:
-        reg_read(localreg, line.r3, ln[0], cfg.nodes[i]['block'].begin)
+    instruction: Instruction = ln[1]
+    # check if the instruction uses at least two registers, in this case the second argument of the instruction is a
+    # register used in read mode, so update binding dictionary
+    if opcodes[instruction.opcode][0] >= 2:
+        reg_read(reg_bind, instruction.r2, ln[0], cfg.nodes[i]['block'].begin)
+    # check if the instruction uses three registers, in this case the third argument of the instruction is a
+    # register used in read mode, so update binding dictionary
+    if opcodes[instruction.opcode][0] == 3:
+        reg_read(reg_bind, instruction.r3, ln[0], cfg.nodes[i]['block'].begin)
 
     # Check if the opcode corresponds to a write operation
-    if opcodes[line.opcode][1]:
-        block = ValueBlock(ln[0], ln[0], next(counter), is_scrambled(line))
-        if line.inserted and not line.swap_instr:
-            block.inserted = True
-        reg_write(block, ln, localreg)
+    if opcodes[instruction.opcode][1]:
+        reg_write(ln, reg_bind)
     else:
         # the opcode correspond to a read operation
-        reg_read(localreg, line.r1, ln[0], cfg.nodes[i]['block'].begin)
+        reg_read(reg_bind, instruction.r1, ln[0], cfg.nodes[i]['block'].begin)
 
 
 def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict[Register, List[ValueBlock]]) \
@@ -190,7 +195,7 @@ def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict
     @return: the block that match the register and the end_line
     """
     for block in reg_bind[instruction.r2]:
-        if block.init_line < line <= block.end_line:
+        if line == block.end_line:
             return block
         elif block.init_line == line:
             return None
@@ -262,6 +267,22 @@ def purge_external(cfg: DiGraph, nodelist: list):
     nodelist[:] = (x for x in nodelist if 'external' not in cfg.nodes[x])
 
 
+def debug_analysis(cfg: DiGraph):
+    global first_choice_blocks
+    global second_choice_blocks
+    global last_choice_blocks
+
+    block_num: int = 0
+    for node_id in cfg.nodes:
+        node = cfg.nodes[node_id]
+        if 'external' not in node:
+            reg_bind: Dict[Register, List[ValueBlock]] = node['reg_bind']
+            for lists in reg_bind.values():
+                block_num += len(lists)
+    rate = ((len(first_choice_blocks) + len(second_choice_blocks) + len(last_choice_blocks)) / block_num) * 100
+    print("ubb rate: %.3f" % rate + "%")
+
+
 def bind_register_to_value(cfg: DiGraph, node: int = None):
     """
     This is the main function, it is responsible for the binding process that associate to every register used in a
@@ -308,3 +329,4 @@ def bind_register_to_value(cfg: DiGraph, node: int = None):
         evaluate_fragmentation(linelist, localreg)
         assign_blocks_to_list(i, localreg)
         cfg.nodes[i]['reg_bind'] = localreg
+    debug_analysis(cfg)
