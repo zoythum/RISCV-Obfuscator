@@ -15,7 +15,6 @@ import rvob.analysis.heatmaps as heatmaps
 import rvob.scrambling as scrambling
 import rvob.analysis.tracer as tracer
 from rvob.structures import Register
-from rvob.registerbinder import ValueBlock
 from rvob.obf.obfuscator import NotEnoughtRegisters, NotValidInstruction
 from os import path
 
@@ -26,16 +25,26 @@ trace_heat_map = None
 cfg: DiGraph = None
 
 
-def write_heat(first: bool, frag: Tuple[int, List[int], int, int, int] = None):
+def write_heat(first: bool, frag: Tuple[int, List[int], int] = None):
+    """
+    this function is used to write the obtained results to the output files
+    @param first: True if we are in the writing phase before the application of the techniques, False if we are in the
+                  writing phase after the application of techniques
+    @param frag: a tuple containing infos about the ValueBlocks fragmentation
+    """
     global trace_heat_map
     global heat_file
     global metrics_file
 
+    # write the heatmap for each line indicating also in the order: if the instruction is an inserted one, the original
+    # first register used, the currently used first register and finally the instruction's op code
     for i in range(len(trace_heat_map.keys())):
         heat_file.write(
             str(i) + ": " + str(trace_heat_map[i][0]) + " i:" + str(trace_heat_map[i][1].inserted) + " o_r: " + str(
                 trace_heat_map[i][1].o_reg) + " n_r: " + str(trace_heat_map[i][1].n_reg) + " opcd: " + str(
                 trace_heat_map[i][1].op_code) + "\n")
+
+    # evaluates the mean heat of the analyzed program
     mean_heat = [0] * len(Register)
     for val in trace_heat_map.values():
         for i in range(len(mean_heat)):
@@ -48,6 +57,7 @@ def write_heat(first: bool, frag: Tuple[int, List[int], int, int, int] = None):
     else:
         metrics_file.write("Mean heat after: " + str(mean_heat) + "\n")
 
+    # compute some additional metrics about the ValueBlocks fragmentation
     if frag is not None:
         # The frag tuple contains the following value:
         # [0] mean fragmentation
@@ -58,40 +68,71 @@ def write_heat(first: bool, frag: Tuple[int, List[int], int, int, int] = None):
         metrics_file.write("List of fragmented ValueBlock: " + str(frag[1]) + "-> " + str(len(frag[1])) + "\n")
 
 
-def analyze_node(node: DiGraph.node, frag_dict: Dict[int, Set[Register]], frag_list: List[int]) -> int:
+def analyze_node(node: DiGraph.node, frag_list: List[int]) -> int:
+    """
+    The function analyzes a node in search of the fragments inside it.
+    @param node: the node to be analyzed
+    @param frag_dict: the dictionary used to collect the fragment associated, thanks to the group_id, to the same
+                      original ValueBlock. The dict use as key the group_id and as value a set of the register used
+                      by the fragment with the same group_id
+    @param frag_list: the list containing, for each original ValueBlock, the number of fragment that compose it.A
+                      ValueBlock that has never been split has the value 1.
+    @return: the number of original ValueBlocks found inside the node
+    """
+
+    # a counter of the blocks inside the node counting as single all the fragments having the same group_id
     block_num: int = 0
+
+    # the dictionary used to collect the fragment associated, thanks to the group_id, to the same original
+    # ValueBlock. The dict use as key the group_id and as value a set of the register used by the fragment with the
+    # same group_id
+    frag_dict: Dict[int, Set[Register]] = {}
+
     for (reg, v) in node['reg_bind'].items():
         v = [blk for blk in v if not blk.inserted]  # eliminate block added by some garbage instruction
         for block in v:
-            # this check exclude the block that have the same group_id only because all of them start from the
-            # first line of the node, but they aren't part of the same original ValueBlock
             if block.group_id is not None:
+                # if group_id isn't None means the block is a fragment of a bigger block
                 try:
+                    # if a fragment associated to this block's group_id is already found add the used register to the
+                    # dictionary
                     frag_dict[block.group_id].add(reg)
                 except KeyError:
+                    # if this is the first fragment of the original ValueBlock associated to this group_id then create a
+                    # a new entry in the dictionary with the used register and increment by 1 the blocks counter
                     frag_dict[block.group_id] = {reg}
                     block_num += 1
             else:
+                # if the block has its group_id set to None means that this block has never been split, so simply
+                # increment by 1 the blocks counter and add 1 to the list containing the numbers of fragments of each
+                # program's block
                 block_num += 1
                 frag_list.append(1)
+    # for each value inside the frag_dict insert inside the frag_list the number of different registers used by the
+    # fragments with the same group_id
+    for val in frag_dict.values():
+        frag_list.append(len(val))
     return block_num
 
 
 def calc_fragmentation():
-    global cfg
+    """
+    This calculates the fragmentation of the ValueBlocks
+    @return: a tuple containing: at [0] the mean of the fragmentation level of the ValueBlocks, at [1] a list of the
+             number of fragments, but only for the ValueBlocks that have been split at least one time, at [2] the number
+             of ValueBlocks inside the program, but counting as 1 all the  fragments having the same group_id, because
+             they are all fragments of a single original ValueBlock
+    """
 
     frag_list: List[int] = []  # indicates how many fragments have each block of the program
     block_num: int = 0
 
     for nd_id in cfg.nodes:
         node = cfg.nodes[nd_id]
-        frag_dict: Dict[int, Set[Register]] = {}
         if 'external' not in node:
-            block_num += analyze_node(node, frag_dict, frag_list)
-            for val in frag_dict.values():
-                frag_list.append(len(val))
+            block_num += analyze_node(node, frag_list)
 
-    src_list = [elm for elm in frag_list if elm > 1]
+    src_list = [elm for elm in frag_list if elm > 1] # create the list of fragments of only splitted ValueBlocks
     mean_fragmentation = sum(frag_list)
     mean_fragmentation //= len(frag_list)
 
@@ -99,7 +140,12 @@ def calc_fragmentation():
 
 
 def do_scrambling(iter_num: int):
-    global cfg
+    """
+    this does the scrambling techniques, that has two sub-operation the splitting that divides a ValueBlock into two
+    fragment where the second one change the used register, and the substitute that changes the register used inside a
+    ValueBlock
+    @param iter_num: the number of iterations to do
+    """
     global heat_map
     failed_splitting = 0
     failed_substitute = 0
@@ -122,71 +168,107 @@ def do_scrambling(iter_num: int):
     print("Substitution failure rate: " + str(failed_substitute / iter_num * 100) + "%")
 
 
-def do_iter():
-    global cfg
-    global heat_map
-    do_scrambling(5)
-    for t in range(5):
-        failed = 0
+def do_garbage(iter_num: int):
+    """
+    this perform the garbage instructions insertion
+    @param iter_num: the number of iteration to do
+    """
+    for t in range(iter_num):
+        print("garbage iteration: " + str(t))
+        garbage_inserter.insert_garbage_instr(cfg)
+
+
+def do_obfuscate(iter_num: int):
+    """
+    this performs the constant obfuscation technique
+    @param iter_num: the number of iterations to do
+    """
+    failed = 0
+    for t in range(iter_num):
         print("obfuscate iteration: " + str(t))
         for z in range(5):
             try:
                 obfuscator.obfuscate(cfg)
                 break
             except (NotEnoughtRegisters, NotValidInstruction):
-                if z == 5:
+                if z == 4:
                     failed += 1
-    print("Failure rate: " + str(failed / 5 * 100) + "%")
+    print("Failure rate: " + str(failed / iter_num * 100) + "%")
 
-    for t in range(5):
-        print("garbage iteration: " + str(t))
-        garbage_inserter.insert_garbage_instr(cfg)
 
-    # do_scrambling(1000)
+def apply_techniques():
+    """
+    This function calls all the sub-functions that applies the obfuscation techniques (Scrambling, garbage instructions
+    insertion and constants obfuscation)
+    """
+    do_scrambling(5)
+    do_obfuscate(5)
+    do_garbage(5)
+    do_scrambling(100)
 
 
 def benchmark(name: str, entry: str):
+    """
+    This function a bunch of benchmarks
+    @param name: the name of the benchmark
+    @param entry: the entry point of the executable, if different from main
+    """
     global heat_map
     global heat_file
     global metrics_file
     global trace_heat_map
+    global cfg
 
+    # Load the json file of the benchmark
     rel = path.dirname(__file__)
     src = rel + '/benchmark/benchmark_file/' + name + '.json'
     file = open(src)
     src = rvob.rep.fragments.load_src_from_maps(json.load(file))
-    global cfg
-    if entry is None:
-        cfg = rvob.analysis.cfg.build_cfg(src)
-    else:
+
+    # build the cfg of the program
+    if entry:
         cfg = rvob.analysis.cfg.build_cfg(src, entry)
+    else:
+        cfg = rvob.analysis.cfg.build_cfg(src)
+
+    # Make some setup operations, computing the nodes requirement contracts and filling the nodes register binder
     rvob.setup_structures.setup_contracts(cfg)
     rvob.setup_structures.sanitize_contracts(cfg)
     rvob.setup_structures.organize_calls(cfg)
     rvob.registerbinder.bind_register_to_value(cfg)
+
+    # Initialize the program heatmap
     heat_map = heatmaps.register_heatmap(cfg, 50)
+
+    # create the output files that will contains the metrics
     dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
     metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
     heat_file = open(dst, "w")
     metrics_file = open(metric_dst, "w")
+
+    # write the value of the metrics for the plain program
     heat_file.write("Baseline:\n")
     trace_out = tracer.get_trace(cfg)
     trace_heat_map = trace_out[1]
     write_heat(first=True)
-    heat_file.write("\n\n\nObuscated version:\n")
-    do_iter()
+
+    # Apply the obfuscation techniques
+    apply_techniques()
     trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
     trace_heat_map = trace_out[1]
+
+    # Write the value of the metrics for the obfuscated program
+    heat_file.write("\n\n\nObfuscated version:\n")
     write_heat(False, calc_fragmentation())
     heat_file.close()
 
 
 def main():
-    benchmarks = [('bubblesort', None), ('crc_32', None), ('dijkstra_small', None), ('fibonacci', None),
-                  ('matrixMul', None), ('patricia', 'bit'), ('quickSort', None), ('sha', 'sha_transform')]
-    sub_test = [('bubblesort', None)]
+    benchmarks = [('bubblesort', ''), ('crc_32', ''), ('dijkstra_small', ''), ('fibonacci', ''),
+                  ('matrixMul', ''), ('patricia', 'bit'), ('quickSort', ''), ('sha', 'sha_transform')]
+    sub_test = [('bubblesort', '')]
     for elem in sub_test:
-        print('\n\033[1mTesting ' + elem[0] + ':\033[0m')
+        print("\n\033[I'm Testing " + elem[0] + ':\033[0m')
         benchmark(elem[0], elem[1])
 
 
