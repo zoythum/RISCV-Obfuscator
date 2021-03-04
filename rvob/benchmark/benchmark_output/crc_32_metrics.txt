@@ -1,8 +1,7 @@
-Mean heat before: [0, 2, 16, 0, 0, 0, 0, 0, 17, 34, 30, 30, 29, 31, 30, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-Mean heat after: [0, 26, 19, 0, 0, 36, 31, 28, 6, 20, 10, 25, 14, 13, 10, 27, 26, 26, 22, 35, 33, 34, 34, 33, 34, 27, 33, 36, 27, 38, 29, 14]
+Mean heat before: [0, 9, 39, 0, 0, 0, 0, 0, 36, 30, 10, 0, 0, 0, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Executed instructions before: 26
+Mean heat after: [0, 15, 33, 0, 0, 30, 33, 28, 25, 25, 34, 20, 27, 30, 23, 25, 22, 27, 24, 18, 20, 21, 23, 23, 15, 25, 27, 16, 17, 27, 18, 10]
+Executed instructions after: 130
 Mean fragmentation: 1
-Mean variable life (unprotected case): 5
-Mean variable life (frag accumulated): 29
-Mean variable life (frag separated): 20
-Number of original ValueBlock: 77
-List of fragmented ValueBlock: [3, 9, 11, 4, 9]-> 5
+Number of original ValueBlock: 245
+List of fragmented ValueBlock: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]-> 22

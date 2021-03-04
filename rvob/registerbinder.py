@@ -199,7 +199,6 @@ def catch_the_previous_block(instruction: Instruction, line: int, reg_bind: Dict
             return block
         elif block.init_line == line:
             return None
-    print()
 
 
 def catch_the_actual_block(instruction: Instruction, line: int, reg_bind: Dict[Register, List[ValueBlock]]) \
@@ -279,8 +278,6 @@ def debug_analysis(cfg: DiGraph):
             reg_bind: Dict[Register, List[ValueBlock]] = node['reg_bind']
             for lists in reg_bind.values():
                 block_num += len(lists)
-    rate = ((len(first_choice_blocks) + len(second_choice_blocks) + len(last_choice_blocks)) / block_num) * 100
-    print("ubb rate: %.3f" % rate + "%")
 
 
 def bind_register_to_value(cfg: DiGraph, node: int = None):

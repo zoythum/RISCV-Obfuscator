@@ -21,7 +21,7 @@ from os import path
 heat_map = None
 heat_file = None
 metrics_file = None
-trace_heat_map = None
+trace_heat_map: Dict[int, Tuple[List[int], tracer.SupplementInfo]] = None
 cfg: DiGraph = None
 
 
@@ -54,8 +54,10 @@ def write_heat(first: bool, frag: Tuple[int, List[int], int] = None):
         mean_heat[i] //= trace_length
     if first:
         metrics_file.write("Mean heat before: " + str(mean_heat) + "\n")
+        metrics_file.write("Executed instructions before: " + str(len(trace_heat_map.keys())) + "\n")
     else:
         metrics_file.write("Mean heat after: " + str(mean_heat) + "\n")
+        metrics_file.write("Executed instructions after: " + str(len(trace_heat_map.keys())) + "\n")
 
     # compute some additional metrics about the ValueBlocks fragmentation
     if frag is not None:
@@ -267,8 +269,8 @@ def main():
     benchmarks = [('bubblesort', ''), ('crc_32', ''), ('dijkstra_small', ''), ('fibonacci', ''),
                   ('matrixMul', ''), ('patricia', 'bit'), ('quickSort', ''), ('sha', 'sha_transform')]
     sub_test = [('bubblesort', '')]
-    for elem in sub_test:
-        print("\n\033[I'm Testing " + elem[0] + ':\033[0m')
+    for elem in benchmarks:
+        print("\n\033[1m\033[91mI'm Testing " + elem[0] + ':\033[0m')
         benchmark(elem[0], elem[1])
 
 
