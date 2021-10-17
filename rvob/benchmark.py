@@ -17,12 +17,40 @@ import rvob.analysis.tracer as tracer
 from rvob.structures import Register
 from rvob.obf.obfuscator import NotEnoughtRegisters, NotValidInstruction
 from os import path
+import argparse
 
 heat_map = None
 heat_file = None
 metrics_file = None
 trace_heat_map: Dict[int, Tuple[List[int], tracer.SupplementInfo]] = None
 cfg: DiGraph = None
+
+
+def get_args():
+
+    parser = argparse.ArgumentParser(description="DETON")
+
+    parser.add_argument(
+        "RS",
+        metavar="Repetition Scrambling",
+        help="Number of times the register scrambling procedure is executed")
+
+    parser.add_argument(
+        "RO",
+        metavar="Repetition Obfuscate",
+        help="Number of times the constant obfuscation procedure is executed")
+
+    parser.add_argument(
+        "RG",
+        metavar="Repetition Garbage",
+        help="Number of times the garbage instruction procedure is executed")
+
+    parser.add_argument(
+        "H",
+        metavar="Heat",
+        help="Max heat for the heatmap")
+
+    return parser.parse_args()
 
 
 def write_heat(first: bool, frag: Tuple[int, List[int], int] = None):
@@ -141,7 +169,7 @@ def calc_fragmentation():
     return mean_fragmentation, src_list, block_num
 
 
-def do_scrambling(iter_num: int):
+def do_scrambling(iter_num: int, heat):
     """
     this does the scrambling techniques, that has two sub-operation the splitting that divides a ValueBlock into two
     fragment where the second one change the used register, and the substitute that changes the register used inside a
@@ -154,15 +182,15 @@ def do_scrambling(iter_num: int):
 
     for t in range(iter_num):
         print("scrambling iteration: " + str(t))
-        heat_map = heatmaps.register_heatmap(cfg, 50)
+        heat_map = heatmaps.register_heatmap(cfg, heat)
 
         # try to do a register substitution
-        ret = scrambling.split_value_blocks(cfg, heat_map, 50)
+        ret = scrambling.split_value_blocks(cfg, heat_map, heat)
         if ret == -1:
             failed_splitting += 1
 
         # try to substitute the usage of a register
-        ret = scrambling.substitute_reg(cfg, heat_map, 50)
+        ret = scrambling.substitute_reg(cfg, heat_map, heat)
         if ret == -1:
             failed_substitute += 1
 
@@ -198,22 +226,23 @@ def do_obfuscate(iter_num: int):
     print("Failure rate: " + str(failed / iter_num * 100) + "%")
 
 
-def apply_techniques():
+def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition):
     """
     This function calls all the sub-functions that applies the obfuscation techniques (Scrambling, garbage instructions
     insertion and constants obfuscation)
     """
-    do_scrambling(5)
-    do_obfuscate(5)
-    do_garbage(5)
-    do_scrambling(100)
+    do_scrambling(scrambling_repetition, heat)
+    do_obfuscate(obfuscate_repetition)
+    do_garbage(garbage_repetition)
+    do_scrambling(scrambling_repetition, heat)
 
 
-def benchmark(name: str, entry: str):
+def benchmark(name: str, entry: str, heat: int, scrambling_repetition, obfuscate_repetition, garbage_repetition):
     """
     This function a bunch of benchmarks
     @param name: the name of the benchmark
     @param entry: the entry point of the executable, if different from main
+    :param heat: max heat of the heatmap
     """
     global heat_map
     global heat_file
@@ -240,7 +269,7 @@ def benchmark(name: str, entry: str):
     rvob.registerbinder.bind_register_to_value(cfg)
 
     # Initialize the program heatmap
-    heat_map = heatmaps.register_heatmap(cfg, 50)
+    heat_map = heatmaps.register_heatmap(cfg, heat)
 
     # create the output files that will contains the metrics
     dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
@@ -255,7 +284,7 @@ def benchmark(name: str, entry: str):
     write_heat(first=True)
 
     # Apply the obfuscation techniques
-    apply_techniques()
+    apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition)
     trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
     trace_heat_map = trace_out[1]
 
@@ -266,12 +295,13 @@ def benchmark(name: str, entry: str):
 
 
 def main():
+    args = get_args()
     benchmarks = [('bubblesort', ''), ('crc_32', ''), ('dijkstra_small', ''), ('fibonacci', ''),
                   ('matrixMul', ''), ('patricia', 'bit'), ('quickSort', ''), ('sha', 'sha_transform')]
     sub_test = [('bubblesort', '')]
     for elem in benchmarks:
         print("\n\033[1m\033[91mI'm Testing " + elem[0] + ':\033[0m')
-        benchmark(elem[0], elem[1])
+        benchmark(elem[0], elem[1], args.H, args.RS, args.RO, args.RG)
 
 
 if __name__ == "__main__":
