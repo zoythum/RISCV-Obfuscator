@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from networkx import DiGraph
 from structures import Register, not_modifiable_regs, opcodes
@@ -57,8 +57,12 @@ def get_scrambling_elements(cfg: DiGraph, heatmap, heat):
     return value_block, node_id, used_reg, unused_reg
 
 
-def split_value_blocks(cfg: DiGraph, heatmap, heat):
-    setup(cfg)
+def extract_elements(cfg: DiGraph, heatmap, heat: int) -> Tuple[int, ValueBlock, int, Register, Register]:
+    node_id = None
+    value_block = None
+    line_num = None
+    used_reg = []
+    unused_reg = []
 
     iter_limit = len(first_choice_blocks) + len(second_choice_blocks) + len(last_choice_blocks)
     for k in range(iter_limit):
@@ -67,8 +71,21 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
             line_num = randint(value_block.init_line + 1, value_block.end_line - 1)
             break
         except (NoSubstitutionException, ValueError):
-            if k == iter_limit - 1:
-                return -1
+            pass
+
+    if node_id is None or value_block is None or line_num is None or (not used_reg) or (not unused_reg):
+        raise NoSubstitutionException
+    else:
+        return node_id, value_block, line_num, used_reg, unused_reg
+
+
+def split_value_blocks(cfg: DiGraph, heatmap, heat):
+    setup(cfg)
+
+    try:
+        node_id, value_block, line_num, used_reg, unused_reg = extract_elements(cfg, heatmap, heat)
+    except NoSubstitutionException:
+        return -1
 
     mv_instruction = mv_instr([unused_reg], [used_reg])
     mv_instruction.original = used_reg
