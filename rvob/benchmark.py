@@ -33,22 +33,26 @@ def get_args():
     parser.add_argument(
         "RS",
         metavar="Repetition Scrambling",
-        help="Number of times the register scrambling procedure is executed")
+        help="Number of times the register scrambling procedure is executed",
+        type=int)
 
     parser.add_argument(
         "RO",
         metavar="Repetition Obfuscate",
-        help="Number of times the constant obfuscation procedure is executed")
+        help="Number of times the constant obfuscation procedure is executed",
+        type=int)
 
     parser.add_argument(
         "RG",
         metavar="Repetition Garbage",
-        help="Number of times the garbage instruction procedure is executed")
+        help="Number of times the garbage instruction procedure is executed",
+        type=int)
 
     parser.add_argument(
         "H",
         metavar="Heat",
-        help="Max heat for the heatmap")
+        help="Max heat for the heatmap",
+        type=int)
 
     return parser.parse_args()
 
