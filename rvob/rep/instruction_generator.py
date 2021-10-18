@@ -37,7 +37,7 @@ def slli_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("slli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("slli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def srli_instr(free_regs: list, used_reg: list) -> Instruction:
@@ -50,7 +50,7 @@ def srli_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("srli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("srli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def srai_instr(free_regs: list, used_reg: list) -> Instruction:
@@ -65,7 +65,7 @@ def srai_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("srai", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("srai", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def addiw_instr(free_regs: list, used_reg: list) -> Instruction:
@@ -82,7 +82,7 @@ def slliw_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("slliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("slliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def srliw_instr(free_regs: list, used_reg: list) -> Instruction:
@@ -95,7 +95,7 @@ def srliw_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("srliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("srliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def sraiw_instr(free_regs: list, used_reg: list) -> Instruction:
@@ -110,7 +110,7 @@ def sraiw_instr(free_regs: list, used_reg: list) -> Instruction:
 
     # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
     immediate = immediate & mask
-    return Instruction("sraiw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
+    return Instruction("sraiw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate.int_val())
 
 
 def mv_instr(free_regs: list, used_reg: list) -> Instruction:

@@ -2,7 +2,7 @@
 from random import seed, randint, sample, choice
 from typing import List, Tuple
 from obf.const_derivation import generate_derivation_chain, Promise, primers
-from rep.base import Instruction, to_line_iterator
+from rep.base import Instruction, to_line_iterator, Statement
 from rvob.registerbinder import bind_register_to_value
 from structures import Register, opcd_family, not_modifiable_regs
 from networkx import DiGraph
@@ -279,10 +279,11 @@ def get_immediate_instructions(cfg) -> Tuple[int, int]:
                 try:
                     line = iterator.__next__()
                     line_num = line.number
-                    stat = line.statement
-                    if (stat.opcode in primers or stat.opcode == "li") and stat.immediate is not None \
-                            and stat.immediate.symbol is None:
-                        result.append((node, line_num))
+                    if isinstance(line.statement, Instruction):
+                        stat: Instruction = line.statement
+                        if (stat.opcode in primers or stat.opcode == "li") and stat.immediate is not None \
+                                and stat.immediate.symbol is None:
+                            result.append((node, line_num))
                 except StopIteration:
                     break
     if len(result) == 0:
