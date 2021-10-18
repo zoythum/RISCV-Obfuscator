@@ -1,78 +1,115 @@
-from random import randint, choice
+from random import choice, getrandbits
 from rep.base import Instruction
+from BitVector import BitVector
 
 
 def addi_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("addi", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("addi", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def slti_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("slti", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("slti", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def sltiu_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("sltiu", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("sltiu", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def xori_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("xori", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("xori", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def ori_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("ori", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("ori", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def andi_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("andi", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("andi", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def slli_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2**12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31 #000000011111
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    for i in range(7, 12):
+        mask[i] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("slli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 
 def srli_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2 ** 12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31  # 000000011111
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    for i in range(7, 12):
+        mask[i] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("srli", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 
 def srai_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2 ** 12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31  # 000000011111
-    # the 11-th encode the type of right shift, for this reason it's set to 1
-    immediate |= 1024 # 010000000000
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0, except for
+    # the 11-th that encode the type of right shift
+    for i in range(7, 12):
+        mask[i] = 1
+    mask[1] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("srai", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 
 def addiw_instr(free_regs: list, used_reg: list) -> Instruction:
-    return Instruction("addiw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=randint(0, 2**12))
+    return Instruction("addiw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=getrandbits(11))
 
 
 def slliw_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2**12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31 #000000011111
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    for i in range(7, 12):
+        mask[i] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("slliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 
 def srliw_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2 ** 12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31  # 000000011111
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    for i in range(7, 12):
+        mask[i] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("srliw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 
 def sraiw_instr(free_regs: list, used_reg: list) -> Instruction:
-    immediate = randint(0, 2 ** 12)
-    # applies a mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
-    immediate &= 31  # 000000011111
-    # the 11-th encode the type of right shift, for this reason it's set to 1
-    immediate |= 1024 # 010000000000
+    immediate = BitVector(intVal=getrandbits(11), size=12)
+    mask = BitVector(size=12)
+
+    # set the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0, except for
+    # the 11-th that encode the type of right shift
+    for i in range(7, 12):
+        mask[i] = 1
+    mask[1] = 1
+
+    # applies the mask, only the lower 5 bits are meaningful for this instruction, the other bits must be 0
+    immediate = immediate & mask
     return Instruction("sraiw", "i", r1=choice(free_regs), r2=choice(used_reg), immediate=immediate)
 
 

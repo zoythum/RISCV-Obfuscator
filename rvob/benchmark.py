@@ -298,7 +298,7 @@ def main():
     args = get_args()
     benchmarks = [('bubblesort', ''), ('crc_32', ''), ('dijkstra_small', ''), ('fibonacci', ''),
                   ('matrixMul', ''), ('patricia', 'bit'), ('quickSort', ''), ('sha', 'sha_transform')]
-    sub_test = [('bubblesort', '')]
+    sub_test = [('patricia', 'bit')]
     for elem in benchmarks:
         print("\n\033[1m\033[91mI'm Testing " + elem[0] + ':\033[0m')
         benchmark(elem[0], elem[1], args.H, args.RS, args.RO, args.RG)
