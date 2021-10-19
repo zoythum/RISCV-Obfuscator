@@ -1,2 +1,2 @@
-networkx
-BitVector
+networkx==2.3.rc4
+BitVector==3.4.9
