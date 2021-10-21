@@ -1,10 +1,9 @@
-
 from random import seed, randint, sample, choice
 from typing import List, Tuple
-from obf.const_derivation import generate_derivation_chain, Promise, primers
-from rep.base import Instruction, to_line_iterator, Statement
+from rvob.obf.const_derivation import generate_derivation_chain, Promise, primers
+from rvob.rep.base import Instruction, to_line_iterator, Statement
 from rvob.registerbinder import bind_register_to_value
-from structures import Register, opcd_family, not_modifiable_regs
+from rvob.structures import Register, opcd_family, not_modifiable_regs
 from networkx import DiGraph
 from queue import Queue
 

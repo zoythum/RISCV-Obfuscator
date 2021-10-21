@@ -65,36 +65,24 @@ print_array:
 	.globl	swap
 	.type	swap, @function
 swap:
-	li	s7,-440
-	mv	t1,sp
-	srli	s4,s7,3
-	andi	t3,s4,-386
-	ori	t2,t3,1201
-	xori	s3,t2,1028
-	slli	s5,s3,4
-	add	a2,t1,s5
-	sd	s9,40(a2)
-	addi	s0,a2,48
-	mv	a7,s0
-	sd	a0,-40(a7)
-	sd	a1,-48(a7)
-	ld	a5,-40(a7)
+	addi	sp,sp,-48
+	sd	s0,40(sp)
+	addi	s0,sp,48
+	sd	a0,-40(s0)
+	sd	a1,-48(s0)
+	ld	a5,-40(s0)
 	lw	a5,0(a5)
-	sw	a5,-20(a7)
-	ld	a5,-48(a7)
+	sw	a5,-20(s0)
+	ld	a5,-48(s0)
 	lw	a4,0(a5)
-	mv	a6,a4
-	mv	t0,a7
-	mv	s1,a6
-	ld	a5,-40(t0)
-	sw	s1,0(a5)
-	ld	a5,-48(t0)
-	mv	t1,a5
-	lw	a4,-20(t0)
-	sw	a4,0(t1)
+	ld	a5,-40(s0)
+	sw	a4,0(a5)
+	ld	a5,-48(s0)
+	lw	a4,-20(s0)
+	sw	a4,0(a5)
 	nop
-	ld	s0,40(a2)
-	addi	sp,a2,48
+	ld	s0,40(sp)
+	addi	sp,sp,48
 	jr	ra
 	.size	swap, .-swap
 	.align	1
@@ -102,45 +90,65 @@ swap:
 	.type	quicksort, @function
 quicksort:
 	addi	sp,sp,-48
-	mv	t1,s0
 	sd	ra,40(sp)
-	sd	t1,32(sp)
-	li	s9,-1024
-	srli	s3,s9,6
-	add	s0,sp,s3
+	sd	s0,32(sp)
+	addi	s0,sp,48
 	sd	a0,-40(s0)
-	mv	t1,a1
+	mv	a5,a1
 	mv	a4,a2
-	mv	t0,a4
-	sw	t1,-44(s0)
-	mv	a5,t0
+	sw	a5,-44(s0)
+	mv	a5,a4
 	sw	a5,-48(s0)
 	lw	a5,-44(s0)
 	sw	a5,-20(s0)
 	lw	a5,-48(s0)
 	sw	a5,-24(s0)
 	lw	a5,-44(s0)
-	slli	t1,a5,2
+	slli	a5,a5,2
 	ld	a4,-40(s0)
-	add	a5,a4,t1
-	lw	a5,0(t1)
+	add	a5,a4,a5
+	lw	a5,0(a5)
 	sw	a5,-28(s0)
 	j	.L6
 .L8:
 	lw	a5,-20(s0)
+	addw	s8,a2,s3
+	mulhu	a6,s7,t5
+	slt	t4,s9,t5
+	srliw	s9,ra,29
+	slliw	sp,s9,21
+	mul	t4,a0,s8
+	add	s1,a6,s10
+	and	t3,a4,t6
+	sll	t5,ra,a7
+	or	s7,s0,a1
+	srliw	s9,sp,3
+	mv	a6,t4
+	slt	ra,s1,s7
 	addiw	a5,a5,1
 	sw	a5,-20(s0)
 .L7:
 	lw	a5,-20(s0)
-	slli	ra,a5,2
+	slli	a5,a5,2
 	ld	a4,-40(s0)
-	add	a5,a4,ra
-	lw	a4,0(ra)
-	mv	a6,a4
+	add	a5,a4,a5
+	lw	a4,0(a5)
 	lw	a5,-28(s0)
 	sext.w	a5,a5
-	bgt	a5,a6,.L8
-	and	s5,s11,t4
+	subw	t2,s11,a3
+	sllw	s9,s10,s9
+	sra	a3,s3,t5
+	mulh	s11,s9,s10
+	sltu	t1,s6,s1
+	mulhsu	s5,s2,t0
+	addw	s10,s4,s3
+	xor	t2,a4,s10
+	srli	s3,s4,24
+	addiw	s3,a2,408
+	slt	s4,a6,s10
+	slli	ra,a5,23
+	sra	s6,t5,s3
+	bgt	a5,a4,.L8
 	j	.L9
 .L10:
 	lw	a5,-24(s0)
@@ -148,40 +156,42 @@ quicksort:
 	sw	a5,-24(s0)
 .L9:
 	lw	a5,-24(s0)
-	slli	ra,a5,2
+	slli	a5,a5,2
 	ld	a4,-40(s0)
-	add	a5,a4,ra
-	lw	t2,0(ra)
+	add	a5,a4,a5
+	lw	a4,0(a5)
 	lw	a5,-28(s0)
 	sext.w	a5,a5
-	blt	a5,t2,.L10
+	blt	a5,a4,.L10
 	lw	a4,-20(s0)
+	lw	ra,-24(s0)
+	xori	s11,s3,-1182
+	slliw	s7,s6,2
+	add	s11,a0,ra
+	xor	s3,t4,a3
+	slti	s6,s3,-744
+	addiw	s1,a0,373
+	addiw	s1,s11,531
 	mv	s1,a4
-	lw	a5,-24(s0)
-	mv	ra,a5
-	sext.w	a4,s1
-	mv	s1,a4
+	sll	s5,s4,s3
+	mul	t6,s1,a0
+	srliw	t5,t1,27
+	andi	s1,t3,1439
+	srli	t0,t3,28
+	sext.w	a4,a4
 	sext.w	a5,ra
-	bgt	s1,a5,.L6
-	lw	a3,-20(s0)
-	mv	s6,s4
-	mv	s2,a7
-	slli	a0,a3,2
-	mv	a3,s2
-	ld	s0,-40(a3)
-	mv	s8,s7
-	add	sp,s0,a0
-	lw	a1,-24(a3)
-	mv	s10,s9
-	slli	s0,a1,2
+	bgt	a4,ra,.L6
+	lw	a5,-20(s0)
+	slli	a5,a5,2
+	mv	ra,a5
 	ld	a4,-40(s0)
-	add	a5,a4,s0
-	add	s3,s6,s10
-	srliw	s3,s3,8
-	mulhsu	t6,a2,s8
-	or	s4,s10,s10
-	mv	a1,s0
-	mv	a0,sp
+	add	a3,a4,ra
+	lw	a5,-24(s0)
+	slli	a5,a5,2
+	ld	a4,-40(s0)
+	add	a5,a4,a5
+	mv	a1,a5
+	mv	a0,a3
 	call	swap
 	lw	a5,-20(s0)
 	addiw	a5,a5,1
@@ -191,17 +201,56 @@ quicksort:
 	sw	a5,-24(s0)
 .L6:
 	lw	a4,-20(s0)
-	mv	a6,a4
-	lw	t0,-24(s0)
-	sext.w	a4,a6
-	mv	t1,a4
-	sext.w	a5,t0
-	ble	t1,t0,.L7
-	lw	a3,-44(s0)
-	lw	ra,-24(s0)
-	sext.w	t1,a3
-	sext.w	a5,ra
-	bge	t1,ra,.L12
+	lw	a5,-24(s0)
+	sext.w	a4,a4
+	sext.w	a5,a5
+	ble	a4,a5,.L7
+	lw	a4,-44(s0)
+	lw	s1,-24(s0)
+	sext.w	a4,a4
+	mul	s6,t4,a1
+	xori	s6,t5,-1437
+	xor	s10,s11,a1
+	ori	ra,s0,-1533
+	sltiu	s6,a3,-732
+	addi	t4,s7,-729
+	slt	s2,a0,t5
+	mulhu	s8,t2,s11
+	xori	a3,ra,811
+	sllw	a7,a3,s5
+	or	s7,ra,a0
+	addw	s10,s5,s5
+	srli	s9,t6,1
+	sltiu	t3,s11,1588
+	addw	t1,s1,s0
+	mv	a5,s5
+	and	a6,s11,a2
+	slti	t6,t5,1451
+	sll	t1,sp,a4
+	srliw	t2,a6,6
+	sll	a6,s6,s6
+	slti	s8,s2,104
+	mulhu	a3,ra,t6
+	andi	ra,s10,-631
+	ori	s3,t1,-1610
+	sltu	s3,s6,s2
+	srai	ra,s8,17
+	mulh	s0,s6,a7
+	mv	sp,t1
+	xori	a0,sp,364
+	srliw	s4,t0,28
+	sllw	a2,s4,sp
+	srlw	t5,a4,a5
+	andi	t0,s2,-981
+	sraw	ra,s1,s11
+	addiw	ra,a7,-766
+	sltu	s4,s3,s6
+	sub	s7,s0,s0
+	subw	t6,s9,s0
+	sraiw	s5,s3,25
+	slliw	s4,s10,24
+	sext.w	a5,s1
+	bge	a4,s1,.L12
 	lw	a4,-24(s0)
 	lw	a5,-44(s0)
 	mv	a2,a4
@@ -209,88 +258,68 @@ quicksort:
 	ld	a0,-40(s0)
 	call	quicksort
 .L12:
-	lw	s1,-20(s0)
-	lw	ra,-48(s0)
-	sext.w	a4,s1
-	sext.w	a5,ra
-	bge	a4,ra,.L14
+	lw	a4,-20(s0)
+	lw	a5,-48(s0)
+	sext.w	a4,a4
+	sext.w	a5,a5
+	bge	a4,a5,.L14
 	lw	a4,-48(s0)
-	mv	a0,a1
-	lw	a5,-20(a0)
+	lw	a5,-20(s0)
 	mv	a2,a4
-	mv	t2,a0
+	mv	ra,s0
 	mv	a1,a5
-	ld	a0,-40(t2)
+	ld	a0,-40(ra)
 	call	quicksort
 .L14:
 	nop
-	mv	t1,t0
-	ld	t2,40(t1)
-	ld	s0,32(t1)
-	addi	sp,t1,48
-	jr	t2
+	ld	ra,40(sp)
+	ld	s0,32(sp)
+	addi	sp,sp,48
+	jr	ra
 	.size	quicksort, .-quicksort
 	.align	1
 	.globl	benchmark_quicksort
 	.type	benchmark_quicksort, @function
 benchmark_quicksort:
-	li	s10,732
-	mv	t2,s3
-	mv	s4,s10
-	mv	s5,t2
-	xori	s11,s4,-1915
-	mv	a1,t3
-	mv	a2,t6
-	xori	a7,s11,-421
-	mv	a6,a4
-	ori	a3,a7,92
-	mv	t2,a6
-	mv	s1,a5
-	xori	a5,a3,-1095
-	andi	t3,a3,-8
-	add	sp,t2,t3
-	mv	s7,s1
-	mv	t2,s0
+	addi	sp,sp,-32
 	sd	ra,24(sp)
-	sd	t2,16(sp)
-	mv	a4,s8
-	addiw	s2,a1,-408
-	and	a6,a7,a4
-	sltiu	a6,s5,-1369
-	ori	a4,a2,-508
-	mv	a3,s7
+	sd	s0,16(sp)
 	addi	s0,sp,32
-	sd	a3,-24(s0)
+	sd	a2,-24(s0)
 	li	a2,99
 	li	a1,0
 	ld	a0,-24(s0)
 	call	quicksort
 	nop
-	mv	t2,sp
-	ld	ra,24(t2)
-	ld	s0,16(t2)
-	mv	t0,ra
-	addi	sp,t2,32
-	jr	t0
+	ld	ra,24(a3)
+	srli	s9,s2,24
+	sll	t4,s5,s6
+	slli	s11,a3,28
+	mulw	s10,a0,a4
+	slli	a7,a1,30
+	mulhsu	a7,a6,s8
+	sraiw	s6,s1,30
+	mulhu	s11,s4,a5
+	xori	s11,s4,900
+	add	t4,s6,s8
+	slli	t1,s8,13
+	sllw	t2,s7,a2
+	srliw	s2,t2,26
+	ld	s0,16(a3)
+	addi	sp,a3,32
+	jr	ra
 	.size	benchmark_quicksort, .-benchmark_quicksort
 	.align	1
 	.globl	fill_array
 	.type	fill_array, @function
 fill_array:
 	addi	sp,sp,-64
-	mv	t5,a1
-	mv	a3,t2
-	mv	s6,s0
-	mv	a2,a3
-	mv	a3,t5
-	sd	a2,56(sp)
-	mv	a2,s6
-	mv	t2,a3
-	sd	a2,48(sp)
+	sd	ra,56(sp)
+	sd	s0,48(sp)
 	sd	s1,40(sp)
 	addi	s0,sp,64
 	sd	a0,-56(s0)
-	mv	a5,t2
+	mv	a5,a1
 	sw	a5,-60(s0)
 	lw	a5,-60(s0)
 	sext.w	a5,a5
@@ -299,27 +328,22 @@ fill_array:
 	j	.L18
 .L19:
 	lw	a5,-36(s0)
-	slli	t0,a5,2
+	slli	ra,a5,2
 	ld	a4,-56(s0)
-	add	a5,a4,t0
-	mv	t1,a5
+	add	a5,a4,ra
 	lw	a4,-36(s0)
-	sw	a4,0(t1)
+	sw	a4,0(a5)
 	lw	a5,-36(s0)
 	addiw	a5,a5,1
 	sw	a5,-36(s0)
 .L18:
 	lw	a5,-36(s0)
-	sext.w	t2,a5
+	sext.w	a4,a5
 	li	a5,99
-	ble	t2,a5,.L19
+	ble	a4,a5,.L19
 	j	.L20
 .L17:
 	sw	zero,-36(s0)
-	mv	a1,ra
-	mv	s6,s5
-	srli	t5,s6,21
-	mulhsu	t4,s6,a1
 	j	.L21
 .L22:
 	lw	a5,-36(s0)
@@ -329,23 +353,21 @@ fill_array:
 	call	rand
 	mv	a5,a0
 	sw	a5,0(s1)
-	li	ra,0
-	ori	s4,ra,-1720
-	srli	s2,s4,3
-	slli	s10,s2,3
-	srli	t6,s10,3
-	slli	s8,t6,3
-	xori	s7,s8,1152
-	srli	s3,s7,3
-	ori	s8,s3,-1466
-	andi	s6,s8,-3
-	andi	t6,s6,-1021
-	slli	s6,t6,0
-	slli	t4,s6,0
-	xori	s11,t4,-1034
-	slli	t6,s11,2
-	add	t4,s0,t6
-	lw	a5,0(t4)
+	lw	a5,-36(s0)
+	ori	t1,ra,-891
+	sltu	s7,t6,s3
+	srli	s9,a7,23
+	slt	ra,s5,s3
+	or	t6,s1,a4
+	mv	sp,s9
+	addw	s7,s5,s0
+	addiw	ra,a7,-1630
+	sub	a2,a2,s5
+	srliw	s10,t5,12
+	subw	s11,sp,a0
+	addi	ra,t2,961
+	addi	a4,s0,-604
+	slti	a7,ra,531
 	addiw	a5,a5,1
 	sw	a5,-36(s0)
 .L21:
@@ -355,30 +377,11 @@ fill_array:
 	ble	a4,a5,.L22
 .L20:
 	nop
-	mv	s3,s1
-	mv	s6,s7
-	mv	s7,t3
-	mv	a0,s3
-	mv	s11,a1
-	mv	a1,a2
-	mv	s1,ra
-	ld	ra,56(s1)
-	ld	s0,48(s1)
-	mv	a2,s1
-	mv	t1,s8
-	mv	a6,t1
-	mv	s3,a4
-	mv	t0,a6
-	sllw	s5,s7,s6
-	slli	a6,t0,18
-	addi	t5,s0,-1381
-	sub	t1,t0,s3
-	srlw	s7,t4,a6
-	subw	t0,s11,s10
-	andi	t0,t6,-777
-	sltu	s10,a1,s0
-	ld	s1,40(a2)
-	addi	sp,a2,64
+	mv	a0,a5
+	ld	ra,56(sp)
+	ld	s0,48(sp)
+	ld	s1,40(sp)
+	addi	sp,sp,64
 	jr	ra
 	.size	fill_array, .-fill_array
 	.align	1
@@ -386,38 +389,85 @@ fill_array:
 	.type	main, @function
 main:
 	addi	sp,sp,-32
-	mv	t2,s0
 	sd	ra,24(sp)
-	sd	t2,16(sp)
+	mulhsu	s9,s11,s11
+	srliw	t2,a6,25
+	addw	s11,s7,t3
+	add	t2,s5,s8
+	sltu	ra,s2,t3
+	xori	s1,s7,-202
+	slli	t3,s10,1
+	mv	a0,a3
+	sub	s0,a0,t6
+	and	s11,s3,s3
+	ori	s10,ra,382
+	sraw	s8,sp,a0
+	sub	a2,s7,s6
+	mulh	a4,s3,s10
+	sd	s0,16(sp)
 	addi	s0,sp,32
 	li	a0,400
 	call	malloc
 	mv	a5,a0
+	slti	s2,s7,-1248
+	srlw	a4,t5,s0
+	or	s10,a4,t5
+	mv	a3,s9
+	sllw	t2,a2,s7
+	sll	t4,a3,t0
+	sraw	t4,t3,t1
+	sllw	t3,sp,ra
+	sltiu	a0,s2,1950
+	slli	a2,a2,6
+	subw	a3,a0,t4
+	slli	t1,a6,28
+	mul	t5,a6,t2
+	srai	a3,s0,29
 	sw	a5,-20(s0)
+	or	s7,s6,s10
+	mv	s2,a7
+	sraiw	s9,s8,16
+	ori	t6,s1,540
+	ori	t5,a3,473
+	slt	s8,a4,a0
+	slt	a4,s10,s2
+	or	s7,a4,t2
+	sltu	s1,a1,s4
+	slti	a2,a6,1496
+	mulhu	sp,t3,s5
+	slt	sp,s0,s4
+	slli	t4,s1,18
 	lw	a5,-20(s0)
-	mv	ra,a5
 	li	a1,0
-	mv	a0,ra
+	mv	a0,a5
 	call	fill_array
 	lw	a5,-20(s0)
 	mv	a0,a5
 	call	benchmark_quicksort
+	sraiw	a7,s6,30
+	mv	a3,s10
+	srli	s6,a1,15
+	srai	t6,a3,25
+	xor	a6,a0,s3
+	subw	s3,s8,t5
+	mulh	s10,a7,sp
+	sltu	s4,s1,a1
+	mv	a3,t4
+	addi	s9,s5,516
+	mv	a0,t2
+	srlw	s9,a1,t0
+	srai	s4,ra,10
+	sltiu	t3,a3,-1094
+	sllw	s4,t1,a0
+	sraiw	a7,a5,28
 	lw	a5,-20(s0)
 	mv	a0,a5
 	call	free
 	li	a5,0
-	mv	s0,ra
 	mv	a0,a5
-	mv	a6,s0
-	ld	ra,24(a6)
-	ld	s0,16(a6)
-	li	a7,1162
-	ori	s6,a7,293
-	slli	s4,s6,1
-	srli	t6,s4,1
-	andi	s9,t6,-1414
-	xori	s2,s9,10
-	add	sp,a6,s2
+	ld	ra,24(sp)
+	ld	s0,16(sp)
+	addi	sp,sp,32
 	jr	ra
 	.size	main, .-main
 	.ident	"GCC:, (GNU), 9.2.0"

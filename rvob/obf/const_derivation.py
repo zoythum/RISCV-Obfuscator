@@ -4,8 +4,8 @@ from secrets import randbits
 from random import seed, choices, sample, randrange
 from BitVector import BitVector
 
-from rep.base import Instruction
-from structures import Register
+from rvob.rep.base import Instruction
+from rvob.structures import Register
 
 
 class Opcodes(Enum):

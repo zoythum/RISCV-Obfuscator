@@ -470,220 +470,248 @@
 	.type	main, @function
 main:
 	addi	sp,sp,-64
-	mv	t6,t4
-	mv	s3,t3
-	mv	t3,t6
-	mv	ra,t3
-	mv	t0,s3
-	mv	t1,t0
-	mv	s0,t1
-	mv	s1,s0
-	mv	t2,ra
-	mv	t3,a6
-	mv	s4,s1
-	mv	a6,t2
-	mv	s3,t5
-	mv	t0,a6
-	mv	s9,t3
-	mv	s0,s3
-	mv	t2,t0
-	mv	a6,s4
-	mv	ra,s9
-	mv	a2,s0
-	mv	t0,ra
-	mv	t1,a6
-	sd	a2,56(sp)
-	mv	s1,t0
-	sd	t1,48(sp)
-	mv	a1,s1
+	sd	ra,56(sp)
+	sd	s0,48(sp)
 	addi	s0,sp,64
-	mv	s2,t2
-	mv	a0,s2
-	mv	t2,a1
-	mv	ra,a0
-	mv	a1,t2
-	mv	a2,ra
-	mv	ra,a1
-	sd	a2,-64(s0)
-	sw	ra,-52(s0)
+	mv	a5,a0
+	sd	a1,-64(s0)
+	sw	a5,-52(s0)
 	lui	a5,%hi(.LC5)
 	addi	a1,a5,%lo(.LC5)
 	lui	a5,%hi(.LC6)
 	addi	a0,a5,%lo(.LC6)
 	call	fopen
-	slti	a5,ra,-656
-	mv	ra,t0
-	mv	s4,s6
-	mv	s6,ra
-	mv	s2,s1
-	mv	s1,s6
-	mv	ra,s1
-	mv	s6,s4
-	mv	t1,ra
-	addi	t0,a6,476
-	srlw	s4,s5,t1
-	mv	s1,s6
-	srai	t2,a3,1
-	mulw	s6,s1,s2
-	sltiu	t1,t0,1031
-	sraiw	t6,s5,26
 	sd	a0,-32(s0)
 	sw	zero,-20(s0)
 	j	.L26
 .L29:
 	sw	zero,-24(s0)
+	mulh	s6,s2,s9
+	srai	a7,a7,6
+	xor	t4,a5,s0
+	sll	s7,t6,a5
+	mulh	a7,a6,t4
+	sra	ra,s8,a6
+	mul	s8,t4,s8
+	mulhsu	s4,t1,a1
+	subw	a6,s1,s8
+	srlw	s7,t6,a6
+	sll	s1,a5,s8
+	slliw	t3,ra,15
+	sllw	t4,s0,a4
 	j	.L27
 .L28:
 	addi	a5,s0,-36
 	mv	a2,a5
 	lui	a5,%hi(.LC7)
+	srli	s2,t1,31
+	sra	s1,s8,t0
+	sltiu	s11,s10,800
+	sltu	s2,t3,a2
+	mul	s9,a6,a6
+	mulhu	a6,s2,s11
+	sltiu	s6,a7,1529
+	add	s8,ra,t3
+	addiw	t4,a1,1710
+	sltu	ra,s3,a1
+	ori	t5,a3,693
+	mv	sp,t4
+	srai	s3,a4,19
+	sra	a0,a7,a0
+	addw	a3,s4,s5
+	sraiw	a3,s6,4
+	sltu	t6,a2,s8
+	mulhsu	t0,a4,a3
+	andi	s0,s7,-1444
+	srliw	a3,a5,0
+	mul	a7,a7,s10
+	sraiw	s0,s0,22
+	add	a0,t3,t3
+	slli	s10,s9,25
+	mv	t1,ra
+	xor	s2,sp,t6
+	srlw	t0,s10,s8
 	addi	a1,a5,%lo(.LC7)
 	ld	a0,-32(s0)
 	call	fscanf
 	lw	a4,-36(s0)
-	mv	a1,a0
-	lui	ra,%hi(AdjMatrix)
-	mv	sp,a1
-	addi	a3,ra,%lo(AdjMatrix)
-	mv	ra,sp
-	lw	sp,-24(ra)
-	lw	t1,-20(ra)
-	mv	s2,ra
-	mv	ra,t1
-	mv	t1,ra
-	mv	t2,t1
+	lui	a5,%hi(AdjMatrix)
+	addi	a3,a5,%lo(AdjMatrix)
+	lw	a5,-24(s0)
+	mv	sp,a5
+	lw	a1,-20(s0)
 	li	a2,100
-	mul	a2,t2,a2
+	mul	a2,a1,a2
+	mv	ra,a3
 	add	a5,a2,sp
-	slli	a5,sp,2
-	add	a5,a3,a5
-	mv	t0,a5
-	li	s11,-2032
-	ori	s1,s11,800
-	ori	s3,s1,1095
-	andi	s11,s3,136
-	slli	s11,s11,12
-	add	a0,t0,s11
-	sw	a4,0(a0)
-	lw	a6,-24(s2)
-	li	s6,-1988
-	srli	s10,s6,2
-	slli	s10,s10,2
-	srli	t5,s10,2
-	slli	t3,t5,2
-	srli	t0,t3,2
-	slli	s2,t0,2
-	srli	s2,s2,2
-	xori	s5,s2,-1121
-	srli	t2,s5,3
-	xori	s10,t2,307
-	ori	t6,s10,1034
-	xori	a7,t6,1178
-	slli	s8,a7,4
-	ori	t0,s8,1643
-	andi	s0,t0,-33
-	li	t4,-192
-	srli	t4,t4,6
-	xori	s4,t4,-1043
-	srli	t4,s4,4
-	slli	s4,t4,3
-	xori	s4,s4,1403
-	slli	t4,s4,4
-	xori	s4,t4,711
-	and	s9,s0,s4
-	andi	t5,s9,1197
-	addi	a5,a6,None
-	sw	a6,-24(s0)
+	slli	a5,a5,2
+	add	a5,ra,a5
+	sw	a4,0(a5)
+	lw	a5,-24(s0)
+	addiw	a5,a5,1
+	sw	a5,-24(s0)
 .L27:
 	lw	a5,-24(s0)
 	sext.w	a4,a5
 	li	a5,99
 	ble	a4,a5,.L28
-	lw	s1,-20(s0)
-	li	s8,-321
-	andi	s9,s8,-41
-	slli	s7,s9,0
-	slli	s4,s7,0
-	xori	a7,s4,-2018
-	xori	s8,a7,1203
-	mv	a1,s8
-	mv	s0,a4
-	sub	a0,s0,s0
-	sraw	a3,t2,s0
-	or	t1,sp,a3
-	srli	t1,t2,6
-	sltiu	s6,t0,1815
-	mulhu	t1,s5,s0
-	mulhu	a2,t5,a3
-	addi	s2,s0,-68
-	andi	s11,a1,-571
-	ori	s4,s11,1
-	addi	a5,s1,None
-	sw	s1,-20(s0)
+	lw	a5,-20(s0)
+	mv	s11,a5
+	mv	ra,s7
+	mv	s4,t4
+	addiw	a5,s11,1
+	srliw	s0,t2,29
+	sllw	s9,ra,s6
+	and	t5,s5,s5
+	mv	sp,s0
+	add	t3,sp,a6
+	slt	t6,s4,a3
+	sllw	s4,s3,sp
+	sllw	s0,a7,sp
+	slliw	s2,s4,25
+	slt	s10,s8,s2
+	sraiw	t0,t5,25
+	sub	ra,s1,t6
+	mul	s11,t2,a0
+	mulhsu	t3,s6,s11
+	sw	a5,-20(s0)
 .L26:
-	lw	s2,-20(s0)
-	mv	s3,s8
-	mv	t1,ra
-	mv	s1,s3
-	mv	s3,t1
-	mv	t1,s1
-	mv	s1,s3
-	sext.w	a4,s2
-	and	s3,a5,a4
-	mv	sp,s3
-	mulw	s2,t1,s1
-	srai	t5,a4,7
-	mv	a5,s11
-	sltu	a7,s4,s9
-	mv	ra,a7
-	sraiw	a0,t6,23
-	srlw	t6,ra,t3
-	addiw	ra,sp,426
-	or	t1,s5,a6
-	slti	a7,a5,-736
-	sltu	sp,ra,t6
+	lw	a5,-20(s0)
+	sext.w	a4,a5
+	slliw	t1,a2,1
+	andi	a3,a5,-1805
+	or	a1,a6,a2
+	mulh	a1,t3,ra
+	srli	s4,a2,22
+	slli	s10,s7,30
+	mulw	t0,s6,t6
+	sra	a7,s6,s4
+	slliw	t0,a0,4
+	xori	s0,s9,258
+	addw	ra,a0,t0
+	mulhu	a3,t4,a1
+	slt	t3,t6,s11
 	li	a5,99
 	ble	a4,a5,.L29
 	sw	zero,-20(s0)
 	li	a5,50
+	sraw	s3,s9,s4
+	addw	a1,ra,s10
+	mv	s0,a7
+	sltiu	a3,s11,-1282
+	and	s9,s5,s5
+	addiw	a0,a4,79
+	sll	t2,a6,a3
+	srl	s1,s11,s11
+	srl	t1,t5,s1
+	slli	t2,s1,30
+	mv	s2,t5
+	add	s9,a1,a1
+	slli	t0,s2,3
+	sllw	a3,t4,s4
 	sw	a5,-24(s0)
 	j	.L30
 .L31:
-	lw	ra,-24(s0)
+	lw	a4,-24(s0)
 	li	a5,100
-	remw	a5,ra,a5
+	remw	a5,a4,a5
 	sw	a5,-24(s0)
 	lw	a4,-24(s0)
 	lw	a5,-20(s0)
 	mv	a1,a4
+	addw	s7,s4,s4
+	sra	t6,t0,s11
+	mulhsu	s10,s1,s3
+	addi	t4,s7,1207
+	addw	t6,a7,s4
+	srliw	s7,s7,10
+	srli	s10,s11,10
+	srlw	s10,a3,s2
+	sltiu	a2,a3,1101
+	sllw	sp,a1,a5
+	sltu	a6,a4,s11
+	addi	s10,s1,-643
+	andi	a2,s0,1330
 	mv	a0,a5
 	call	dijkstra
-	lw	ra,-20(s0)
-	li	t2,695
-	xori	t0,t2,-1353
-	srli	t0,t0,11
-	addi	a5,ra,None
-	sw	ra,-20(s0)
+	lw	a5,-20(s0)
+	addiw	a5,a5,1
+	mulhu	s6,a6,a7
+	and	ra,t2,s8
+	sltiu	s7,a5,599
+	sraw	t6,a7,t2
+	sltu	s5,a6,a2
+	sub	a1,s11,s2
+	srli	t6,t0,24
+	ori	t5,s1,-259
+	mul	s1,s5,a7
+	mul	s0,t0,a1
+	mulh	a0,s6,a7
+	sltu	a2,s9,s5
+	sub	s3,s10,sp
+	srliw	s0,s2,5
+	mulh	s4,s2,t1
+	slliw	s10,t6,21
+	srliw	t0,s8,29
+	ori	t2,s6,1935
+	slt	s0,t1,s7
+	add	s9,a6,s1
+	sltiu	sp,s0,551
+	mv	t5,a2
+	xori	a0,sp,1572
+	ori	s9,s6,-816
+	ori	s4,a0,1515
+	mul	s5,s8,s5
+	sw	a5,-20(s0)
 	lw	a5,-24(s0)
+	mulhsu	s7,s6,t2
+	srliw	a4,s0,2
+	srlw	a6,t6,a6
+	mv	sp,s5
+	slt	a4,a6,t0
+	sll	s10,a3,t2
+	xor	a3,s3,sp
+	srliw	t5,s4,14
+	xor	s10,s1,ra
+	mulhu	s2,t5,s6
+	sltiu	s10,a7,-1985
+	addiw	s10,sp,-934
+	slt	s2,s9,a4
+	sub	t6,ra,t2
+	srli	ra,t2,31
+	andi	s8,t2,1989
+	addw	s11,a7,s9
+	slliw	a7,a1,4
+	mulhsu	s2,a2,s6
+	sub	a6,s4,t0
+	sllw	s11,s6,a5
+	srai	t1,sp,10
+	srai	s8,s6,19
+	sllw	s7,a6,a6
+	subw	ra,sp,s3
+	srl	a3,sp,s0
+	sraiw	s6,s6,23
 	addiw	a5,a5,1
 	sw	a5,-24(s0)
 .L30:
-	lw	s11,-20(s0)
-	srl	t0,t2,a2
-	sub	s8,sp,s2
-	mv	t3,s11
-	sltiu	s0,s7,-850
-	mv	s9,t3
-	add	a2,s5,s0
-	mv	a1,a2
-	andi	a3,s7,1399
-	slli	s10,s6,4
-	slliw	a6,a3,0
-	add	s3,a1,t4
-	and	a2,s2,sp
-	sext.w	a4,s9
+	lw	a5,-20(s0)
+	sext.w	a4,a5
 	li	a5,19
 	ble	a4,a5,.L31
+	srliw	s4,a4,15
+	xori	a2,a2,1492
+	sltu	s1,a4,a0
+	mv	t6,ra
+	addi	s7,a2,1081
+	mulh	s4,a1,t6
+	mulhu	a1,t1,a4
+	xor	s7,a0,a7
+	addw	t6,s9,s8
+	sltiu	a6,s5,-283
+	srlw	s7,a4,t0
+	sltu	ra,s11,s6
+	slt	s8,t3,t1
+	srl	s0,s1,s7
 	li	a0,0
 	call	exit
 	.size	main, .-main
