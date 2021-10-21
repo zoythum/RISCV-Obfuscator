@@ -297,6 +297,10 @@ def benchmark(name: str, entry: str, heat: int, scrambling_repetition, obfuscate
     write_heat(False, calc_fragmentation())
     heat_file.close()
 
+    dirct = rel + '/benchmark/benchmark_output/' + name + ".s"
+    out = open(dirct, 'w+')
+    out.write(str(src))
+
 
 def main():
     args = get_args()
