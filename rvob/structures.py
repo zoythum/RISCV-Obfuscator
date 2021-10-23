@@ -102,7 +102,7 @@ opcd_family: Mapping[str, str] = {
     'sw': 's', 'call': 'j', 'sd': 's', 'mv': '_2arg', 'ld': 's', 'li': 'li', 'bgtu': 'b', 'lwu': 's', 'lhu': 's',
     'not': '_2arg', 'negw': '_2arg', 'sc.w': 'as', 'amoswap.w': 'as', 'amoadd.w': 'as', 'amoxor.w': 'as',
     'amoor.w': 'as', 'amoand.w': 'as', 'amomin.w': 'as', 'amomax.w': 'as', 'amominu.w': 'as', 'amomaxu.w': 'as',
-    'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoand.d': 'as',
+    'lr.d': 'al', 'sc.d': 'as', 'amoswap.d': 'as', 'amoadd.d': 'as', 'amoxor.d': 'as', 'amoor.d': 'as', 'amoand.d': 'as',
     'amomin.d': 'as', 'amomax.d': 'as', 'amominu.d': 'as', 'amomaxu.d': 'as', 'bgtz': 'bz', 'snez': 'snez'
     }
 
