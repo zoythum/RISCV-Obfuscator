@@ -324,8 +324,8 @@ def execute(name: str, entry: str, heat: int, scrambling_repetition: int, obfusc
             dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
             metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
         else:
-            dst = rel + '/metrics/data' + ".txt"
-            metric_dst = rel + '/metrics/data' + "_metrics.txt"
+            dst = rel + '/metrics/data.txt'
+            metric_dst = rel + '/metrics/data_metrics.txt'
         heat_file = open(dst, "w")
         metrics_file = open(metric_dst, "w")
 
