@@ -274,7 +274,7 @@ def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_
     insertion and constants obfuscation)
     """
 
-    #do_obfuscate(obfuscate_repetition)
+    do_obfuscate(obfuscate_repetition)
     do_garbage(garbage_repetition, garb_par)
     do_scrambling(scrambling_repetition, heat)
 

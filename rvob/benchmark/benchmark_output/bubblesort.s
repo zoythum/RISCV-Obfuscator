@@ -8,12 +8,12 @@
 	.globl	swap
 	.type	swap, @function
 swap:
-	addi	t1,sp,-48
-	mv	ra,a0
-	sd	s0,40(t1)
-	addi	s0,t1,48
-	sd	ra,-40(s0)
-	sd	a1,-48(s0)
+	addi	s4,sp,-48
+	sd	s0,40(s4)
+	mv	s6,a1
+	addi	s0,s4,48
+	sd	a2,-40(s0)
+	sd	s6,-48(s0)
 	ld	a5,-40(s0)
 	lw	a5,0(a5)
 	sw	a5,-20(s0)
@@ -21,13 +21,13 @@ swap:
 	lw	a4,0(a5)
 	ld	a5,-40(s0)
 	sw	a4,0(a5)
-	ld	a5,-48(s0)
-	mv	ra,a5
-	lw	a4,-20(s0)
-	sw	a4,0(ra)
+	mv	ra,s0
+	ld	a5,-48(ra)
+	lw	a4,-20(ra)
+	sw	a4,0(a5)
 	nop
-	ld	s0,40(t1)
-	addi	sp,t1,48
+	ld	s0,40(s4)
+	addi	sp,s4,48
 	jr	ra
 	.size	swap, .-swap
 	.align	1
@@ -35,40 +35,47 @@ swap:
 	.type	bubbleSort, @function
 bubbleSort:
 	addi	sp,sp,-48
-	sd	ra,40(sp)
-	sd	s0,32(sp)
+	mv	s4,ra
+	mv	a2,s0
+	sd	s4,40(sp)
+	sd	a2,32(sp)
 	addi	s0,sp,48
-	sd	a0,-40(s0)
+	sd	a4,-40(s0)
 	mv	a5,a1
 	sw	a5,-44(s0)
 	sw	zero,-20(s0)
 	j	.L3
 .L7:
 	sw	zero,-24(s0)
+	mv	ra,a3
+	mulw	t2,s3,t0
+	slti	s9,t0,-1455
+	slti	s10,ra,-1464
 	j	.L4
 .L6:
 	lw	a5,-24(s0)
 	slli	a5,a5,2
-	mv	ra,a5
 	ld	a4,-40(s0)
-	add	a5,a4,ra
+	add	a5,a4,a5
 	lw	a3,0(a5)
 	lw	a5,-24(s0)
 	addi	a5,a5,1
-	slli	ra,a5,2
-	ld	a4,-40(s0)
-	add	a5,a4,ra
-	lw	t1,0(ra)
-	mv	a4,a3
-	ble	a4,t1,.L5
-	lw	a5,-24(s0)
 	slli	a5,a5,2
 	ld	a4,-40(s0)
-	add	a3,a4,a5
-	mulhsu	t2,s9,s11
-	sra	a7,t0,ra
-	mulh	s6,s6,s1
+	add	a5,a4,a5
+	lw	a5,0(a5)
+	mv	a4,a3
+	ble	a4,a5,.L5
 	lw	a5,-24(s0)
+	mv	ra,s6
+	slli	a5,a5,2
+	mv	sp,a5
+	ld	a4,-40(s0)
+	add	a3,a4,sp
+	lw	a5,-24(s0)
+	slt	t2,s10,s11
+	srl	s3,s11,ra
+	addi	s1,t3,-1848
 	addi	a5,a5,1
 	slli	a5,a5,2
 	ld	a4,-40(s0)
@@ -77,23 +84,27 @@ bubbleSort:
 	mv	a0,a3
 	call	swap
 .L5:
-	lw	t2,-24(s0)
-	addi	ra,s3,-2010
-	addw	ra,s3,ra
-	sub	ra,t0,s2
-	addiw	a5,t2,1
-	sw	t2,-24(s0)
+	lw	a5,-24(s0)
+	addiw	a5,a5,1
+	sw	a5,-24(s0)
 .L4:
 	lw	a4,-44(s0)
+	mv	s1,a4
 	lw	a5,-20(s0)
-	subw	a5,a4,a5
+	subw	a5,s1,a5
 	sext.w	a5,a5
 	addiw	a5,a5,-1
-	sext.w	a4,a5
+	sext.w	a0,a5
 	lw	a5,-24(s0)
 	sext.w	a5,a5
-	blt	a5,a4,.L6
+	slti	t4,s2,1268
+	slt	t5,t5,s5
+	sltu	s3,a6,a6
+	blt	a5,a0,.L6
 	lw	a5,-20(s0)
+	slli	s6,a6,0
+	xori	a3,a7,1701
+	mulhsu	s7,t1,s5
 	addiw	a5,a5,1
 	sw	a5,-20(s0)
 .L3:
@@ -104,11 +115,14 @@ bubbleSort:
 	sext.w	a5,a5
 	blt	a5,a4,.L7
 	nop
+	mv	s4,a7
+	xor	s7,s8,s3
+	mulhu	s7,t1,s6
 	nop
-	ld	ra,40(t1)
-	ld	s0,32(t1)
-	addi	sp,t1,48
-	jr	ra
+	ld	t0,40(sp)
+	ld	s0,32(sp)
+	addi	sp,sp,48
+	jr	t0
 	.size	bubbleSort, .-bubbleSort
 	.align	1
 	.globl	fill_array
@@ -116,70 +130,66 @@ bubbleSort:
 fill_array:
 	addi	sp,sp,-64
 	sd	ra,56(sp)
-	mv	a2,a1
-	sd	a3,48(sp)
+	sd	s4,48(sp)
 	sd	s1,40(sp)
 	addi	s0,sp,64
+	addiw	s11,t3,-559
+	addiw	s8,a6,-1000
+	addiw	s7,a3,-337
 	sd	a0,-56(s0)
-	mv	a5,a2
+	mv	a5,a1
 	sw	a5,-60(s0)
 	lw	a5,-60(s0)
 	sext.w	a5,a5
 	beq	a5,zero,.L9
 	sw	zero,-36(s0)
+	slliw	s11,t6,6
+	addw	s5,s7,s1
+	mv	ra,t4
+	srlw	a7,t1,s7
+	slliw	t6,ra,12
+	mulhu	t3,a3,s2
+	mulhsu	a2,t2,a6
 	j	.L10
 .L11:
 	lw	a5,-36(s0)
-	slli	a5,a5,2
+	slli	ra,a5,2
 	ld	a4,-56(s0)
-	addi	s8,t1,1011
-	mulw	s6,t3,t3
-	mv	ra,a4
-	sra	t1,t5,t1
-	sub	s2,s7,a6
-	xor	s11,s7,s4
-	sll	s3,t4,t2
-	add	a5,ra,a5
+	add	a5,a4,ra
 	lw	a4,-36(s0)
 	sw	a4,0(a5)
 	lw	a5,-36(s0)
 	addiw	a5,a5,1
 	sw	a5,-36(s0)
-	srli	t0,t6,22
-	slliw	a2,t6,7
-	slli	s6,s10,7
 .L10:
 	lw	a5,-36(s0)
 	sext.w	a4,a5
+	sraw	a6,a6,s10
+	sltiu	a6,t5,-1360
+	sllw	s3,t2,s10
 	li	a5,99
 	ble	a4,a5,.L11
 	j	.L12
 .L9:
 	sw	zero,-36(s0)
-	slliw	s2,t5,22
-	subw	s4,a7,s10
-	slt	s5,t0,t0
 	j	.L13
 .L14:
 	lw	a5,-36(s0)
-	mulhu	t3,t5,a2
-	andi	s11,s3,1034
-	sraw	s2,s8,s1
 	slli	a5,a5,2
 	ld	a4,-56(s0)
 	add	s1,a4,a5
 	call	rand
 	mv	a5,a0
 	sw	a5,0(s1)
-	lw	ra,-36(s0)
-	srliw	a6,ra,15
-	slli	t6,t6,15
-	add	sp,t4,s10
-	addiw	a5,ra,1
-	sw	ra,-36(s0)
+	lw	a5,-36(s0)
+	addiw	a5,a5,1
+	sw	a5,-36(s0)
 .L13:
 	lw	a5,-36(s0)
 	sext.w	a4,a5
+	xor	t4,t3,a3
+	mv	s2,s11
+	mv	a3,s9
 	li	a5,99
 	ble	a4,a5,.L14
 .L12:
@@ -194,47 +204,37 @@ fill_array:
 	.align	1
 	.globl	main
 	.type	main, @function
+	srli	t3,s9,26
+	mv	s4,s8
+	sltu	a2,a2,ra
+	andi	a0,s4,382
 main:
 	addi	sp,sp,-32
-	ori	a2,t6,1824
-	sra	s9,t5,s9
-	sub	s2,a3,a3
 	sd	ra,24(sp)
-	sd	s0,16(sp)
+	sd	s7,16(sp)
 	addi	s0,sp,32
 	li	a0,400
 	call	malloc
 	mv	a5,a0
 	sw	a5,-20(s0)
-	lw	a5,-20(s0)
-	sraw	a0,s4,sp
-	addw	s3,s2,t0
-	and	t3,s4,s4
+	lw	ra,-20(s0)
 	li	a1,0
-	mv	a0,a5
-	slti	s9,a7,1710
-	slt	t2,a2,t2
-	addiw	t4,a6,1017
+	mv	a0,ra
 	call	fill_array
 	li	a5,25
 	sw	a5,-24(s0)
-	mv	a1,a6
-	mv	t2,a7
-	mv	a2,t6
 	lw	a5,-20(s0)
-	or	t1,a1,a2
-	sub	s8,s8,t2
-	srli	t1,t2,28
-	mv	t0,a5
 	li	a1,100
-	mv	a0,t0
+	mv	a0,a5
 	call	bubbleSort
 	li	a5,0
-	mv	a2,sp
 	mv	a0,a5
-	ld	ra,24(a2)
-	ld	s0,16(a2)
-	addi	sp,a2,32
+	ld	ra,24(sp)
+	ld	s0,16(sp)
+	addi	sp,sp,32
+	slti	a7,s6,-1567
+	slliw	s7,a3,20
+	sraiw	s10,t2,28
 	jr	ra
 	.size	main, .-main
 	.ident	"GCC:, (GNU), 9.2.0"
