@@ -97,7 +97,7 @@ def split_value_blocks(cfg: DiGraph, heatmap, heat):
     switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
 
     # ----------------Debugging Stuff Init------------------------ #
-    print("###Done for splitting###")
+    #print("###Done for splitting###")
     return 0
     # ----------------Debugging Stuff End------------------------ #
 
@@ -135,7 +135,7 @@ def substitute_reg(cfg: DiGraph, heatmap, heat):
     switch_regs(line_num, value_block.end_line, cfg.nodes[node_id], used_reg, unused_reg)
 
     # ----------------Debugging Stuff Init------------------------ #
-    print("###Done for substitute###")
+    #print("###Done for substitute###")
     return 0
     # ----------------Debugging Stuff End------------------------ #
 

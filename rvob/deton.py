@@ -1,8 +1,6 @@
 import json
 from typing import List, Tuple, Dict, Set
-
 from networkx import DiGraph
-
 import rvob.rep.base
 import rvob.rep.fragments
 import rvob.analysis
@@ -31,6 +29,29 @@ def get_args():
     parser = argparse.ArgumentParser(description="DETON")
 
     parser.add_argument(
+        "File",
+        metavar="File path input",
+        help="The path of the file in .json format to process",
+        nargs='?',
+        default='q',
+        type=str)
+
+    parser.add_argument(
+        '-e', '-entry',
+        metavar="File entry point",
+        help="Entry point of the program to process",
+        nargs='?',
+        default='',
+        const='',
+        type=str)
+
+    parser.add_argument(
+        '-b', '-benchmark',
+        action = 'store_true',
+        default=False,
+        help = "Execution of all benchmark file")
+
+    parser.add_argument(
         "RS",
         metavar="Repetition Scrambling",
         help="Number of times the register scrambling procedure is executed",
@@ -49,10 +70,30 @@ def get_args():
         type=int)
 
     parser.add_argument(
+        "SG",
+        metavar="Size block Garbage",
+        help="Size of the block of garbage instruction to insert",
+        type=int)
+
+    parser.add_argument(
         "H",
         metavar="Heat",
         help="Max heat for the heatmap",
         type=int)
+
+    parser.add_argument(
+        "Output",
+        metavar="Output file path",
+        help="The output file path in .s format (example: /User/file.s )",
+        nargs='?',
+        default='q',
+        type=str)
+
+    parser.add_argument(
+        '-m', '-metrics',
+        action='store_true',
+        default=False,
+        help="Generate the metrics file of the process located in metrics directory")
 
     return parser.parse_args()
 
@@ -185,7 +226,6 @@ def do_scrambling(iter_num: int, heat):
     failed_substitute = 0
 
     for t in range(iter_num):
-        print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, heat)
 
         # try to do a register substitution
@@ -202,14 +242,13 @@ def do_scrambling(iter_num: int, heat):
     print("Substitution failure rate: " + str(failed_substitute / iter_num * 100) + "%")
 
 
-def do_garbage(iter_num: int):
+def do_garbage(iter_num: int, garb_par: int):
     """
     this perform the garbage instructions insertion
     @param iter_num: the number of iteration to do
     """
     for t in range(iter_num):
-        print("garbage iteration: " + str(t))
-        garbage_inserter.insert_garbage_instr(cfg)
+        garbage_inserter.insert_garbage_instr(cfg, None, garb_par)
 
 
 def do_obfuscate(iter_num: int):
@@ -219,7 +258,6 @@ def do_obfuscate(iter_num: int):
     """
     failed = 0
     for t in range(iter_num):
-        print("obfuscate iteration: " + str(t))
         for z in range(5):
             try:
                 obfuscator.obfuscate(cfg)
@@ -227,38 +265,43 @@ def do_obfuscate(iter_num: int):
             except (NotEnoughtRegisters, NotValidInstruction):
                 if z == 4:
                     failed += 1
-    print("Failure rate: " + str(failed / iter_num * 100) + "%")
+    print("Obfuscate failure rate: " + str(failed / iter_num * 100) + "%")
 
 
-def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition):
+def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition, garb_par):
     """
     This function calls all the sub-functions that applies the obfuscation techniques (Scrambling, garbage instructions
     insertion and constants obfuscation)
     """
-    do_scrambling(scrambling_repetition, heat)
+
     do_obfuscate(obfuscate_repetition)
-    do_garbage(garbage_repetition)
+    do_garbage(garbage_repetition, garb_par)
     do_scrambling(scrambling_repetition, heat)
 
 
-def benchmark(name: str, entry: str, heat: int, scrambling_repetition, obfuscate_repetition, garbage_repetition):
+def execute(name: str, entry: str, heat: int, scrambling_repetition: int, obfuscate_repetition: int, garbage_repetition: int, garb_size: int, output: str, bench: bool, metric: bool):
     """
     This function a bunch of benchmarks
     @param name: the name of the benchmark
     @param entry: the entry point of the executable, if different from main
-    :param heat: max heat of the heatmap
     """
+
     global heat_map
     global heat_file
     global metrics_file
     global trace_heat_map
     global cfg
 
-    # Load the json file of the benchmark
+    # Load the json file
     rel = path.dirname(__file__)
-    src = rel + '/benchmark/benchmark_file/' + name + '.json'
-    file = open(src)
-    src = rvob.rep.fragments.load_src_from_maps(json.load(file))
+    if bench==True:
+        src = rel + '/benchmark/benchmark_file/' + name + '.json'
+        file = open(src)
+        src = rvob.rep.fragments.load_src_from_maps(json.load(file))
+    else:
+        src = name
+        file = open(src)
+        src = rvob.rep.fragments.load_src_from_maps(json.load(file))
 
     # build the cfg of the program
     if entry:
@@ -276,40 +319,57 @@ def benchmark(name: str, entry: str, heat: int, scrambling_repetition, obfuscate
     heat_map = heatmaps.register_heatmap(cfg, heat)
 
     # create the output files that will contains the metrics
-    dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
-    metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
-    heat_file = open(dst, "w")
-    metrics_file = open(metric_dst, "w")
+    if metric==True:
+        if bench==True:
+            dst = rel + '/benchmark/benchmark_output/' + name + ".txt"
+            metric_dst = rel + '/benchmark/benchmark_output/' + name + "_metrics.txt"
+        else:
+            dst = rel + '/metrics/data.txt'
+            metric_dst = rel + '/metrics/data_metrics.txt'
+        heat_file = open(dst, "w")
+        metrics_file = open(metric_dst, "w")
 
-    # write the value of the metrics for the plain program
-    heat_file.write("Baseline:\n")
-    trace_out = tracer.get_trace(cfg)
-    trace_heat_map = trace_out[1]
-    write_heat(first=True)
+        # write the value of the metrics for the plain program
+        heat_file.write("Baseline:\n")
+        trace_out = tracer.get_trace(cfg)
+        trace_heat_map = trace_out[1]
+        write_heat(first=True)
 
     # Apply the obfuscation techniques
-    apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition)
-    trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
-    trace_heat_map = trace_out[1]
+    apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition, garb_size)
 
     # Write the value of the metrics for the obfuscated program
-    heat_file.write("\n\n\nObfuscated version:\n")
-    write_heat(False, calc_fragmentation())
-    heat_file.close()
+    if metric==True:
+        trace_out = tracer.get_trace(cfg, ex_path=trace_out[0])
+        trace_heat_map = trace_out[1]
+        heat_file.write("\n\n\nObfuscated version:\n")
+        write_heat(False, calc_fragmentation())
+        heat_file.close()
 
-    dirct = rel + '/benchmark/benchmark_output/' + name + ".s"
+    # Write the output file
+    if bench==True:
+        dirct = rel + '/benchmark/benchmark_output/' + name + ".s"
+    else:
+        dirct = output
     out = open(dirct, 'w+')
     out.write(str(src))
 
 
 def main():
     args = get_args()
+
     benchmarks = [('bubblesort', ''), ('crc_32', ''), ('dijkstra_small', ''), ('fibonacci', ''),
                   ('matrixMul', ''), ('patricia', 'bit'), ('quickSort', ''), ('sha', 'sha_transform')]
-    sub_test = [('patricia', 'bit')]
-    for elem in benchmarks:
-        print("\n\033[1m\033[91mI'm Testing " + elem[0] + ':\033[0m')
-        benchmark(elem[0], elem[1], args.H, args.RS, args.RO, args.RG)
+
+    if args.b == True:
+        for elem in benchmarks:
+            print("\n\033[1m\033[91mI'm Testing " + elem[0] + ':\033[0m')
+            execute(elem[0], elem[1], args.H, args.RS, args.RO, args.RG, args.SG, args.Output, args.b, args.m)
+    else:
+        if args.File == 'q' or args.Output == 'q':
+            print("Input or Output file path missing, please see -h option to more information")
+        else:
+            execute(args.File, args.e, args.H, args.RS, args.RO, args.RG, args.SG, args.Output, args.b, args.m)
 
 
 if __name__ == "__main__":

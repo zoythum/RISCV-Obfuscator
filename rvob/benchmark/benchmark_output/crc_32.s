@@ -429,122 +429,67 @@
 	.type	main, @function
 main:
 	addi	sp,sp,-64
-	mv	t6,a3
-	mv	ra,s6
-	mv	s6,t6
-	mv	a3,ra
-	mv	ra,t4
-	mv	s11,s6
-	mv	t4,ra
-	mv	s6,a3
-	mv	a3,t5
-	mv	a7,s6
-	mv	t1,t4
-	sub	s0,s9,a0
-	srli	s5,a0,27
-	slli	t2,a0,27
-	slti	s9,a0,-957
-	mv	t0,s9
-	mv	a1,t1
-	mv	t1,t0
-	mv	s1,a1
-	addi	s3,s11,-324
-	sllw	s10,a4,a7
-	sraw	s7,t1,t5
-	sraw	a2,s5,s4
-	mv	t1,a2
-	sltu	s0,sp,s1
-	mulhsu	s3,s5,t1
-	mv	t1,s1
-	mv	ra,a7
-	mv	s10,t3
-	mv	s6,a3
-	addi	a4,a4,-1571
-	sll	s9,t6,s11
-	sraw	t5,a5,s8
-	slli	s1,t6,2
-	srlw	s3,a6,t3
-	mv	a0,s3
-	srai	a4,s11,20
-	sub	a5,a5,a0
-	sub	a6,a5,a1
-	mv	a3,ra
-	mv	s3,t1
-	mv	a7,s6
-	mv	t0,s11
-	sd	a3,56(sp)
-	mv	t2,s3
-	mv	s7,s10
-	mv	s0,s7
-	sd	a7,48(sp)
-	sd	t0,40(sp)
-	mv	s4,s0
+	mv	t1,s7
+	sd	a6,56(sp)
+	mv	t0,a2
+	add	a7,t3,a5
+	add	a5,a4,t0
+	mulhsu	s10,t1,s5
+	srai	t1,a6,31
+	xor	a6,t0,s3
+	mv	s7,a0
+	sd	s0,48(sp)
+	sd	s3,40(sp)
+	mv	s3,a4
 	addi	s0,sp,64
-	mv	t1,t2
-	mv	a6,s4
-	mv	ra,t1
-	sd	a6,-64(s0)
+	mv	a5,a0
+	and	s4,s11,t5
+	xor	s5,t6,s11
+	add	t0,s3,t4
+	mv	ra,a5
+	sd	a1,-64(s0)
 	sw	ra,-52(s0)
 	li	s1,0
 	j	.L14
 .L15:
-	ld	t1,-64(s0)
-	mv	s8,s0
-	addi	t2,t1,8
-	mv	t4,s2
-	mv	a0,s8
-	mv	t1,t4
-	sd	t2,-64(a0)
-	ld	t2,-64(a0)
-	mul	a0,s5,t5
-	sltu	s0,t1,s9
-	sll	sp,ra,s1
-	srliw	a0,s7,29
-	ori	a6,t6,1591
-	srai	a0,t0,14
-	srli	s0,t0,20
-	sraw	s11,a6,a6
-	subw	sp,s3,s9
-	ld	a5,0(t2)
+	ld	a5,-64(s0)
+	addi	a5,a5,8
+	sd	a5,-64(s0)
+	slt	t3,s7,s8
+	andi	t1,s6,-32
+	mulh	s9,t2,t2
+	and	s5,t5,t0
+	and	s2,a1,t0
+	mv	a2,s8
+	or	a1,s6,s3
+	ld	a5,-64(s0)
+	slt	s3,s4,a2
+	slli	t0,a4,31
+	mv	sp,a5
+	mul	ra,s6,a3
+	ld	a5,0(sp)
 	addi	a3,s0,-48
 	addi	a4,s0,-40
 	mv	a2,a3
+	or	s8,sp,s11
+	andi	t4,s4,1327
+	mulw	t4,a7,a6
+	mulhu	t4,t4,a6
+	srlw	a0,s6,t2
+	srl	t2,sp,t2
 	mv	a1,a4
 	mv	a0,a5
 	call	crc32file
-	xori	t1,s1,-1239
-	mv	a2,a5
-	mv	a0,a4
-	mv	a3,a2
-	mv	t4,s8
 	mv	a5,a0
-	mv	a4,t4
-	mv	s8,a5
-	mv	a0,a3
-	mv	a2,s8
-	mv	s2,a4
-	mv	a3,a2
-	mv	a5,a0
-	mv	a4,a3
-	mv	s8,s10
-	mulw	t2,a5,s4
-	mv	a1,s8
-	mulhsu	sp,s6,a4
-	mv	a2,s2
-	mulh	ra,a1,s9
-	mv	t0,t2
-	slti	a1,a6,1122
-	addi	s11,t0,1168
-	mulhu	s0,t3,s3
-	xori	s2,sp,604
-	mv	t2,s0
-	slliw	s8,s11,18
-	mv	a5,t2
-	or	a5,a5,a2
+	mv	t1,a3
+	or	a5,a5,s1
 	sext.w	s1,a5
 	ld	a4,-40(s0)
 	ld	a2,-48(s0)
 	ld	a5,-64(s0)
+	or	s8,t4,t0
+	subw	s10,s10,t1
+	mulw	a1,t0,s0
 	ld	a5,0(a5)
 	mv	a3,a5
 	mv	a1,a4
@@ -552,62 +497,33 @@ main:
 	addi	a0,a5,%lo(.LC1)
 	call	printf
 .L14:
-	li	s2,457
-	slli	s2,s2,3
-	srli	t1,s2,3
-	slli	t0,t1,3
-	xori	s4,t0,-756
-	xori	s6,s4,824
-	xori	s4,s6,911
-	slli	a1,s4,2
-	li	t4,-808
-	srli	a0,t4,3
-	mv	sp,a1
-	xori	ra,a0,818
-	slli	t6,ra,1
-	xori	t4,t6,1363
-	slli	t4,t4,11
-	srli	t6,t4,10
-	srl	s2,sp,t6
-	slli	s4,s2,2
-	add	s9,s0,s4
-	li	a4,-1106
-	andi	s5,a4,-653
-	ori	a2,s5,16
-	li	s10,722
-	xori	s7,s10,1311
-	andi	t5,s7,-257
-	and	s3,a2,t5
-	ori	t3,s3,0
-	add	a2,s9,t3
-	lw	a5,0(a2)
-	mv	a0,a5
-	li	a3,-1
-	addi	a5,a0,None
-	sw	a5,-52(s0)
 	lw	a5,-52(s0)
-	sext.w	a5,a5
+	mv	a1,t5
+	addiw	a5,a5,-1
+	sw	a5,-52(s0)
+	srli	a4,a1,29
+	srl	t3,s2,a2
+	and	s7,s11,s2
+	lw	a5,-52(s0)
+	mulh	a1,s8,a2
+	addiw	t6,s9,-441
+	mv	sp,a5
+	mv	t5,s6
+	sext.w	a5,sp
 	bgt	a5,zero,.L15
-	mv	s5,s1
-	mv	s9,a0
-	mv	t6,s5
-	mv	a1,t6
-	snez	a5,a1
-	andi	a5,a1,255
+	mv	a5,s1
+	snez	a5,a5
+	mv	t2,t0
+	andi	a5,a5,255
 	sext.w	a5,a5
-	mv	s5,s9
 	mv	a0,a5
-	mv	t2,s5
-	ld	ra,56(t2)
-	ld	s0,48(t2)
-	ld	s1,40(t2)
-	addi	sp,t2,64
-	srlw	s6,t1,a7
-	slli	a6,s6,13
-	andi	s11,a6,347
-	or	s6,a7,a7
-	subw	s6,a2,a4
-	xor	a7,a3,t3
+	ld	ra,56(s3)
+	slli	s5,t2,7
+	add	t2,s9,t3
+	mulhsu	t1,t1,s6
+	ld	s0,48(s3)
+	ld	s1,40(s3)
+	addi	sp,s3,64
 	jr	ra
 	.size	main, .-main
 	.ident	"GCC:, (GNU), 9.2.0"
