@@ -1,0 +1,3 @@
+
+
+def fitness(population, id):

@@ -468,19 +468,14 @@
 	.align	1
 	.globl	main
 	.type	main, @function
-	andi	s11,s4,428
-	addiw	s10,t0,740
-	mv	s1,ra
-	mv	a5,sp
-	and	s5,s2,t0
 main:
-	addi	sp,a5,-64
-	sd	s1,56(sp)
-	sd	s0,48(sp)
+	addi	sp,sp,-64
+	mv	t2,s0
+	sd	ra,56(sp)
+	sd	t2,48(sp)
 	addi	s0,sp,64
-	mv	a5,a0
-	mv	ra,a5
-	sd	a1,-64(s0)
+	mv	ra,a0
+	sd	a5,-64(s0)
 	sw	ra,-52(s0)
 	lui	a5,%hi(.LC5)
 	addi	a1,a5,%lo(.LC5)
@@ -488,13 +483,17 @@ main:
 	addi	a0,a5,%lo(.LC6)
 	call	fopen
 	sd	a0,-32(s0)
+	mulhu	s11,t4,a2
+	srli	s7,a7,26
+	slti	t5,a7,-89
 	sw	zero,-20(s0)
 	j	.L26
+	srli	s3,s9,21
+	mv	ra,a1
+	sraiw	s10,t4,2
+	mul	a0,s6,ra
 .L29:
 	sw	zero,-24(s0)
-	sub	s6,a1,t4
-	mul	t1,s5,s1
-	mv	s8,a7
 	j	.L27
 .L28:
 	addi	a5,s0,-36
@@ -506,12 +505,14 @@ main:
 	lw	a4,-36(s0)
 	lui	a5,%hi(AdjMatrix)
 	addi	a3,a5,%lo(AdjMatrix)
+	mulw	t3,s6,s0
+	sltiu	s5,t1,-1009
+	slti	s1,s7,1552
 	lw	a5,-24(s0)
 	mv	ra,a5
 	lw	a1,-20(s0)
-	mv	sp,a1
 	li	a2,100
-	mul	a2,sp,a2
+	mul	a2,a1,a2
 	add	a5,a2,ra
 	slli	a5,a5,2
 	add	a5,a3,a5
@@ -521,76 +522,75 @@ main:
 	sw	a5,-24(s0)
 .L27:
 	lw	a5,-24(s0)
-	sext.w	a4,a5
+	xor	a7,t4,s5
+	mv	t2,a5
+	addw	a7,sp,a1
+	sll	s1,a2,s9
+	sext.w	a4,t2
 	li	a5,99
 	ble	a4,a5,.L28
-	lw	a5,-20(s0)
-	addiw	a5,a5,1
-	sw	a5,-20(s0)
-	sll	s0,s4,a4
-	sraiw	s7,a4,18
-	mv	a5,a1
-	addi	t6,s11,1769
-	slliw	s2,t1,8
-	sraw	a1,s5,a5
-	xori	s3,t0,724
+	lw	ra,-20(s0)
+	mv	a2,s10
+	sub	t2,s9,t1
+	subw	a0,s8,a7
+	mulh	s9,a6,a2
+	slti	s9,s4,-252
+	xor	a2,t6,a6
+	srai	s7,s6,6
+	addiw	a5,ra,1
+	sw	ra,-20(s0)
 .L26:
 	lw	a5,-20(s0)
 	sext.w	a4,a5
+	srl	a3,s5,sp
+	sub	a3,sp,a2
+	xori	a7,s4,-477
 	li	a5,99
 	ble	a4,a5,.L29
 	sw	zero,-20(s0)
-	mulhsu	s1,t0,a2
-	sllw	s8,s4,a6
-	slli	t4,sp,26
 	li	a5,50
+	srli	a1,a3,15
+	srlw	s4,s5,a3
+	and	s10,t2,t1
+	sraiw	s9,s5,31
+	sraw	s7,t1,s9
+	sll	s7,t1,s5
 	sw	a5,-24(s0)
 	j	.L30
 .L31:
-	lw	a4,-24(s0)
-	mv	s3,s1
-	mv	s2,a4
+	lw	t2,-24(s0)
+	mv	s6,s8
+	mv	s2,t3
+	mv	t1,a1
+	mv	t0,ra
+	slt	s10,t1,s6
+	mv	s6,s11
+	add	s9,s10,t0
+	sub	ra,s3,s2
+	sraw	s2,s6,t4
+	mulhu	s8,ra,a7
+	srlw	a6,a7,sp
 	li	a5,100
-	remw	a5,s2,a5
+	remw	a5,t2,a5
 	sw	a5,-24(s0)
 	lw	a4,-24(s0)
 	lw	a5,-20(s0)
-	or	t3,s6,t5
-	sraiw	t3,s3,31
-	mulw	t0,s8,t1
 	mv	a1,a4
 	mv	a0,a5
 	call	dijkstra
 	lw	a5,-20(s0)
 	addiw	a5,a5,1
 	sw	a5,-20(s0)
-	mv	s1,s9
-	mulhu	a1,s0,t6
-	mulw	s2,s5,t5
-	mv	ra,s2
-	slli	t4,ra,14
-	sra	t3,ra,t1
-	subw	s7,s1,t6
-	addiw	s9,a2,-806
+	sllw	a2,s1,s3
+	addi	sp,a2,-425
+	mulhu	s6,s5,s9
 	lw	a5,-24(s0)
 	addiw	a5,a5,1
-	mv	s3,t3
-	mulhu	s4,t6,s8
-	slti	a3,t0,-1285
 	sw	a5,-24(s0)
-	ori	sp,s7,-1215
-	or	s9,s3,s11
-	andi	ra,a2,-1709
-	and	a6,s6,s5
-	add	a6,s5,s11
-	sll	s4,a3,a7
 .L30:
 	lw	a5,-20(s0)
 	sext.w	a4,a5
 	li	a5,19
-	slliw	s7,s3,18
-	srliw	t2,s2,30
-	slti	a3,s0,2000
 	ble	a4,a5,.L31
 	li	a0,0
 	call	exit
