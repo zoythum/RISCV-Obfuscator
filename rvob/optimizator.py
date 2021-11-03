@@ -1,6 +1,8 @@
 from deton import execute
 import argparse
 from optimization.setup_popolation import setup_population
+from os import path
+from optimization.fitness import fitness
 
 
 def get_args():
@@ -32,23 +34,37 @@ def get_args():
 
     return parser.parse_args()
 
-def run_gen(p, n_individuals, file: str, entry: str):
+def calc_fitness(p, id: int, overhead: int):
+    rel = path.dirname(__file__)
+    str1 = rel + '/metrics/data.txt'
+    str2 = rel + '/metrics/data_metrics.txt'
+
+    # execute the fitness on the cromosome
+    fitness(p, id, str1, str2, overhead)
+
+def run_gen(p, n_individuals, file: str, entry: str, overhead: int):
+
+    # execution of deton and fitness on every cromosome
     for i in range(n_individuals):
-        execute(file, entry, p.individuals[i].heat, p.individuals[i].scrambling, p.individuals[i].obfuscate, p.individuals[i].garbage, p.individuals[i].garbage_block, ' ', True, opt=False)
+        execute(file, entry, p.individuals[i].heat, p.individuals[i].scrambling, p.individuals[i].obfuscate, p.individuals[i].garbage, p.individuals[i].garbage_block, (path.dirname(__file__)+'/metrics/output.s'), False, True)
+        calc_fitness(p, i, overhead)
+
+    classifica = p.classifica()
+    print(classifica)
 
 
 def ga(overhead: int, file: str, entry: str):
 
-    n_individuals = 10
+    n_individuals = 100
 
     # setup the population
     population = setup_population(n_individuals)
 
-    # running the generation
-    i = False
+    # running the generation and the fitness function
+    i = True
     count = 0
     while (i and count <= 1000):
-        run_gen(population, n_individuals, file, entry)
+        run_gen(population, n_individuals, file, entry, overhead)
 
 
 

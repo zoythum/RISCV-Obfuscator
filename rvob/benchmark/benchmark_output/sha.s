@@ -14,26 +14,30 @@ sha_transform:
 	sw	zero,-20(s0)
 	j	.L2
 .L3:
-	ld	t0,-728(s0)
+	ld	a2,-728(s0)
 	lw	a5,-20(s0)
 	addi	a5,a5,6
 	slli	a5,a5,3
-	add	a5,t0,a5
-	ld	a4,8(a5)
+	add	a5,a2,a5
+	ld	ra,8(a5)
 	lw	a5,-20(s0)
 	slli	a5,a5,3
 	addi	a3,s0,-16
 	add	a5,a3,a5
-	sd	a4,-696(a5)
+	sd	ra,-696(a5)
 	lw	a5,-20(s0)
 	addiw	a5,a5,1
 	sw	a5,-20(s0)
 .L2:
 	lw	a5,-20(s0)
 	sext.w	a4,a5
+	mv	t0,a4
 	li	a5,15
-	ble	a4,a5,.L3
+	ble	t0,a5,.L3
 	li	a5,16
+	mv	s4,ra
+	mulhu	s8,t2,t4
+	slt	s6,a0,t1
 	sw	a5,-20(s0)
 	j	.L4
 .L5:
@@ -55,16 +59,11 @@ sha_transform:
 	lw	a5,-20(s0)
 	addiw	a5,a5,-14
 	sext.w	a5,a5
-	mv	sp,a4
 	slli	a5,a5,3
-	mv	ra,a5
 	addi	a3,s0,-16
-	add	a5,a3,ra
-	ld	t1,-696(a5)
-	sltiu	a7,a1,-1864
-	mul	t4,a6,s9
-	andi	t0,s7,-889
-	xor	a4,sp,t1
+	add	a5,a3,a5
+	ld	a5,-696(a5)
+	xor	a4,a4,a5
 	lw	a5,-20(s0)
 	addiw	a5,a5,-16
 	sext.w	a5,a5
@@ -78,14 +77,20 @@ sha_transform:
 	addi	a3,s0,-16
 	add	a5,a3,a5
 	sd	a4,-696(a5)
+	srli	t5,t3,14
+	srlw	s4,a0,s7
+	sltiu	s5,s1,1811
 	lw	a5,-20(s0)
 	addiw	a5,a5,1
 	sw	a5,-20(s0)
+	sra	s10,s2,ra
+	mv	ra,s7
+	add	t1,s6,a3
 .L4:
 	lw	a5,-20(s0)
-	sext.w	t0,a5
+	sext.w	a4,a5
 	li	a5,79
-	ble	t0,a5,.L5
+	ble	a4,a5,.L5
 	ld	a5,-728(s0)
 	ld	a5,0(a5)
 	sd	a5,-32(s0)
@@ -95,32 +100,32 @@ sha_transform:
 	ld	a5,-728(s0)
 	ld	a5,16(a5)
 	sd	a5,-48(s0)
+	mv	a0,zero
 	ld	a5,-728(s0)
+	slli	t6,t3,29
+	and	t0,a6,t2
+	mul	s3,a6,a2
 	ld	a5,24(a5)
 	sd	a5,-56(s0)
 	ld	a5,-728(s0)
-	mv	s3,a2
 	ld	a5,32(a5)
-	mul	s8,a3,s7
-	sltu	s5,s3,s4
-	slti	a2,a0,278
 	sd	a5,-64(s0)
-	sw	zero,-20(s0)
+	sw	a0,-20(s0)
 	j	.L6
 .L7:
 	ld	a5,-32(s0)
 	slli	a4,a5,5
 	ld	a5,-32(s0)
-	mv	ra,a4
 	srli	a5,a5,27
-	or	a4,ra,a5
+	or	a4,a4,a5
 	ld	a3,-40(s0)
+	mv	ra,a3
 	ld	a5,-48(s0)
-	and	a3,a3,a5
+	and	a3,ra,a5
 	ld	a5,-40(s0)
-	not	ra,a5
+	not	a2,a5
 	ld	a5,-56(s0)
-	and	a5,ra,a5
+	and	a5,a2,a5
 	or	a5,a3,a5
 	add	a4,a4,a5
 	ld	a5,-64(s0)
@@ -131,10 +136,9 @@ sha_transform:
 	add	a5,a3,a5
 	ld	a5,-696(a5)
 	add	a4,a4,a5
-	mv	sp,a4
 	li	a5,1518501888
 	addi	a5,a5,-1639
-	add	a5,sp,a5
+	add	a5,a4,a5
 	sd	a5,-72(s0)
 	ld	a5,-56(s0)
 	sd	a5,-64(s0)
@@ -155,17 +159,13 @@ sha_transform:
 	sw	a5,-20(s0)
 .L6:
 	lw	a5,-20(s0)
-	sext.w	a4,a5
-	mv	t0,a4
+	sext.w	a0,a5
+	sra	t3,a3,s4
+	mulhsu	t2,a7,t1
+	subw	s6,ra,s11
 	li	a5,19
-	ble	t0,a5,.L7
+	ble	a0,a5,.L7
 	li	a5,20
-	srlw	a0,a3,a7
-	and	a0,s2,t6
-	sraiw	s1,s11,14
-	slt	t0,a7,a7
-	add	t4,ra,t3
-	subw	s9,s2,s1
 	sw	a5,-20(s0)
 	j	.L8
 .L9:
@@ -179,7 +179,8 @@ sha_transform:
 	xor	a3,a3,a5
 	ld	a5,-56(s0)
 	xor	a5,a3,a5
-	add	ra,a4,a5
+	add	a4,a4,a5
+	mv	ra,a4
 	ld	a5,-64(s0)
 	add	a4,ra,a5
 	lw	a5,-20(s0)
@@ -211,54 +212,65 @@ sha_transform:
 	sw	a5,-20(s0)
 .L8:
 	lw	a5,-20(s0)
+	add	s2,s5,s7
+	add	s6,s3,s6
+	subw	s3,t0,s4
 	sext.w	a4,a5
 	li	a5,39
 	ble	a4,a5,.L9
-	sraiw	t0,a7,0
-	srl	s4,a6,s7
-	srl	t3,t3,a3
+	sllw	s5,a7,a6
+	sltiu	t4,s8,1189
+	mul	a0,t4,a1
 	li	a5,40
 	sw	a5,-20(s0)
 	j	.L10
 .L11:
 	ld	a5,-32(s0)
-	slli	sp,a5,5
+	slli	a4,a5,5
+	mv	t2,ra
+	mv	sp,a4
 	ld	a5,-32(s0)
 	srli	a5,a5,27
-	or	ra,sp,a5
+	or	a4,sp,a5
 	ld	a3,-48(s0)
+	mulhsu	t4,t2,s8
+	slti	a7,s4,-1447
+	sraw	s1,a6,t1
 	ld	a5,-56(s0)
 	or	a3,a3,a5
 	ld	a5,-40(s0)
 	and	a3,a3,a5
+	srai	s4,t2,26
+	srliw	s9,s4,8
+	sraiw	t5,s4,12
 	ld	a2,-48(s0)
 	ld	a5,-56(s0)
 	and	a5,a2,a5
 	or	a5,a3,a5
-	add	sp,ra,a5
+	add	a4,a4,a5
 	ld	a5,-64(s0)
-	add	a4,sp,a5
+	add	sp,a4,a5
 	lw	a5,-20(s0)
 	slli	a5,a5,3
+	mv	ra,a5
 	addi	a3,s0,-16
-	add	a5,a3,a5
+	add	a5,a3,ra
 	ld	a5,-696(a5)
-	add	a4,a4,a5
+	add	ra,sp,a5
 	li	a5,600240128
 	slli	a5,a5,2
 	addi	a5,a5,-804
-	add	a5,a4,a5
+	add	a5,ra,a5
 	sd	a5,-72(s0)
 	ld	a5,-56(s0)
 	sd	a5,-64(s0)
 	ld	a5,-48(s0)
 	sd	a5,-56(s0)
 	ld	a5,-40(s0)
-	slli	a4,a5,30
-	mv	ra,a4
+	slli	sp,a5,30
 	ld	a5,-40(s0)
 	srli	a5,a5,2
-	or	a5,ra,a5
+	or	a5,sp,a5
 	sd	a5,-48(s0)
 	ld	a5,-32(s0)
 	sd	a5,-40(s0)
@@ -270,16 +282,17 @@ sha_transform:
 .L10:
 	lw	a5,-20(s0)
 	sext.w	a4,a5
+	mulh	s0,s7,s7
+	mulhu	s9,a3,s1
+	mv	t2,a4
+	sraiw	s8,a6,31
 	li	a5,59
-	sra	s5,s6,a1
-	slti	s8,t2,-211
-	slt	t4,s2,t2
-	srai	a3,s10,14
-	sraiw	s10,a7,23
-	sraiw	s11,ra,12
-	ble	a4,a5,.L11
+	ble	t2,a5,.L11
 	li	a5,60
 	sw	a5,-20(s0)
+	add	a1,a0,a0
+	srliw	a6,t5,4
+	or	s1,a7,ra
 	j	.L12
 .L13:
 	ld	a5,-32(s0)
@@ -288,19 +301,20 @@ sha_transform:
 	srli	a5,a5,27
 	or	a4,a4,a5
 	ld	a3,-40(s0)
+	mv	ra,a3
 	ld	a5,-48(s0)
-	xor	a3,a3,a5
+	xor	a3,ra,a5
 	ld	a5,-56(s0)
 	xor	a5,a3,a5
 	add	a4,a4,a5
 	ld	a5,-64(s0)
-	add	a4,a4,a5
+	add	sp,a4,a5
 	lw	a5,-20(s0)
 	slli	a5,a5,3
 	addi	a3,s0,-16
 	add	a5,a3,a5
 	ld	a5,-696(a5)
-	add	a4,a4,a5
+	add	a4,sp,a5
 	li	a5,848867328
 	slli	a5,a5,2
 	addi	a5,a5,470
@@ -308,8 +322,12 @@ sha_transform:
 	sd	a5,-72(s0)
 	ld	a5,-56(s0)
 	sd	a5,-64(s0)
+	mv	t1,a1
 	ld	a5,-48(s0)
 	sd	a5,-56(s0)
+	ori	s9,sp,625
+	mulhsu	s11,a0,s9
+	add	a1,t1,t6
 	ld	a5,-40(s0)
 	slli	a4,a5,30
 	ld	a5,-40(s0)
@@ -325,60 +343,42 @@ sha_transform:
 	sw	a5,-20(s0)
 .L12:
 	lw	a5,-20(s0)
-	mv	t0,s2
-	sext.w	a0,a5
-	mulh	ra,s1,s0
-	srl	s3,t0,t2
-	srli	s1,t1,17
-	mv	a1,sp
-	addi	s7,a7,1915
-	mul	t5,t6,s3
+	sext.w	a4,a5
 	li	a5,79
-	sraw	a6,a7,t6
-	or	s6,t1,t1
-	srliw	s2,t6,22
-	ble	a0,a5,.L13
+	ble	a4,a5,.L13
 	ld	a5,-728(s0)
 	ld	a4,0(a5)
-	ld	a5,-32(s0)
+	ld	a5,-32(t0)
 	add	a4,a4,a5
-	mv	ra,a4
-	ld	a5,-728(s0)
-	sd	ra,0(a5)
-	ld	a5,-728(s0)
+	ld	a5,-728(t0)
+	sd	a4,0(a5)
+	ld	a5,-728(t0)
 	ld	a4,8(a5)
-	ld	a5,-40(s0)
-	slti	t6,a7,60
-	mv	ra,a4
-	addw	t6,t2,s0
-	sraiw	t6,a6,29
-	add	a4,ra,a5
-	ld	a5,-728(s0)
+	ld	a5,-40(t0)
+	add	a4,a4,a5
+	ld	a5,-728(t0)
 	sd	a4,8(a5)
-	ld	a5,-728(s0)
+	ld	a5,-728(t0)
 	ld	a4,16(a5)
-	ld	a5,-48(s0)
+	ld	a5,-48(t0)
 	add	a4,a4,a5
-	ld	a5,-728(s0)
+	ld	a5,-728(t0)
 	sd	a4,16(a5)
-	ld	a5,-728(s0)
+	ld	a5,-728(t0)
 	ld	a4,24(a5)
-	ld	a5,-56(s0)
-	add	a4,a4,a5
-	ld	a5,-728(s0)
-	sd	a4,24(a5)
-	ld	a5,-728(s0)
+	ld	a5,-56(t0)
+	add	ra,a4,a5
+	ld	a5,-728(t0)
+	sd	ra,24(a5)
+	ld	a5,-728(t0)
 	ld	a4,32(a5)
-	ld	a5,-64(s0)
+	ld	a5,-64(t0)
 	add	a4,a4,a5
-	ld	a5,-728(s0)
+	ld	a5,-728(t0)
 	sd	a4,32(a5)
 	nop
 	ld	s0,728(sp)
 	addi	sp,sp,736
-	slti	a7,a7,78
-	slt	t2,s6,t2
-	sraw	t2,s8,t2
 	jr	ra
 	.size	sha_transform, .-sha_transform
 	.align	1

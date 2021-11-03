@@ -9,7 +9,7 @@ def heat_ideal_determination(n: int, new_population: population):
 
 # TODO implementing a garbage value range determination
 def garbage_determination(n: int):
-    param = nu.random.uniform(0, 200, n)
+    param = nu.random.uniform(1, 50, n)
     return param
 
 
@@ -20,13 +20,13 @@ def garbage_block_size(n: int):
 
 # TODO implementing an obfuscate value range determination
 def obfuscate_determination(n: int):
-    param = nu.random.uniform(0, 200, n)
+    param = nu.random.uniform(1, 50, n)
     return param
 
 
 # TODO implementing a scrambling value range determination
 def scrambling_determination(n: int):
-    param = nu.random.uniform(0, 300, n)
+    param = nu.random.uniform(1, 50, n)
     return param
 
 
@@ -46,16 +46,16 @@ def setup_population(n_individuals: int):
     garbage_range = garbage_determination(n_individuals)
     block_size = garbage_block_size(n_individuals)
     for i in range(n_individuals):
-        new_population.individuals[i].set_garbage(garbage_range[i], block_size[i])
+        new_population.individuals[i].set_garbage(int(garbage_range[i]), int(block_size[i]))
 
     # setup the obfuscate value
     obfuscate_range = obfuscate_determination(n_individuals)
     for i in range(n_individuals):
-        new_population.individuals[i].set_obfuscate(obfuscate_range[i])
+        new_population.individuals[i].set_obfuscate(int(obfuscate_range[i]))
 
     # setup the scrambling value
     scrambling_range = scrambling_determination(n_individuals)
     for i in range(n_individuals):
-        new_population.individuals[i].set_scrambling(scrambling_range[i])
+        new_population.individuals[i].set_scrambling(int(scrambling_range[i]))
 
     return new_population

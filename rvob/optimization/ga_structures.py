@@ -55,3 +55,10 @@ class population:
         self.individuals = []
         for i in range(n):
             self.individuals.append(cromosome(i))
+
+    def classifica(self):
+        classifica = []
+        for i in self.individuals:
+            classifica.append([int(i.punt_tot), int(i.id)])
+        ordered = sorted(classifica, key=lambda x: x[0], reverse=True)
+        return ordered

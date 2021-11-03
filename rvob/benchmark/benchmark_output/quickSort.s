@@ -74,9 +74,9 @@ swap:
 	lw	a5,0(a5)
 	sw	a5,-20(s0)
 	ld	a5,-48(s0)
-	lw	ra,0(a5)
+	lw	a4,0(a5)
 	ld	a5,-40(s0)
-	sw	ra,0(a5)
+	sw	a4,0(a5)
 	ld	a5,-48(s0)
 	lw	a4,-20(s0)
 	sw	a4,0(a5)
@@ -91,12 +91,16 @@ swap:
 quicksort:
 	addi	sp,sp,-48
 	sd	ra,40(sp)
-	sd	s0,32(sp)
+	sd	t2,32(sp)
 	addi	s0,sp,48
 	sd	a0,-40(s0)
 	mv	a5,a1
+	mv	ra,a5
 	mv	a4,a2
-	sw	a5,-44(s0)
+	sw	ra,-44(s0)
+	sll	t6,t3,s9
+	andi	s8,t1,792
+	slti	s5,t3,319
 	mv	a5,a4
 	sw	a5,-48(s0)
 	lw	a5,-44(s0)
@@ -104,10 +108,13 @@ quicksort:
 	lw	a5,-48(s0)
 	sw	a5,-24(s0)
 	lw	a5,-44(s0)
-	slli	ra,a5,2
+	slli	a5,a5,2
 	ld	a4,-40(s0)
-	add	a5,a4,ra
-	lw	a5,0(ra)
+	add	a5,a4,a5
+	sraiw	a3,s10,18
+	sltu	t3,s4,a3
+	mulhsu	t4,s3,t1
+	lw	a5,0(a5)
 	sw	a5,-28(s0)
 	j	.L6
 .L8:
@@ -120,10 +127,9 @@ quicksort:
 	ld	a4,-40(s0)
 	add	a5,a4,a5
 	lw	a4,0(a5)
-	mv	t2,a4
 	lw	a5,-28(s0)
 	sext.w	a5,a5
-	bgt	a5,t2,.L8
+	bgt	a5,a4,.L8
 	j	.L9
 .L10:
 	lw	a5,-24(s0)
@@ -136,16 +142,17 @@ quicksort:
 	add	a5,a4,a5
 	lw	a4,0(a5)
 	lw	a5,-28(s0)
-	sext.w	a5,a5
-	blt	a5,a4,.L10
-	lw	a4,-20(s0)
-	lw	ra,-24(s0)
-	srlw	s4,ra,t0
-	mulhsu	t2,t3,a6
-	slt	t6,a6,t2
-	sext.w	a4,a4
+	mv	ra,a5
+	mv	t1,a4
 	sext.w	a5,ra
-	bgt	a4,ra,.L6
+	blt	a5,t1,.L10
+	lw	a4,-20(s0)
+	mv	t2,a4
+	lw	a5,-24(s0)
+	sext.w	a4,t2
+	mv	t2,a4
+	sext.w	a5,a5
+	bgt	t2,a5,.L6
 	lw	a5,-20(s0)
 	slli	a5,a5,2
 	ld	a4,-40(s0)
@@ -163,13 +170,15 @@ quicksort:
 	lw	a5,-24(s0)
 	addiw	a5,a5,-1
 	sw	a5,-24(s0)
+	addi	s9,s11,-1433
+	subw	a7,s9,s2
+	mulh	s9,a6,t0
 .L6:
 	lw	a4,-20(s0)
 	lw	a5,-24(s0)
-	mv	ra,a5
-	sext.w	t1,a4
-	sext.w	a5,ra
-	ble	t1,a5,.L7
+	sext.w	t2,a4
+	sext.w	a5,a5
+	ble	t2,a5,.L7
 	lw	a4,-44(s0)
 	lw	a5,-24(s0)
 	sext.w	a4,a4
@@ -183,9 +192,14 @@ quicksort:
 	call	quicksort
 .L12:
 	lw	a4,-20(s0)
-	lw	a5,-48(s0)
-	sext.w	a4,a4
-	sext.w	a5,a5
+	mv	t0,a4
+	lw	ra,-48(s0)
+	sext.w	a4,t0
+	mv	t0,s1
+	sext.w	a5,ra
+	mv	s2,t1
+	mulhsu	s9,t4,ra
+	sraw	s1,ra,t0
 	bge	a4,a5,.L14
 	lw	a4,-48(s0)
 	lw	a5,-20(s0)
@@ -197,9 +211,9 @@ quicksort:
 	nop
 	ld	ra,40(sp)
 	ld	s0,32(sp)
-	mv	t0,ra
+	mv	t1,ra
 	addi	sp,sp,48
-	jr	t0
+	jr	t1
 	.size	quicksort, .-quicksort
 	.align	1
 	.globl	benchmark_quicksort
@@ -208,23 +222,20 @@ benchmark_quicksort:
 	addi	sp,sp,-32
 	sd	ra,24(sp)
 	sd	s0,16(sp)
-	mulhu	s10,t0,t5
-	sllw	s9,a4,a1
-	mulh	t2,s6,t3
-	srai	t6,s4,2
-	srliw	s4,t6,9
-	xor	s3,s6,a3
 	addi	s0,sp,32
-	sd	t1,-24(s0)
+	sd	a0,-24(s0)
 	li	a2,99
 	li	a1,0
 	ld	a0,-24(s0)
 	call	quicksort
 	nop
+	mv	t0,t6
 	ld	ra,24(sp)
-	mv	t0,sp
-	ld	s0,16(t0)
-	addi	sp,t0,32
+	addi	s3,a0,1440
+	ori	t6,t0,-976
+	sub	s5,a3,t3
+	ld	s0,16(sp)
+	addi	sp,sp,32
 	jr	ra
 	.size	benchmark_quicksort, .-benchmark_quicksort
 	.align	1
@@ -232,67 +243,67 @@ benchmark_quicksort:
 	.type	fill_array, @function
 fill_array:
 	addi	sp,sp,-64
-	mv	s3,s0
 	sd	ra,56(sp)
-	mv	s2,s9
-	sd	s3,48(sp)
+	sd	s0,48(sp)
 	sd	s1,40(sp)
 	addi	s0,sp,64
-	sltiu	a2,t3,1396
-	or	t4,s2,t4
-	xori	a2,s2,-691
+	mv	a4,ra
 	sd	a0,-56(s0)
 	mv	a5,a1
 	sw	a5,-60(s0)
 	lw	a5,-60(s0)
 	sext.w	a5,a5
+	srli	t1,s9,26
+	and	t0,s11,s8
+	sll	a3,s5,a2
+	xor	s1,a4,s11
+	sraiw	s11,a7,27
+	mulhu	s11,a7,s4
 	beq	a5,zero,.L17
 	sw	zero,-36(s0)
 	j	.L18
 .L19:
 	lw	a5,-36(s0)
-	slli	a5,a5,2
-	mv	ra,a5
+	slli	sp,a5,2
+	mul	t2,s3,s7
+	addw	t5,s10,s1
+	subw	s1,t1,t2
 	ld	a4,-56(s0)
-	add	a5,a4,ra
+	add	ra,a4,sp
 	lw	a4,-36(s0)
-	sw	a4,0(a5)
+	sw	a4,0(ra)
 	lw	a5,-36(s0)
 	addiw	a5,a5,1
 	sw	a5,-36(s0)
 .L18:
 	lw	a5,-36(s0)
 	sext.w	a4,a5
+	sltu	s2,t4,t0
+	sra	t4,a3,a2
+	srliw	a3,s9,26
 	li	a5,99
-	mv	ra,a4
-	add	s10,t3,a3
-	slt	s7,a6,t2
-	addiw	s10,t5,-787
-	ble	ra,a5,.L19
+	ble	a4,a5,.L19
 	j	.L20
 .L17:
 	sw	zero,-36(s0)
 	j	.L21
-	sllw	a3,t3,s2
-	srl	s9,a3,a3
-	xor	s5,t1,a7
-	mulw	t5,ra,s5
-	sltu	s6,t3,s10
-	add	a6,t6,t0
 .L22:
 	lw	a5,-36(s0)
 	slli	a5,a5,2
 	ld	a4,-56(s0)
 	add	s1,a4,a5
+	addiw	t4,t4,637
+	xori	a7,a1,-2008
+	srl	t4,ra,s6
 	call	rand
 	mv	a5,a0
 	sw	a5,0(s1)
 	lw	a5,-36(s0)
 	addiw	a5,a5,1
-	srliw	s7,s5,15
-	and	ra,s11,s7
-	sltu	ra,a1,t3
 	sw	a5,-36(s0)
+	sltiu	s4,t4,109
+	mulw	t0,s7,a6
+	sllw	s10,t2,s4
 .L21:
 	lw	a5,-36(s0)
 	sext.w	a4,a5
@@ -313,9 +324,6 @@ fill_array:
 main:
 	addi	sp,sp,-32
 	sd	ra,24(sp)
-	sub	t1,s6,t2
-	sltu	t6,ra,a0
-	srlw	s0,s10,a4
 	sd	s0,16(sp)
 	addi	s0,sp,32
 	li	a0,400
@@ -324,30 +332,22 @@ main:
 	sw	a5,-20(s0)
 	lw	a5,-20(s0)
 	li	a1,0
-	addw	s11,s9,a4
-	sll	s0,a7,t4
-	mv	ra,a5
-	slli	a2,a4,12
-	mv	a0,ra
+	mv	a0,a5
+	slliw	t2,t4,29
+	srliw	t5,s5,26
+	sltu	s4,t5,sp
 	call	fill_array
 	lw	a5,-20(s0)
 	mv	a0,a5
 	call	benchmark_quicksort
 	lw	a5,-20(s0)
-	mv	t1,t0
 	mv	a0,a5
-	sltu	t4,a2,t6
-	addi	a7,t5,-86
-	slti	s5,s9,-1729
-	mv	s8,t1
-	srliw	s3,a7,14
-	slti	s7,a2,-69
 	call	free
 	li	a5,0
 	mv	a0,a5
-	ld	ra,24(sp)
-	ld	s0,16(sp)
-	addi	sp,sp,32
+	ld	ra,24(t0)
+	ld	s0,16(t0)
+	addi	sp,t0,32
 	jr	ra
 	.size	main, .-main
 	.ident	"GCC:, (GNU), 9.2.0"

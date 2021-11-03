@@ -280,7 +280,7 @@ def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_
     do_scrambling(scrambling_repetition, heat)
 
 
-def execute(name: str, entry: str, heat: int, scrambling_repetition: int, obfuscate_repetition: int, garbage_repetition: int, garb_size: int, output: str, bench: bool, metric: bool, opt=True):
+def execute(name: str, entry: str, heat: int, scrambling_repetition: int, obfuscate_repetition: int, garbage_repetition: int, garb_size: int, output: str, bench: bool, metric: bool):
 
     global heat_map
     global heat_file
@@ -341,15 +341,15 @@ def execute(name: str, entry: str, heat: int, scrambling_repetition: int, obfusc
         heat_file.write("\n\n\nObfuscated version:\n")
         write_heat(False, calc_fragmentation())
         heat_file.close()
+        metrics_file.close()
 
     # Write the output file
-    if opt==True:
-        if bench==True:
-            dirct = rel + '/benchmark/benchmark_output/' + name + ".s"
-        else:
-            dirct = output
-        out = open(dirct, 'w+')
-        out.write(str(src))
+    if bench==True:
+        dirct = rel + '/benchmark/benchmark_output/' + name + ".s"
+    else:
+        dirct = output
+    out = open(dirct, 'w+')
+    out.write(str(src))
 
 
 def main():
