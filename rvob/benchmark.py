@@ -15,7 +15,7 @@ import rvob.analysis.heatmaps as heatmaps
 import rvob.scrambling as scrambling
 import rvob.analysis.tracer as tracer
 from rvob.structures import Register
-from rvob.obf.obfuscator import NotEnoughtRegisters, NotValidInstruction
+from rvob.obf.obfuscator import NotEnoughRegisters, NotValidInstruction
 from os import path
 import argparse
 
@@ -185,7 +185,7 @@ def do_scrambling(iter_num: int, heat):
     failed_substitute = 0
 
     for t in range(iter_num):
-        print("scrambling iteration: " + str(t))
+        # print("scrambling iteration: " + str(t))
         heat_map = heatmaps.register_heatmap(cfg, heat)
 
         # try to do a register substitution
@@ -207,9 +207,18 @@ def do_garbage(iter_num: int):
     this perform the garbage instructions insertion
     @param iter_num: the number of iteration to do
     """
+    failed = 0
     for t in range(iter_num):
-        print("garbage iteration: " + str(t))
-        garbage_inserter.insert_garbage_instr(cfg)
+        # print("garbage iteration: " + str(t))
+        for z in range(5):
+            try:
+                garbage_inserter.insert_garbage_instr(cfg)
+                break
+            except NotEnoughRegisters:
+                if z == 4:
+                    failed += 1
+
+    print("Garbage failure rate: " + str(failed / iter_num * 100) + "%")
 
 
 def do_obfuscate(iter_num: int):
@@ -219,15 +228,15 @@ def do_obfuscate(iter_num: int):
     """
     failed = 0
     for t in range(iter_num):
-        print("obfuscate iteration: " + str(t))
+        # print("obfuscate iteration: " + str(t))
         for z in range(5):
             try:
                 obfuscator.obfuscate(cfg)
                 break
-            except (NotEnoughtRegisters, NotValidInstruction):
+            except (NotEnoughRegisters, NotValidInstruction):
                 if z == 4:
                     failed += 1
-    print("Failure rate: " + str(failed / iter_num * 100) + "%")
+    print("Obfuscator Failure rate: " + str(failed / iter_num * 100) + "%")
 
 
 def apply_techniques(heat, scrambling_repetition, obfuscate_repetition, garbage_repetition):

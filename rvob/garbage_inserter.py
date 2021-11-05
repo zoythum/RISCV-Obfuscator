@@ -3,6 +3,8 @@ from typing import List
 
 from networkx import DiGraph
 from random import randint, choices
+
+from rvob.obf.obfuscator import NotEnoughRegisters
 from setup_structures import get_free_regs
 from structures import Register, not_modifiable_regs
 from rvob.registerbinder import bind_register_to_value
@@ -18,14 +20,11 @@ def sorting_function(val: Enum):
 
 def establish_write_reg(free_reg: List[Enum], needed: int) -> List[Enum]:
     write_reg: List[Enum] = list()
-    for reg in free_reg:
-        if line_heat_map[reg.value] == 0:
-            write_reg.append(reg)
-        elif len(write_reg) < needed:
-            write_reg.append(reg)
-        else:
-            break
-    return write_reg
+
+    if len(free_reg) >= needed:
+        return [free_reg[i] for i in range(needed)]
+    else:
+        return free_reg
 
 
 def establish_read_reg(all_reg: List[Enum], needed: int) -> List[Enum]:
@@ -69,10 +68,10 @@ def insert_garbage_instr(cfg: DiGraph, node: int = None, block_size: int = None,
     all_regs.sort(key=sorting_function)
 
     instr_list = choices(list(garbage_inst.keys()), k=block_size)
-    write_reg = establish_write_reg(free_regs, block_size)
-    read_reg = establish_read_reg(all_regs, block_size)
+    if len(free_regs) == 0 or len(all_regs) <= 1:
+        raise NotEnoughRegisters
     for instr in instr_list:
-        statement = garbage_inst[instr](write_reg, read_reg)
+        statement = garbage_inst[instr](free_regs, all_regs)
         statement.inserted = True
         cfg.nodes[node]["block"].insert(line_num, statement)
         bind_register_to_value(cfg, node)
